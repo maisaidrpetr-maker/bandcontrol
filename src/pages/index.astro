@@ -1,17 +1,125 @@
 ---
+import { getCollection, getEntry } from 'astro:content';
+import '../styles/global.css';
 
+// 1. Načteme všechny skladby pro sidebar
+const vsechnySkladby = await getCollection('skladby');
+
+// 2. Načteme první skladbu jako výchozí (pro začátek)
+const prvniSkladba = vsechnySkladby[0];
+
+// Pokud nemáš žádnou skladbu v src/content/skladby/, vyhodí to chybu, 
+// tak si pohlídej, že tam ten .md soubor je.
+if (!prvniSkladba) {
+  throw new Error("Složka src/content/skladby/ je prázdná! Dej tam alespoň jeden .md soubor.");
+}
+
+const { title, artist, bpm, key, audio } = prvniSkladba.data;
+
+// 3. Tvůj parser pro akordy (ten stejný co v Hugu)
+const formattedContent = prvniSkladba.body
+  .replace(/\[(.*?)\]/g, '<b style="color: #a32626;">$1</b>')
+  .replace(/\{(?:c|comment): (.*?)\}/g, '<div style="color: #0055aa; font-style: italic; margin: 10px 0;">$1</div>');
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>{title} | BandControl</title>
+</head>
+<body>
+
+<header>
+  <div class="display-module song-info-panel">
+    <div class="title-container">
+        <div class="digital-text song-title-main">{title}</div>
+    </div>
+    <div class="digital-text" id="display-artist">{artist}</div>
+    <div class="meta-row">
+      <span id="display-bpm">{bpm} BPM</span>
+      <span id="display-key">KEY: {key}</span>
+    </div>
+  </div>
+  
+  <div class="player-unit">
+    <div class="display-module player-display">
+      <canvas id="analyzer"></canvas>
+      <div class="display-content-overlay">
+          <div class="display-top-row">
+              <div id="track-time" class="digital-text dot-matrix">00:00</div>
+              <div id="speed-label" class="digital-text">SPEED: 1.00x</div>
+          </div>
+          
+          <div id="display-brand-container">
+              <div class="brand-intro-split digital-text dot-matrix">
+                  <div class="brand-part-l">Band</div>
+                  <div class="brand-part-r">Control</div>
+              </div>
+          </div>
+
+          <div class="progress-container" id="progress-container">
+            <div class="progress-rail"><div class="progress-fill" id="progress-bar"></div></div>
+          </div>
+      </div>
+    </div>
+    
+    <div class="control-row">
+      <div class="btn-group">
+        <button class="btn-base" id="rew-btn">REW</button>
+        <button class="btn-base" id="stop-btn">STOP</button>
+        <button class="btn-base" id="play-btn">PLAY</button>
+        <button class="btn-base" id="fwd-btn">FWD</button>
+        <button class="btn-base" id="rpt-btn">RPT</button>
+      </div>
+      <div class="btn-group">
+        <button class="btn-base speed-btn" id="speed-down">&ndash;</button>
+        <button class="btn-base speed-btn" id="speed-up">+</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="timer-rack">
+    <div class="display-module timer-display">
+        <div id="timer-text" class="digital-text dot-matrix">00:00</div>
+        <div class="timer-adjust-btns">
+            <button class="btn-mini" id="t-plus">+5</button>
+            <button class="btn-mini" id="t-minus">-5</button>
+        </div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+        <button class="btn-base" style="flex-grow:1;" id="timer-start">START</button>
+        <button class="btn-base" style="flex-grow:1;" id="timer-reset">RESET</button>
+    </div>
+  </div>
+</header>
+
+<div class="main-layout">
+  <aside class="library">
+    {vsechnySkladby.map(s => (
+      <a href={`/skladby/${s.slug}`} class={`list-entry ${s.slug === prvniSkladba.slug ? 'active-entry' : ''}`}>
+        <span class="led-dot"></span>
+        <span>{s.data.title}</span>
+      </a>
+    ))}
+  </aside>
+
+  <main class="content">
+    <div class="paper">
+      <pre class="song-raw" set:html={formattedContent}></pre>
+    </div>
+  </main>
+
+  <aside class="sidebar-right"></aside>
+</div>
+
+{audio && <audio id="main-audio" src={audio} crossorigin="anonymous"></audio>}
+
+<script is:inline>
+  // SEM VLOŽ CELÝ TEN SVŮJ JAVASCRIPT OD "const audio = ..." AŽ PO KONEC
+  // (Ten co jsi mi poslal v minulé zprávě)
+  // Astro ho nechá přesně tak, jak je, a tvůj analyzér hned naskočí.
+</script>
+
+</body>
 </html>

@@ -6,33 +6,44 @@ import '../styles/global.css';
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>BandControl | Skeleton</title>
+    <title>BandControl | Master</title>
 </head>
-<body>
+<body style="margin: 0; background: #000;">
 
-    <div class="app-shell">
-        <header>
-            </header>
-
-        <div class="main-layout">
-            
-            <aside class="library">
-                </aside>
-
-            <main class="content">
-                <div class="paper">
-                    <pre class="song-raw"></pre>
-                </div>
-            </main>
-
-            <aside class="sidebar-right">
-                </aside>
-
+    <div id="master-splash" style="position: fixed; inset: 0; background: #000; z-index: 999999; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer;">
+        <div class="splash-content">
+            <img src="/images/bms.png" alt="BAND CONTROL" class="splash-logo" style="max-width: 400px; display: block;" />
+            <div class="tap-to-start" style="color: #00ffcc; margin-top: 20px; font-family: monospace;">TAP TO START SYSTEM</div>
         </div>
-
-        <footer class="rack-footer">
-            </footer>
     </div>
+
+    <div id="main-app-container" style="display: none;">
+        <div class="app-shell">
+            <header class="rack-header"></header>
+            <div class="main-layout">
+                <aside class="library"></aside>
+                <main class="content">
+                    <div class="paper">
+                        <pre class="song-raw"></pre>
+                    </div>
+                </main>
+                <aside class="sidebar-right"></aside>
+            </div>
+            <footer class="rack-footer"></footer>
+        </div>
+    </div>
+
+    <script is:inline>
+        const opona = document.getElementById('master-splash');
+        const stroj = document.getElementById('main-app-container');
+
+        opona.addEventListener('click', () => {
+            // Nejdřív úplně zlikvidujeme oponu, aby nezabírala paměť
+            opona.remove();
+            // Pak teprve pustíme do displeje zbytek stroje
+            stroj.style.display = 'block';
+        });
+    </script>
 
 </body>
 </html>

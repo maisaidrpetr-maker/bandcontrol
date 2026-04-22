@@ -1,0 +1,22 @@
+---
+interface Props {
+  songs: Array<{ title: string; url: string }>;
+}
+const { songs = [] } = Astro.props;
+---
+<aside class="sidebar-l">
+    <div class="song-list-wrapper">
+        <div class="song-list-container">
+            {songs.map(song => (
+                <a href={song.url} class="song-item">
+                    <div class="led"></div>
+                    <span>{song.title}</span>
+                </a>
+            ))}
+        </div>
+    </div>
+</aside>
+
+<style>
+    @import "./Sidebar.css";
+</style>

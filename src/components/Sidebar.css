@@ -1,0 +1,55 @@
+.sidebar-l {
+    width: 250px;
+    min-width: 250px;
+    background-color: #0a0a0a;
+    border-right: 1px solid #1a1a1a;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.song-list-wrapper {
+    border: 1px solid #222;
+    border-radius: 8px;
+    background-color: #050505;
+    flex-grow: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.song-list-container {
+    padding: 6px;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.song-item {
+    display: flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 12px;
+    text-decoration: none;
+    font-size: 13px;
+    gap: 12px;
+    color: #555;
+    transition: 0.1s;
+}
+
+.song-item:hover { 
+    color: #aaa; 
+    background: linear-gradient(90deg, rgba(255, 204, 0, 0.05) 0%, transparent 100%); 
+}
+
+.song-item.is-active { 
+    color: #fff; 
+    background: linear-gradient(90deg, rgba(0, 204, 68, 0.1) 0%, transparent 100%); 
+}
+
+.led { 
+    width: 14px; height: 4px; background-color: #1a1a1a; 
+    border: 1px solid #333; border-radius: 1px;
+}
+
+.song-item.is-active .led { background-color: #00cc44; box-shadow: 0 0 10px #00cc44; }

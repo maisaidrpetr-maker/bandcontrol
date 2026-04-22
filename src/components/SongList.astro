@@ -1,0 +1,26 @@
+---
+interface Props {
+  songs: Array<{ title: string; url: string }>;
+}
+
+const { songs = [] } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<nav class="song-list">
+  {songs.map((song) => {
+    // Normalizace cest pro porovnání aktivního stavu
+    const active = currentPath.replace(/\/$/, '') === song.url.replace(/\/$/, '');
+    
+    return (
+      <a href={song.url} class={`song-item ${active ? 'is-active' : ''}`}>
+        <div class="led"></div>
+        <span class="song-name">{song.title}</span>
+      </a>
+    );
+  })}
+</nav>
+
+<style>
+  @import "./Sidebar.css";
+</style>

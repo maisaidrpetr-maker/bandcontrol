@@ -1,0 +1,39 @@
+---
+import '../styles/global.css';
+const { title = "BandControl" } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+</head>
+<body>
+    <slot name="splash" />
+
+    <div id="main-app-container" class="app-shell">
+        <header class="rack-header">
+            <slot name="header" />
+        </header>
+
+        <div class="main-layout">
+            <aside class="library">
+                <slot name="sidebar-left" />
+            </aside>
+
+            <main class="content">
+                <slot />
+            </main>
+
+            <aside class="sidebar-right">
+                <slot name="sidebar-right" />
+            </aside>
+        </div>
+
+        <footer class="rack-footer">
+            <slot name="footer" />
+        </footer>
+    </div>
+</body>
+</html>

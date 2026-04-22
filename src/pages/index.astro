@@ -1,49 +1,71 @@
 ---
-import '../styles/global.css';
+import MainLayout from '../layouts/MainLayout.astro';
 ---
 
-<!DOCTYPE html>
-<html lang="cs">
-<head>
-    <meta charset="UTF-8">
-    <title>BandControl | Master</title>
-</head>
-<body style="margin: 0; background: #000;">
+<MainLayout title="BandControl | HOME">
 
-    <div id="master-splash" style="position: fixed; inset: 0; background: #000; z-index: 999999; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer;">
-        <div class="splash-content">
-            <img src="/images/bms.png" alt="BAND CONTROL" class="splash-logo" style="max-width: 400px; display: block;" />
-            <div class="tap-to-start" style="color: #00ffcc; margin-top: 20px; font-family: monospace;">TAP TO START SYSTEM</div>
-        </div>
+    <div slot="splash" id="master-splash" style="position: fixed; inset: 0; background: #000; z-index: 999999; display: none; flex-direction: column; justify-content: center; align-items: center; cursor: pointer;">
+        <img src="/images/bms.png" alt="BMS SYSTEM" style="width: 400px; height: auto;" />
+        <div style="color: #00ffcc; margin-top: 20px; font-family: monospace; letter-spacing: 2px;">SYSTEM READY - TAP TO START</div>
     </div>
 
-    <div id="main-app-container" style="display: none;">
-        <div class="app-shell">
-            <header class="rack-header"></header>
-            <div class="main-layout">
-                <aside class="library"></aside>
-                <main class="content">
-                    <div class="paper">
-                        <pre class="song-raw"></pre>
-                    </div>
-                </main>
-                <aside class="sidebar-right"></aside>
-            </div>
-            <footer class="rack-footer"></footer>
+    <div slot="header" style="display: flex; gap: 20px; color: #00ffcc; font-family: monospace; padding: 0 20px;">
+        <span>BMS DASHBOARD</span>
+        <span style="color: #666;">|</span>
+        <span>NEXT GIG: 25.04. PRAHA</span>
+    </div>
+
+    <div slot="sidebar-left" style="padding: 20px; color: #888; font-size: 0.9rem;">
+        <h3 style="color: #555; font-size: 0.8rem; text-transform: uppercase;">System Status</h3>
+        <p>● BandControl v1.0</p>
+        <p>● Database: Connected</p>
+        <p style="margin-top: 20px; color: #555; font-size: 0.8rem; text-transform: uppercase;">Poslední Jamy</p>
+        <ul style="list-style: none; padding: 0; color: #aaa;">
+            <li>12.04. - Studio A</li>
+            <li>05.04. - Garage Jam</li>
+        </ul>
+    </div>
+
+    <div class="paper" style="padding: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+        <div style="grid-column: 1 / -1;">
+            <h1 style="margin-top: 0;">Vítej v BandControl</h1>
+            <p style="color: #666;">Tvůj centrální uzel pro správu kapely a hraní.</p>
         </div>
+
+        <section style="border-top: 1px solid #ddd; padding-top: 15px;">
+            <h2 style="font-size: 1.1rem; color: #cc0000;">Aktuality z kapely</h2>
+            <ul style="padding-left: 20px; color: #444;">
+                <li>Nové demo nahráno do složky Archive.</li>
+                <li>Potvrzen letní festival "Open Air".</li>
+            </ul>
+        </section>
+
+        <section style="border-top: 1px solid #ddd; padding-top: 15px;">
+            <h2 style="font-size: 1.1rem; color: #0066cc;">Termíny zkoušek</h2>
+            <ul style="padding-left: 20px; color: #444;">
+                <li>Úterý 18:00 - Pravidelná zkouška</li>
+                <li>Čtvrtek 19:30 - Workshop (technika)</li>
+            </ul>
+        </section>
+    </div>
+
+    <div slot="footer" style="display: flex; gap: 10px; padding: 0 20px; align-items: center; height: 100%;">
+        <a href="/"><button style="background: #333; color: #fff; border: 1px solid #555; padding: 5px 15px; cursor: pointer;">HOME</button></a>
+        <a href="/live"><button style="background: #111; color: #666; border: 1px solid #333; padding: 5px 15px; cursor: pointer;">LIVE</button></a>
+        <a href="/workshop"><button style="background: #111; color: #666; border: 1px solid #333; padding: 5px 15px; cursor: pointer;">WORKSHOP</button></a>
     </div>
 
     <script is:inline>
-        const opona = document.getElementById('master-splash');
-        const stroj = document.getElementById('main-app-container');
-
-        opona.addEventListener('click', () => {
-            // Nejdřív úplně zlikvidujeme oponu, aby nezabírala paměť
-            opona.remove();
-            // Pak teprve pustíme do displeje zbytek stroje
-            stroj.style.display = 'block';
+        const splash = document.getElementById('master-splash');
+        if (sessionStorage.getItem('bms_init')) {
+            splash?.remove();
+        } else {
+            if (splash) splash.style.display = 'flex';
+        }
+        splash?.addEventListener('click', () => {
+            sessionStorage.setItem('bms_init', 'true');
+            splash.remove();
         });
     </script>
 
-</body>
-</html>
+</MainLayout>

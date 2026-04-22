@@ -1,0 +1,46 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+
+<MainLayout title="BandControl | WORKSHOP">
+
+    <div slot="header" style="display: flex; gap: 40px; color: #ffcc00; font-family: monospace; padding: 0 20px;">
+        <span>WORKSHOP MODE ACTIVE</span>
+        <div style="border: 1px solid #ffcc00; padding: 0 10px; background: rgba(255,204,0,0.1);">METRONOME: 120 BPM</div>
+        <span style="color: #ff3300;">● REC READY</span>
+    </div>
+
+    <div slot="sidebar-left" style="padding: 20px;">
+        <h3 style="color: #555; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 10px;">Zadání cvičení</h3>
+        <p style="color: #aaa; font-size: 0.9rem; line-height: 1.5;">Dnes se zaměřit na čistotu přechodů v refrénu u skladby My Way.</p>
+    </div>
+
+    <div class="paper" style="background: #e5e5e5; border-left: 10px solid #ffcc00;">
+        <h1 style="color: #222;">Cvičení: Akordové postupy</h1>
+        <p style="color: #444; line-height: 1.6;">
+            Tady bude později interaktivní prvek pro cvičení, 
+            možná tabulatura nebo nahrávací smyčka.
+        </p>
+    </div>
+
+    <div slot="footer" style="display: flex; gap: 10px; padding: 0 20px; align-items: center; height: 100%;">
+        <a href="/">
+            <button style="background: #111; color: #666; border: 1px solid #333; padding: 5px 15px; cursor: pointer;">
+                HOME
+            </button>
+        </a>
+        
+        <a href="/live">
+            <button style="background: #111; color: #666; border: 1px solid #333; padding: 5px 15px; cursor: pointer;">
+                LIVE
+            </button>
+        </a>
+        
+        <a href="/workshop">
+            <button style="background: #333; color: #ffcc00; border: 1px solid #ffcc00; padding: 5px 15px; cursor: pointer;">
+                WORKSHOP
+            </button>
+        </a>
+    </div>
+
+</MainLayout>

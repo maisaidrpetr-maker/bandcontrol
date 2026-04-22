@@ -37,18 +37,20 @@ header {
 .main-layout { 
   display: flex; 
   flex-grow: 1; 
-  height: calc(100vh - 165px - 50px); /* Odečten header a nová patička */
+  /* Opravený výpočet podle tvé nové výšky headeru (120px) */
+  height: calc(100vh - 120px - 50px); 
   width: 100%; 
 }
 
-/* LEVÝ SLOUPEC */
+/* LEVÝ SLOUPEC (S GRADIENTEM ZLEVA DOPRAVA) */
 .library { 
   width: 250px; 
-  background: #111; 
+  background: linear-gradient(90deg, #111 0%, #222 100%); 
   border-right: 2px solid #000; 
   padding: 10px; 
   overflow-y: auto; 
   flex-shrink: 0; 
+  box-shadow: inset -5px 0 15px rgba(0,0,0,0.5);
 }
 
 /* PROSTŘEDNÍ ČÁST S TEXTEM */
@@ -67,36 +69,31 @@ header {
   border-right: 1px solid #000; 
 }
 
-/* PRAVÝ SLOUPEC */
+/* PRAVÝ SLOUPEC (S GRADIENTEM ZPRAVA DOLEVA) */
 .sidebar-right { 
   width: 250px; 
-  background: #111; 
+  background: linear-gradient(270deg, #111 0%, #222 100%); 
   border-left: 2px solid #000; 
   flex-shrink: 0; 
+  box-shadow: inset 5px 0 15px rgba(0,0,0,0.5);
 }
 
-/* PATIČKA (UPRAVENA ABY VYPADALA JAKO HEADER) */
+/* PATIČKA (STEJNÝ DESIGN JAKO HEADER) */
 .rack-footer {
   height: 50px;
-  /* Stejný gradient jako máš v headeru, jen otočený nebo zachovaný pro kontinuitu */
   background: linear-gradient(180deg, #111 0%, #222 50%, #333 100%); 
-  
-  /* Horní hrana a stín směřující nahoru */
   border-top: 4px solid #000; 
-  border-bottom: 1px solid #555; /* Spodní jemná linka pro detail */
-  
-  /* Stín: první hodnota 0 (osa x), druhá -10px (osa y nahoru), třetí 40px (rozpětí) */
+  border-bottom: 1px solid #555; 
   box-shadow: 0 -2px 30px rgba(0,0,0,1); 
-  
   display: flex;
   align-items: center;
   padding: 0 25px;
   flex-shrink: 0;
   z-index: 110;
-  position: relative; /* Zajišťuje, že stín bude nad papírem */
+  position: relative; 
 }
 
-/* Zajištění, aby .app-shell držel strukturu a neházel scrollbary navíc */
+/* APP SHELL STRUKTURA */
 .app-shell {
   display: flex;
   flex-direction: column;

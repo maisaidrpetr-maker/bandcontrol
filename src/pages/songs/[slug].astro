@@ -1,6 +1,5 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
-import ChordSheetJS from 'chordsheetjs';
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -13,44 +12,92 @@ export async function getStaticPaths() {
 
 const { song } = Astro.props;
 
-const parser = new ChordSheetJS.ChordProParser();
-const chordSheet = parser.parse(song.body);
+function parseChordProLine(line) {
+  let chords = "";
+  let lyrics = "";
+  const parts = line.split(/\[(.*?)\]/g);
+  
+  for (let i = 0; i < parts.length; i++) {
+    if (i % 2 === 1) {
+      chords = chords.padEnd(lyrics.length) + parts[i];
+    } else {
+      lyrics += parts[i];
+    }
+  }
+  return { chords, lyrics };
+}
 
-const formatter = new ChordSheetJS.TextFormatter();
-const plainText = formatter.format(chordSheet);
+const lines = song.body.split('\n');
 ---
 
 <MainLayout title={`${song.data.title} | LIVE`}>
-    <div class="paper">
-        <div class="chord-content">
-            <pre class="song-render">{plainText}</pre>
-        </div>
+  <div class="paper">
+    <div class="chord-content">
+      <div class="song-render">
+        {lines.map(line => {
+          if (line.startsWith('{')) {
+            const content = line.replace(/[{}]/g, '').split(':').pop().trim();
+            return <div class="comment">{content}</div>;
+          }
+          
+          const { chords, lyrics } = parseChordProLine(line);
+          
+          return (
+            <div class="line-group">
+              {/* Pokud řádek s akordy existuje, vykreslíme ho */}
+              {chords.trim() ? <div class="chords-line">{chords}</div> : null}
+              <div class="lyrics-line">{lyrics || "\u00A0"}</div>
+            </div>
+          );
+        })}
+      </div>
     </div>
+  </div>
 </MainLayout>
 
 <style is:global>
-    .paper {
-        background-color: #fdf6e3 !important;
-        min-height: 100vh;
-        width: 100%;
-        display: block;
-    }
+  .paper {
+    background-color: #fdf6e3 !important;
+    min-height: 100vh;
+    width: 100%;
+  }
 
-    .chord-content {
-        padding: 40px 60px;
-    }
+  .chord-content {
+    padding: 40px 60px;
+  }
 
-    .song-render {
-        font-family: 'Courier New', Courier, monospace !important;
-        font-size: 1.4rem;
-        
-        /* Zvýšeno na 1.8: 
-           Tím se zvětší mezera pod každým řádkem. 
-           Vizuálně to vytvoří přesně ten odstup pod textem před dalším akordem. */
-        line-height: 1 !important; 
-        
-        white-space: pre;
-        color: #1a1a1a;
-        margin: 0;
-    }
+  .song-render {
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 1.4rem;
+    color: #1a1a1a;
+  }
+
+  .line-group {
+    display: flex;
+    flex-direction: column;
+    /* MEZERA MEZI CELÝMI ŘÁDKY (ODSTUP SLOK) */
+    margin-bottom: 0.6rem; 
+  }
+
+  .chords-line {
+    white-space: pre;
+    color: #c53030;
+    font-weight: bold;
+    line-height: 1;
+    /* PŘITAŽENÍ AKORDU DOLŮ K TEXTU */
+    /* Čím větší záporné číslo (např. -0.6rem), tím blíž textu budou */
+    margin-bottom: -0.2rem; 
+  }
+
+  .lyrics-line {
+    white-space: pre;
+    line-height: 1;
+  }
+
+  .comment {
+    color: #718096;
+    font-style: italic;
+    margin-bottom: 1.2rem;
+    font-weight: bold;
+  }
 </style>

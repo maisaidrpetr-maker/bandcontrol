@@ -1,4 +1,5 @@
 ---
+<<<<<<< HEAD
 import '../styles/global.css';
 const { pathname } = Astro.url;
 ---
@@ -98,6 +99,42 @@ const { pathname } = Astro.url;
     
     // Tohle je to pole, které ti chybělo - musí přesně odpovídat tvým 8 tlačítkům
     const colors = ['pink', 'orange', 'yellow', 'green', 'blue', 'purple', 'magenta', 'cyan'];
+=======
+import { getCollection } from 'astro:content';
+import MainLayout from '../layouts/MainLayout.astro';
+
+const allSongs = await getCollection('songs');
+const firstSong = allSongs[0]?.id || "";
+---
+
+<MainLayout title="BandControl | DASHBOARD">
+  
+  <div slot="header" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+    <div style="color:#0f0; font-family:monospace; text-shadow:0 0-10px #0f0;">BMS DASHBOARD</div>
+    <div style="color:#00ffff; font-family:monospace;">READY</div>
+    <div style="color:#555; font-family:monospace;">v1.0</div>
+  </div>
+
+  <div slot="sidebar-left" style="padding: 10px; font-family: monospace; font-size: 0.9rem;">
+    <div style="color: #444; margin-bottom: 15px; letter-spacing: 1px;">SYSTEM STATUS</div>
+    <div style="color: #0f0; margin-bottom: 5px;">● Online</div>
+  </div>
+
+  <div class="paper">
+    <h1 style="margin-top: 0;">Vítej v BandControl</h1>
+    <p>Systém je připraven k akci.</p>
+  </div>
+
+  <div slot="footer" style="display:flex; align-items:center; gap:10px; width:100%;">
+    <button style="background:#0f0; color:#000; border:1px solid #0f0; padding:5px 15px; cursor:pointer; font-family:monospace; font-weight:bold;">HOME</button>
+    
+    <a href={firstSong ? `/songs/${firstSong}` : "#"} style="text-decoration:none;">
+      <button style="background:#222; color:#fff; border:1px solid #444; padding:5px 15px; cursor:pointer; font-family:monospace;">LIVE</button>
+    </a>
+
+    <button style="background:#222; color:#555; border:1px solid #444; padding:5px 15px; cursor:not-allowed; font-family:monospace;">WORKSHOP</button>
+  </div>
+>>>>>>> cfadb22f2e9b358c5949b2f028b02f480bd9f738
 
     // 2. SPLASH SCREEN (Zmizení po kliknutí)
     splash?.addEventListener('click', () => {

@@ -32,8 +32,17 @@ const { title = "BandControl" } = Astro.props;
         </div>
 
         <footer class="rack-footer">
-            <slot name="footer" />
-        </footer>
+  <div class="nav-group">
+    <a href="/board" class="btn-nav">Board</a>
+    <a href="/stage" class="btn-nav">Stage</a>
+    <a href="/bandroom" class="btn-nav">BandRoom</a>
+    <a href="/practice" class="btn-nav">Practice</a>
+    <a href="/library" class="btn-nav">Library</a>
+    <a href="/agenda" class="btn-nav">Agenda</a>
+    <a href="/settings" class="btn-nav">Settings</a>
+    <a href="/about" class="btn-nav">About</a>
+  </div>
+</footer>
     </div>
 </body>
 </html>

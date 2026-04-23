@@ -1,71 +1,131 @@
 ---
-import MainLayout from '../layouts/MainLayout.astro';
+import '../styles/global.css';
+const { pathname } = Astro.url;
 ---
 
-<MainLayout title="BandControl | HOME">
+<html lang="cs">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BandControl | Master</title>
+</head>
+<body>
 
-    <div slot="splash" id="master-splash" style="position: fixed; inset: 0; background: #000; z-index: 999999; display: none; flex-direction: column; justify-content: center; align-items: center; cursor: pointer;">
-        <img src="/images/bms.png" alt="BMS SYSTEM" style="width: 400px; height: auto;" />
-        <div style="color: #00ffcc; margin-top: 20px; font-family: monospace; letter-spacing: 2px;">SYSTEM READY - TAP TO START</div>
-    </div>
-
-    <div slot="header" style="display: flex; gap: 20px; color: #00ffcc; font-family: monospace; padding: 0 20px;">
-        <span>BMS DASHBOARD</span>
-        <span style="color: #666;">|</span>
-        <span>NEXT GIG: 25.04. PRAHA</span>
-    </div>
-
-    <div slot="sidebar-left" style="padding: 20px; color: #888; font-size: 0.9rem;">
-        <h3 style="color: #555; font-size: 0.8rem; text-transform: uppercase;">System Status</h3>
-        <p>● BandControl v1.0</p>
-        <p>● Database: Connected</p>
-        <p style="margin-top: 20px; color: #555; font-size: 0.8rem; text-transform: uppercase;">Poslední Jamy</p>
-        <ul style="list-style: none; padding: 0; color: #aaa;">
-            <li>12.04. - Studio A</li>
-            <li>05.04. - Garage Jam</li>
-        </ul>
-    </div>
-
-    <div class="paper" style="padding: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-        <div style="grid-column: 1 / -1;">
-            <h1 style="margin-top: 0;">Vítej v BandControl</h1>
-            <p style="color: #666;">Tvůj centrální uzel pro správu kapely a hraní.</p>
+    <div id="splash" class="splash-screen">
+        <div class="splash-content">
+            <img src="/images/bms.png" alt="BMS LOGO" class="splash-logo" />
+            <div class="blink">SYSTEM READY - TAP TO START</div>
         </div>
-
-        <section style="border-top: 1px solid #ddd; padding-top: 15px;">
-            <h2 style="font-size: 1.1rem; color: #cc0000;">Aktuality z kapely</h2>
-            <ul style="padding-left: 20px; color: #444;">
-                <li>Nové demo nahráno do složky Archive.</li>
-                <li>Potvrzen letní festival "Open Air".</li>
-            </ul>
-        </section>
-
-        <section style="border-top: 1px solid #ddd; padding-top: 15px;">
-            <h2 style="font-size: 1.1rem; color: #0066cc;">Termíny zkoušek</h2>
-            <ul style="padding-left: 20px; color: #444;">
-                <li>Úterý 18:00 - Pravidelná zkouška</li>
-                <li>Čtvrtek 19:30 - Workshop (technika)</li>
-            </ul>
-        </section>
     </div>
 
-    <div slot="footer" style="display: flex; gap: 10px; padding: 0 20px; align-items: center; height: 100%;">
-        <a href="/"><button style="background: #333; color: #fff; border: 1px solid #555; padding: 5px 15px; cursor: pointer;">HOME</button></a>
-        <a href="/live"><button style="background: #111; color: #666; border: 1px solid #333; padding: 5px 15px; cursor: pointer;">LIVE</button></a>
-        <a href="/workshop"><button style="background: #111; color: #666; border: 1px solid #333; padding: 5px 15px; cursor: pointer;">WORKSHOP</button></a>
+    <div class="app-shell" id="app-shell">
+        <header class="rack-header">
+            <div style="color: #00f2ff; font-family: monospace; font-weight: bold; letter-spacing: 2px;">
+                <span style="color: #444;">[</span> UNIT_01 // DASHBOARD <span style="color: #444;">]</span>
+            </div>
+            <div style="margin-left: auto; color: #555; font-family: monospace; font-size: 11px;">
+                BMS_CORE v1.0 // ACTIVE
+            </div>
+        </header>
+
+        <main class="main-layout">
+            <aside class="library">
+                <div style="padding: 20px; color: #444; font-family: monospace; font-size: 11px;">
+                    > SCANNING...<br/>> OK.
+                </div>
+            </aside>
+
+            <section class="content">
+                <div class="paper">
+                    <h1 style="margin-top: 0; letter-spacing: -1px;">CENTRAL BOARD</h1>
+                    <div style="height: 2px; background: #000; margin: 25px 0;"></div>
+                    <p>Vítej. Navigace je vpravo.</p>
+                </div>
+            </section>
+
+            <aside class="sidebar-right"></aside>
+
+            <div id="drawer" class="side-drawer collapsed">
+                <div id="drawer-handle" class="drawer-handle">
+                    <span></span><span></span><span></span>
+                </div>
+<nav class="drawer-content">
+    <a href="#" class="btn-nav b-pink active">BOARD</a>
+    <a href="#" class="btn-nav b-orange">STAGE</a>
+    <a href="#" class="btn-nav b-yellow">BANDROOM</a>
+    <a href="#" class="btn-nav b-green">PRACTICE</a>
+    <a href="#" class="btn-nav b-blue">LIBRARY</a>
+    <a href="#" class="btn-nav b-purple">AGENDA</a>
+    <a href="#" class="btn-nav b-magenta">SETTINGS</a>
+    <a href="#" class="btn-nav b-cyan">ABOUT</a>
+</nav>
+            </div>
+        </main>
+
+        <footer class="rack-footer">
+            <div style="color: #00f2ff; font-size: 11px; font-family: monospace; text-shadow: 0 0 5px rgba(0,242,255,0.5);">
+                ● LIVE_SESSION // 120 BPM // KEY: C#min
+            </div>
+        </footer>
     </div>
 
     <script is:inline>
-        const splash = document.getElementById('master-splash');
-        if (sessionStorage.getItem('bms_init')) {
-            splash?.remove();
-        } else {
-            if (splash) splash.style.display = 'flex';
-        }
-        splash?.addEventListener('click', () => {
-            sessionStorage.setItem('bms_init', 'true');
-            splash.remove();
-        });
-    </script>
+    const splash = document.getElementById('splash');
+    const appShell = document.getElementById('app-shell');
 
-</MainLayout>
+    // --- 1. SPLASH SCREEN LOGIC ---
+    if (sessionStorage.getItem('bms_init')) {
+        splash?.remove();
+        if (appShell) appShell.style.visibility = 'visible'; 
+    } else {
+        if (appShell) appShell.style.visibility = 'hidden'; 
+    }
+
+    splash?.addEventListener('click', () => {
+        sessionStorage.setItem('bms_init', 'true');
+        splash.style.opacity = '0';
+        
+        setTimeout(() => {
+            splash.remove();
+            if (appShell) {
+                appShell.style.visibility = 'visible'; 
+            }
+        }, 800);
+    });
+
+    // --- 2. DRAWER (ŠUPLÍK) LOGIC ---
+    const drawer = document.getElementById('drawer');
+    const handle = document.getElementById('drawer-handle');
+    
+    handle?.addEventListener('click', () => {
+        drawer.classList.toggle('collapsed');
+    });
+
+    document.querySelector('.content')?.addEventListener('click', () => {
+        drawer?.classList.add('collapsed');
+    });
+
+    // --- 3. TLAČÍTKA (BARVY A AUTOMATICKÉ ZAVÍRÁNÍ) ---
+    const navButtons = document.querySelectorAll('.btn-nav');
+
+    navButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // VŽDYCKY zastavíme původní akci, aby se stránka neobnovila hned
+            e.preventDefault();
+
+            // 1. Rozsvítíme barvu
+            navButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // 2. Počkáme na ten tvůj hardware moment (700ms)
+            setTimeout(() => {
+                drawer?.classList.add('collapsed');
+                
+                // Pokud bys později chtěl, aby BOARD opravdu někam skočil:
+                // window.location.href = btn.getAttribute('href');
+            }, 700); 
+        });
+    });
+</script>
+</body>
+</html>

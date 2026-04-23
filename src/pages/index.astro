@@ -29,38 +29,56 @@ const { pathname } = Astro.url;
         </header>
 
         <main class="main-layout">
-            <aside class="library">
-                <div style="padding: 20px; color: #444; font-family: monospace; font-size: 11px;">
-                    > SCANNING...<br/>> OK.
-                </div>
-            </aside>
+    <div id="setlist-drawer" class="side-drawer-left collapsed">
+    <div class="side-drawer-left-panel">
+        <div class="setlist-content" style="width: 230px; padding: 20px;">
+            <h3 style="color: var(--neon-cyan); font-family: 'Rajdhani'; margin-bottom: 15px;">SETLIST_v1.0</h3>
+            <ul style="list-style: none; color: #aaa; font-family: monospace; font-size: 13px; padding: 0;">
+                <li>01. INTRO</li>
+                <li style="color: #fff;">02. FIRST_SONG_ [ACTIVE]</li>
+                <li>03. NEXT_TRACK</li>
+            </ul>
+        </div>
+        <div id="setlist-handle" class="setlist-handle">
+            <span class="setlist-dot"></span>
+            <span class="setlist-dot"></span>
+            <span class="setlist-dot"></span>
+        </div>
+    </div>
+</div>
 
-            <section class="content">
-                <div class="paper">
-                    <h1 style="margin-top: 0; letter-spacing: -1px;">CENTRAL BOARD</h1>
-                    <div style="height: 2px; background: #000; margin: 25px 0;"></div>
-                    <p>Vítej. Navigace je vpravo.</p>
-                </div>
-            </section>
+    <aside class="library">
+        <div style="padding: 20px; color: #444; font-family: monospace; font-size: 11px;">
+            > SCANNING...<br/>> OK.
+        </div>
+    </aside>
 
-            <aside class="sidebar-right"></aside>
+    <section class="content">
+        <div class="paper">
+            <h1 style="margin-top: 0; letter-spacing: -1px;">CENTRAL BOARD</h1>
+            <div style="height: 2px; background: #000; margin: 25px 0;"></div>
+            <p>Vítej. Navigace je vpravo.</p>
+        </div>
+    </section>
 
-            <div id="drawer" class="side-drawer collapsed">
-                <div id="drawer-handle" class="drawer-handle">
-                    <span></span><span></span><span></span>
-                </div>
-<nav class="drawer-content">
-    <a href="#" class="btn-nav b-pink active">BOARD</a>
-    <a href="#" class="btn-nav b-orange">STAGE</a>
-    <a href="#" class="btn-nav b-yellow">BANDROOM</a>
-    <a href="#" class="btn-nav b-green">PRACTICE</a>
-    <a href="#" class="btn-nav b-blue">LIBRARY</a>
-    <a href="#" class="btn-nav b-purple">AGENDA</a>
-    <a href="#" class="btn-nav b-magenta">SETTINGS</a>
-    <a href="#" class="btn-nav b-cyan">ABOUT</a>
-</nav>
-            </div>
-        </main>
+    <aside class="sidebar-right"></aside>
+
+    <div id="drawer" class="side-drawer collapsed">
+        <div id="drawer-handle" class="drawer-handle">
+            <span></span><span></span><span></span>
+        </div>
+        <nav class="drawer-content">
+            <a href="#" class="btn-nav b-pink active">BOARD</a>
+            <a href="#" class="btn-nav b-orange">STAGE</a>
+            <a href="#" class="btn-nav b-yellow">BANDROOM</a>
+            <a href="#" class="btn-nav b-green">PRACTICE</a>
+            <a href="#" class="btn-nav b-blue">LIBRARY</a>
+            <a href="#" class="btn-nav b-purple">AGENDA</a>
+            <a href="#" class="btn-nav b-magenta">SETTINGS</a>
+            <a href="#" class="btn-nav b-cyan">ABOUT</a>
+        </nav>
+    </div>
+</main>
 
         <footer class="rack-footer">
             <div style="color: #00f2ff; font-size: 11px; font-family: monospace; text-shadow: 0 0 5px rgba(0,242,255,0.5);">
@@ -70,62 +88,76 @@ const { pathname } = Astro.url;
     </div>
 
     <script is:inline>
+    // 1. ZÁKLADNÍ PROMĚNNÉ (Tady definujeme barvy a hledáme prvky na stránce)
     const splash = document.getElementById('splash');
     const appShell = document.getElementById('app-shell');
+    const drawer = document.getElementById('drawer');
+    const handle = document.getElementById('drawer-handle');
+    const navButtons = document.querySelectorAll('.btn-nav');
+    const dots = document.querySelectorAll('.dot');
+    
+    // Tohle je to pole, které ti chybělo - musí přesně odpovídat tvým 8 tlačítkům
+    const colors = ['pink', 'orange', 'yellow', 'green', 'blue', 'purple', 'magenta', 'cyan'];
 
-    // --- 1. SPLASH SCREEN LOGIC ---
-    if (sessionStorage.getItem('bms_init')) {
-        splash?.remove();
-        if (appShell) appShell.style.visibility = 'visible'; 
-    } else {
-        if (appShell) appShell.style.visibility = 'hidden'; 
-    }
-
+    // 2. SPLASH SCREEN (Zmizení po kliknutí)
     splash?.addEventListener('click', () => {
-        sessionStorage.setItem('bms_init', 'true');
         splash.style.opacity = '0';
-        
         setTimeout(() => {
             splash.remove();
-            if (appShell) {
-                appShell.style.visibility = 'visible'; 
-            }
+            if (appShell) appShell.style.visibility = 'visible';
         }, 800);
     });
 
-    // --- 2. DRAWER (ŠUPLÍK) LOGIC ---
-    const drawer = document.getElementById('drawer');
-    const handle = document.getElementById('drawer-handle');
-    
-    handle?.addEventListener('click', () => {
-        drawer.classList.toggle('collapsed');
+    // 3. OVLÁDÁNÍ MADLA (Otevírání/Zavírání menu)
+// Pravé madlo (Hlavní menu)
+handle?.addEventListener('click', () => {
+    drawer?.classList.toggle('collapsed');
+});
+
+// OVLÁDÁNÍ LEVÉHO MADLA
+const setlistDrawer = document.getElementById('setlist-drawer');
+const setlistHandle = document.getElementById('setlist-handle');
+
+if (setlistHandle && setlistDrawer) {
+    setlistHandle.addEventListener('click', (e) => {
+        console.log("Kliknuto na levé madlo"); // Uvidíš v konzoli
+        setlistDrawer.classList.toggle('collapsed');
     });
+}
 
-    document.querySelector('.content')?.addEventListener('click', () => {
-        drawer?.classList.add('collapsed');
-    });
-
-    // --- 3. TLAČÍTKA (BARVY A AUTOMATICKÉ ZAVÍRÁNÍ) ---
-    const navButtons = document.querySelectorAll('.btn-nav');
-
-    navButtons.forEach(btn => {
+    // 4. LOGIKA TLAČÍTEK A LAYOUTU
+    navButtons.forEach((btn, index) => {
         btn.addEventListener('click', (e) => {
-            // VŽDYCKY zastavíme původní akci, aby se stránka neobnovila hned
             e.preventDefault();
+            const currentColor = colors[index];
 
-            // 1. Rozsvítíme barvu
+            // A) Změna layoutu (Nalepí 'page-orange', 'page-pink' atd. na body)
+            document.body.className = ''; 
+            document.body.classList.add(`page-${currentColor}`);
+
+            // B) Aktivace tlačítka v menu
             navButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
-            // 2. Počkáme na ten tvůj hardware moment (700ms)
+
+            // C) Rozsvícení správné tečky na madlu
+            dots.forEach((dot, dotIndex) => {
+                // Nejdřív zhasneme všechny možné barvy u tečky
+                colors.forEach(c => dot.classList.remove(`glow-${c}`));
+                // Pokud je to ta správná tečka, rozsvítíme ji aktuální barvou
+                if (dotIndex === index) {
+                    dot.classList.add(`glow-${currentColor}`);
+                }
+            });
+
+            // D) Zavření menu po kliknutí (aby byl vidět ten nový layout)
             setTimeout(() => {
                 drawer?.classList.add('collapsed');
-                
-                // Pokud bys později chtěl, aby BOARD opravdu někam skočil:
-                // window.location.href = btn.getAttribute('href');
-            }, 700); 
+            }, 700);
         });
     });
+
+    // 5. INICIALIZACE (Aby po startu svítila první tečka - BOARD)
+    if (dots[0]) dots[0].classList.add('glow-pink');
 </script>
 </body>
 </html>

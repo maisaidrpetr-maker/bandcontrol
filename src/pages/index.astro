@@ -1,71 +1,37 @@
 ---
+import { getCollection } from 'astro:content';
 import MainLayout from '../layouts/MainLayout.astro';
+
+const allSongs = await getCollection('songs');
+const firstSong = allSongs[0]?.id || "";
 ---
 
-<MainLayout title="BandControl | HOME">
+<MainLayout title="BandControl | DASHBOARD">
+  
+  <div slot="header" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+    <div style="color:#0f0; font-family:monospace; text-shadow:0 0-10px #0f0;">BMS DASHBOARD</div>
+    <div style="color:#00ffff; font-family:monospace;">READY</div>
+    <div style="color:#555; font-family:monospace;">v1.0</div>
+  </div>
 
-    <div slot="splash" id="master-splash" style="position: fixed; inset: 0; background: #000; z-index: 999999; display: none; flex-direction: column; justify-content: center; align-items: center; cursor: pointer;">
-        <img src="/images/bms.png" alt="BMS SYSTEM" style="width: 400px; height: auto;" />
-        <div style="color: #00ffcc; margin-top: 20px; font-family: monospace; letter-spacing: 2px;">SYSTEM READY - TAP TO START</div>
-    </div>
+  <div slot="sidebar-left" style="padding: 10px; font-family: monospace; font-size: 0.9rem;">
+    <div style="color: #444; margin-bottom: 15px; letter-spacing: 1px;">SYSTEM STATUS</div>
+    <div style="color: #0f0; margin-bottom: 5px;">● Online</div>
+  </div>
 
-    <div slot="header" style="display: flex; gap: 20px; color: #00ffcc; font-family: monospace; padding: 0 20px;">
-        <span>BMS DASHBOARD</span>
-        <span style="color: #666;">|</span>
-        <span>NEXT GIG: 25.04. PRAHA</span>
-    </div>
+  <div class="paper">
+    <h1 style="margin-top: 0;">Vítej v BandControl</h1>
+    <p>Systém je připraven k akci.</p>
+  </div>
 
-    <div slot="sidebar-left" style="padding: 20px; color: #888; font-size: 0.9rem;">
-        <h3 style="color: #555; font-size: 0.8rem; text-transform: uppercase;">System Status</h3>
-        <p>● BandControl v1.0</p>
-        <p>● Database: Connected</p>
-        <p style="margin-top: 20px; color: #555; font-size: 0.8rem; text-transform: uppercase;">Poslední Jamy</p>
-        <ul style="list-style: none; padding: 0; color: #aaa;">
-            <li>12.04. - Studio A</li>
-            <li>05.04. - Garage Jam</li>
-        </ul>
-    </div>
+  <div slot="footer" style="display:flex; align-items:center; gap:10px; width:100%;">
+    <button style="background:#0f0; color:#000; border:1px solid #0f0; padding:5px 15px; cursor:pointer; font-family:monospace; font-weight:bold;">HOME</button>
+    
+    <a href={firstSong ? `/songs/${firstSong}` : "#"} style="text-decoration:none;">
+      <button style="background:#222; color:#fff; border:1px solid #444; padding:5px 15px; cursor:pointer; font-family:monospace;">LIVE</button>
+    </a>
 
-    <div class="paper" style="padding: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-        <div style="grid-column: 1 / -1;">
-            <h1 style="margin-top: 0;">Vítej v BandControl</h1>
-            <p style="color: #666;">Tvůj centrální uzel pro správu kapely a hraní.</p>
-        </div>
-
-        <section style="border-top: 1px solid #ddd; padding-top: 15px;">
-            <h2 style="font-size: 1.1rem; color: #cc0000;">Aktuality z kapely</h2>
-            <ul style="padding-left: 20px; color: #444;">
-                <li>Nové demo nahráno do složky Archive.</li>
-                <li>Potvrzen letní festival "Open Air".</li>
-            </ul>
-        </section>
-
-        <section style="border-top: 1px solid #ddd; padding-top: 15px;">
-            <h2 style="font-size: 1.1rem; color: #0066cc;">Termíny zkoušek</h2>
-            <ul style="padding-left: 20px; color: #444;">
-                <li>Úterý 18:00 - Pravidelná zkouška</li>
-                <li>Čtvrtek 19:30 - Workshop (technika)</li>
-            </ul>
-        </section>
-    </div>
-
-    <div slot="footer" style="display: flex; gap: 10px; padding: 0 20px; align-items: center; height: 100%;">
-        <a href="/"><button style="background: #333; color: #fff; border: 1px solid #555; padding: 5px 15px; cursor: pointer;">HOME</button></a>
-        <a href="/live"><button style="background: #111; color: #666; border: 1px solid #333; padding: 5px 15px; cursor: pointer;">LIVE</button></a>
-        <a href="/workshop"><button style="background: #111; color: #666; border: 1px solid #333; padding: 5px 15px; cursor: pointer;">WORKSHOP</button></a>
-    </div>
-
-    <script is:inline>
-        const splash = document.getElementById('master-splash');
-        if (sessionStorage.getItem('bms_init')) {
-            splash?.remove();
-        } else {
-            if (splash) splash.style.display = 'flex';
-        }
-        splash?.addEventListener('click', () => {
-            sessionStorage.setItem('bms_init', 'true');
-            splash.remove();
-        });
-    </script>
+    <button style="background:#222; color:#555; border:1px solid #444; padding:5px 15px; cursor:not-allowed; font-family:monospace;">WORKSHOP</button>
+  </div>
 
 </MainLayout>

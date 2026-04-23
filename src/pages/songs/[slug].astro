@@ -1,103 +1,160 @@
 ---
-import MainLayout from '../../layouts/MainLayout.astro';
 import { getCollection } from 'astro:content';
+import MainLayout from '../../layouts/MainLayout.astro';
 
+// Tato funkce je povinná pro dynamické cesty v Astru
 export async function getStaticPaths() {
-  const allSongs = await getCollection('songs');
-  return allSongs.map(song => ({
+  const songs = await getCollection('songs');
+  return songs.map(song => ({
     params: { slug: song.id },
-    props: { song },
+    props: { song, allSongs: songs },
   }));
 }
 
-const { song } = Astro.props;
+const { song, allSongs } = Astro.props;
 
 function parseChordProLine(line) {
   let chords = "";
   let lyrics = "";
-  const parts = line.split(/\[(.*?)\]/g);
-  
-  for (let i = 0; i < parts.length; i++) {
-    if (i % 2 === 1) {
-      chords = chords.padEnd(lyrics.length) + parts[i];
-    } else {
-      lyrics += parts[i];
+  let isDirective = false;
+  let directiveExtra = "";
+
+  let processingLine = line.trim();
+
+  // 1. Detekce direktiv {c: ...}
+  if (processingLine.startsWith('{')) {
+    isDirective = true;
+    processingLine = processingLine
+      .replace(/^\{[a-z]+:\s*/i, '')
+      .replace(/\}$/, '')
+      .trim();
+    
+    // Logika pro SOLO: D# B Cmi - mandolin
+    if (processingLine.includes(':')) {
+      const [label, rest] = processingLine.split(/:(.+)/);
+      lyrics = label.toUpperCase() + ":";
+      
+      let content = rest.trim();
+      if (content.includes('-')) {
+        const [c, extra] = content.split('-');
+        chords = c.trim();
+        directiveExtra = "- " + extra.trim();
+      } else {
+        chords = content;
+      }
+      return { chords, lyrics, isDirective, directiveExtra };
     }
   }
-  return { chords, lyrics };
+
+  // 2. Klasické parsování akordů v textu [G]
+  const parts = processingLine.split(/\[(.*?)\]/);
+  for (let j = 0; j < parts.length; j++) {
+    if (j % 2 === 1) {
+      chords = chords.padEnd(lyrics.length) + parts[j];
+    } else {
+      lyrics += parts[j];
+    }
+  }
+
+  return { chords, lyrics, isDirective, directiveExtra: "" };
 }
 
-const lines = song.body.split('\n');
+const lines = song.body ? song.body.split('\n') : [];
 ---
 
 <MainLayout title={`${song.data.title} | LIVE`}>
+  
+  <div slot="header" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+    <div style="color:#0f0; font-family:monospace; text-shadow:0 0 10px #0f0;">LIVE</div>
+    <div style="color:#fff; font-family:monospace; font-size:1.2rem; letter-spacing:2px;">{song.data.title.toUpperCase()}</div>
+  </div>
+
+  <nav slot="sidebar-left" class="playlist">
+    <div class="sidebar-label">SETLIST</div>
+    {allSongs.map((s) => (
+      <a href={`/songs/${s.id}`} class={`playlist-item ${song.id === s.id ? 'active' : ''}`}>
+        <div class="led-indicator"></div>
+        <span class="song-title">{s.data.title}</span>
+      </a>
+    ))}
+  </nav>
+
   <div class="paper">
-    <div class="chord-content">
-      <div class="song-render">
-        {lines.map(line => {
-          if (line.startsWith('{')) {
-            const content = line.replace(/[{}]/g, '').split(':').pop().trim();
-            return <div class="comment">{content}</div>;
-          }
-          
-          const { chords, lyrics } = parseChordProLine(line);
-          
-          return (
-            <div class="line-group">
-              {/* Pokud řádek s akordy existuje, vykreslíme ho */}
-              {chords.trim() ? <div class="chords-line">{chords}</div> : null}
-              <div class="lyrics-line">{lyrics || "\u00A0"}</div>
-            </div>
-          );
-        })}
-      </div>
+    <div class="lyrics-container">
+      {lines.map(line => {
+        const { chords, lyrics, isDirective, directiveExtra } = parseChordProLine(line);
+        const hasChords = chords.trim().length > 0;
+
+        if (!isDirective && !hasChords && !lyrics.trim()) return <div class="empty-spacer"></div>;
+
+        return (
+          <div class={`line-block ${isDirective ? 'directive-row' : 'standard-row'}`}>
+            {isDirective ? (
+              <div class="lyrics-row">
+                <span class="label-text">{lyrics}</span>
+                <span class="chords-inline">{chords}</span>
+                <span class="extra-text">{directiveExtra}</span>
+              </div>
+            ) : (
+              <>
+                {hasChords && <div class="chords-row">{chords}</div>}
+                <div class="lyrics-row">{lyrics || " "}</div>
+              </>
+            )}
+          </div>
+        );
+      })}
     </div>
   </div>
+
+  <div slot="footer" style="display:flex; align-items:center; gap:10px; width:100%;">
+    <a href="/" style="text-decoration:none;"><button class="f-btn">HOME</button></a>
+    <button class="f-btn active">LIVE</button>
+    <div style="color:#f00; font-family:monospace; margin-left:auto; font-size:1.2rem;">
+        BPM: {song.data.bpm || '---'}
+    </div>
+  </div>
+
 </MainLayout>
 
-<style is:global>
-  .paper {
-    background-color: #fdf6e3 !important;
-    min-height: 100vh;
-    width: 100%;
-  }
+<style>
+  .lyrics-container { font-family: 'Courier New', monospace; white-space: pre; font-size: 1.2rem; line-height: 1.2; }
+  .line-block { display: flex; margin-bottom: 0.3rem; }
+  .standard-row { flex-direction: column; }
+  .directive-row { flex-direction: row; margin-top: 1.5rem; margin-bottom: 0.8rem; align-items: baseline; }
+  
+  .empty-spacer { height: 1.2rem; }
 
-  .chord-content {
-    padding: 40px 60px;
-  }
+  .chords-row, .chords-inline { 
+  color: #c53030; 
+  font-weight: bold; 
+  font-size: 1.2rem; 
+  margin-bottom: -0.4rem; /* Přidáno: přitáhne akordy dolů k textu */
+}
+  .chords-inline { margin-left: 1ch; }
+  
+  .lyrics-row { color: #1a1a1a; font-size: 1.2rem; }
+  .label-text { font-weight: bold; text-transform: uppercase; }
+  .extra-text { color: #1a1a1a; font-weight: normal; text-transform: none; margin-left: 1ch; }
 
-  .song-render {
-    font-family: 'Courier New', Courier, monospace !important;
-    font-size: 1.4rem;
-    color: #1a1a1a;
-  }
+  /* UI Vizuál */
+  .f-btn { background:#222; color:#fff; border:1px solid #444; padding:5px 15px; cursor:pointer; font-family:monospace; }
+  .f-btn.active { background:#0f0; color:#000; border-color:#0f0; font-weight:bold; }
+  .playlist { display: flex; flex-direction: column; gap: 2px; padding: 10px 5px; background: #111; height: 100%; }
+  .sidebar-label { color: #444; font-size: 0.7rem; margin-bottom: 10px; margin-left: 5px; letter-spacing: 1px; font-family: monospace; }
+  .playlist-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; text-decoration: none; background: linear-gradient(180deg, #252525 0%, #1a1a1a 100%); border: 1px solid #333; border-radius: 2px; margin-bottom: 2px; }
+  .playlist-item.active { background: linear-gradient(180deg, #333 0%, #222 100%); border-color: #0f0; }
+  .led-indicator { width: 8px; height: 8px; background: #333; border: 1px solid #111; }
+  .playlist-item.active .led-indicator { background: #0f0; box-shadow: 0 0 8px #0f0; }
+  .song-title { color: #777; font-family: monospace; font-size: 0.85rem; text-transform: uppercase; }
+  .playlist-item.active .song-title { color: #fff; font-weight: bold; }
+/* Tímto upravíš odsazení papíru jen na této konkrétní stránce */
+.paper {
+  padding-top: 10px !important; /* !important zajistí, že to přebije hodnotu z global.css */
+}
 
-  .line-group {
-    display: flex;
-    flex-direction: column;
-    /* MEZERA MEZI CELÝMI ŘÁDKY (ODSTUP SLOK) */
-    margin-bottom: 0.6rem; 
-  }
-
-  .chords-line {
-    white-space: pre;
-    color: #c53030;
-    font-weight: bold;
-    line-height: 1;
-    /* PŘITAŽENÍ AKORDU DOLŮ K TEXTU */
-    /* Čím větší záporné číslo (např. -0.6rem), tím blíž textu budou */
-    margin-bottom: -0.2rem; 
-  }
-
-  .lyrics-line {
-    white-space: pre;
-    line-height: 1;
-  }
-
-  .comment {
-    color: #718096;
-    font-style: italic;
-    margin-bottom: 1.2rem;
-    font-weight: bold;
-  }
+/* A ještě pojistka pro první řádek písničky, aby nebyl odskočený */
+.lyrics-container > :first-child {
+  margin-top: 0 !important;
+}
 </style>

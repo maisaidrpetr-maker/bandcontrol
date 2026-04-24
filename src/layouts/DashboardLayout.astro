@@ -1,0 +1,179 @@
+---
+/* src/layouts/DashboardLayout.astro */
+---
+<div class="app-shell">
+  <header class="rack-header">
+    <div class="logo-plate">
+      <span class="rivet top-left"></span>
+      <span class="rivet top-right"></span>
+      <h1 class="logo-text">
+        <span class="part-1">Band</span><span class="part-2">Control</span>
+      </h1>
+      <span class="rivet bottom-left"></span>
+      <span class="rivet bottom-right"></span>
+    </div>
+    
+    <slot name="header" />
+  </header>
+
+  <div class="main-layout">
+    <aside class="library">
+      <slot name="left-sidebar" />
+    </aside>
+
+    <main class="content">
+      <div class="paper">
+        <slot />
+      </div>
+    </main>
+
+    <aside class="sidebar-right">
+      <slot name="right-sidebar" />
+    </aside>
+  </div>
+
+  <footer class="rack-footer">
+    <slot name="footer" />
+  </footer>
+</div>
+
+<style is:global>
+  :root {
+    --rack-bg: #1a1a1a;
+    --rack-border: #000000;
+    --paper-bg: #d4b483;
+    --neon-cyan: #00f2ff;
+    --sidebar-width: 250px;
+    --header-height: 120px;
+    --footer-height: 50px;
+  }
+
+  /* ZÁKLADNÍ RESET */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { 
+    background-color: #000; 
+    height: 100vh; 
+    overflow: hidden; 
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  .app-shell { 
+    display: flex; 
+    flex-direction: column; 
+    height: 100vh; 
+    width: 100vw; 
+  }
+
+  /* RACK HEADER - ZMĚNĚNO NA CENTER */
+  .rack-header { 
+    height: var(--header-height); 
+    background: linear-gradient(180deg, #444 0%, #151515 40%, #0a0a0a 100%);
+    border-bottom: 4px solid var(--rack-border); 
+    z-index: 10;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    display: flex; 
+    align-items: center; 
+    justify-content: center; /* Tady se děje to centrování */
+    padding: 0 40px;
+    position: relative;
+  }
+
+  /* MASIVNÍ KOVOVÝ ŠTÍTEK */
+  .logo-plate {
+    background: radial-gradient(circle at 50% 0%, #555 0%, #2a2a2a 70%, #1a1a1a 100%);
+    padding: 9px 40px; 
+    border-radius: 12px;
+    border: 1px solid #000;
+    border-top: 1px solid #999;
+    position: relative;
+    box-shadow: 
+      inset 0 1px 3px rgba(255,255,255,0.2),
+      0 10px 20px rgba(0,0,0,0.9);
+    margin-right: 0; /* Odstraněn margin, aby to neuhýbalo doleva */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* MAXIMÁLNÍ FONT */
+  .logo-text {
+    font-family: 'Arial Black', Gadget, sans-serif;
+    font-size: 74px; 
+    text-transform: none;
+    letter-spacing: -2px;
+    line-height: 0.9;
+    margin: 0;
+    background: linear-gradient(180deg, #ffffff 0%, #dddddd 30%, #888888 65%, #333333 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 4px 3px rgba(0,0,0,1));
+  }
+
+  .part-1 { font-weight: 900; }
+  .part-2 { 
+    font-weight: 400; 
+    opacity: 0.95;
+    background: linear-gradient(180deg, #eee 0%, #bbb 50%, #666 100%);
+    -webkit-background-clip: text;
+  }
+
+  /* NÝTY */
+  .logo-plate .rivet {
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle at 35% 35%, #888 0%, #222 100%);
+    border-radius: 50%;
+    border: 1px solid #000;
+    position: absolute;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  }
+
+  .top-left     { top: 10px; left: 10px; }
+  .top-right    { top: 10px; right: 10px; }
+  .bottom-left  { bottom: 10px; left: 10px; }
+  .bottom-right { bottom: 10px; right: 10px; }
+
+  /* HLAVNÍ PLOCHA */
+  .main-layout { 
+    display: flex; 
+    flex-grow: 1; 
+    height: calc(100vh - var(--header-height) - var(--footer-height)); 
+  }
+
+  .library, .sidebar-right { 
+    width: var(--sidebar-width); 
+    background: linear-gradient(90deg, #111 0%, #1a1a1a 100%); 
+    border-left: 2px solid #000; 
+    border-right: 2px solid #000;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    flex-shrink: 0;
+  }
+
+  .content { 
+    flex-grow: 1; 
+    background: #0a0a0a; 
+    position: relative; 
+    overflow: hidden;
+  }
+
+  .paper { 
+    background: var(--paper-bg); 
+    height: 100%; 
+    width: 100%;
+    background-image: radial-gradient(#cba46d 0.5px, transparent 0.5px);
+    background-size: 24px 24px;
+    box-shadow: inset 0 0 100px rgba(0,0,0,0.2);
+    position: relative;
+  }
+
+  /* FOOTER */
+  .rack-footer {
+    height: var(--footer-height);
+    background: #0d0d0d;
+    border-top: 1px solid #333;
+    z-index: 10;
+    display: flex; 
+    align-items: center; 
+    padding: 0 30px;
+  }
+</style>

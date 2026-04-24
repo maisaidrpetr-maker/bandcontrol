@@ -1,0 +1,78 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import NavigationDrawer from '../components/NavigationDrawer.astro';
+---
+
+<DashboardLayout>
+  
+  <div slot="header"></div>
+
+  <div slot="left-sidebar">
+    </div>
+
+  <div class="board-container">
+    <div class="board-content">
+      <section class="board-header">
+        <h1>Untitled Session</h1>
+        <div class="status-dot"></div>
+      </section>
+
+      <div class="board-grid">
+         <div class="placeholder-module">
+            Ready for your first module...
+         </div>
+      </div>
+    </div>
+  </div>
+
+  <div slot="right-sidebar">
+    <NavigationDrawer />
+  </div>
+
+  <div slot="footer"></div>
+
+</DashboardLayout>
+
+<style>
+  /* Styl pro vnitřek papíru, aby to vypadalo industriálně */
+  .board-container {
+    padding: 60px;
+    color: #222;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .board-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-bottom: 2px solid rgba(0,0,0,0.1);
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    font-weight: 800;
+    margin: 0;
+  }
+
+  .status-dot {
+    width: 12px;
+    height: 12px;
+    background: #00ff00;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0,255,0,0.5);
+  }
+
+  .placeholder-module {
+    border: 2px dashed rgba(0,0,0,0.2);
+    padding: 40px;
+    text-align: center;
+    color: rgba(0,0,0,0.4);
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+</style>

@@ -5,29 +5,29 @@
 <style is:global>
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
-  /* Definice trojitého bliknutí */
-  @keyframes blink-active {
-    0% { opacity: 1; filter: brightness(1.2); }
-    50% { opacity: 0.2; filter: brightness(0.5); }
-    100% { opacity: 1; filter: brightness(1.2); }
-  }
+  /* Zrychlené pulzování textu (0.3s) podle tvého nastavení */
+  @keyframes pulse-pink { 0%, 100% { color: #f00; text-shadow: 0 0 10px #f00; } 50% { color: #b00; text-shadow: none; } }
+  @keyframes pulse-orange { 0%, 100% { color: #f80; text-shadow: 0 0 10px #f80; } 50% { color: #b50; text-shadow: none; } }
+  @keyframes pulse-yellow { 0%, 100% { color: #ff0; text-shadow: 0 0 10px #ff0; } 50% { color: #bb0; text-shadow: none; } }
+  @keyframes pulse-green { 0%, 100% { color: #6f0; text-shadow: 0 0 10px #6f0; } 50% { color: #4a0; text-shadow: none; } }
+  @keyframes pulse-blue { 0%, 100% { color: #0ff; text-shadow: 0 0 10px #0ff; } 50% { color: #0aa; text-shadow: none; } }
+  @keyframes pulse-purple { 0%, 100% { color: #e0f; text-shadow: 0 0 10px #e0f; } 50% { color: #a0a; text-shadow: none; } }
+  @keyframes pulse-magenta { 0%, 100% { color: #fff; text-shadow: 0 0 10px #fff; } 50% { color: #aaa; text-shadow: none; } }
 
-  .blink-effect {
-    /* 0.3s jedno bliknutí, 3 opakování = celkem 0.9s */
-    animation: blink-active 0.3s ease-in-out 3;
-  }
+  .b-pink.blink-effect { animation: pulse-pink 0.3s ease-in-out 3; }
+  .b-orange.blink-effect { animation: pulse-orange 0.3s ease-in-out 3; }
+  .b-yellow.blink-effect { animation: pulse-yellow 0.3s ease-in-out 3; }
+  .b-green.blink-effect { animation: pulse-green 0.3s ease-in-out 3; }
+  .b-blue.blink-effect { animation: pulse-blue 0.3s ease-in-out 3; }
+  .b-purple.blink-effect { animation: pulse-purple 0.3s ease-in-out 3; }
+  .b-magenta.blink-effect { animation: pulse-magenta 0.3s ease-in-out 3; }
 </style>
 
 <div id="right-drawer" class="side-drawer collapsed">
   <div class="drawer-handle" id="drawer-toggle">
     <div class="dots-container">
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
       <span class="dot"></span>
     </div>
   </div>
@@ -35,16 +35,14 @@
   <div class="drawer-content metal-chassis">
     <span class="rivet axial-top"></span>
     <span class="rivet axial-bottom"></span>
-    
     <div class="nav-group">
       <a href="#" class="btn-nav b-pink active">Board</a>
       <a href="#" class="btn-nav b-orange">Stage</a>
-      <a href="#" class="btn-nav b-yellow">BandRoom</a>
+      <a href="#" class="btn-nav b-yellow">Studio</a>
       <a href="#" class="btn-nav b-green">Practice</a>
       <a href="#" class="btn-nav b-blue">Library</a>
       <a href="#" class="btn-nav b-purple">Agenda</a>
       <a href="#" class="btn-nav b-magenta">Settings</a>
-      <a href="#" class="btn-nav b-cyan">About</a>
     </div>
   </div>
 </div>
@@ -54,189 +52,132 @@
   const toggle = document.getElementById('drawer-toggle');
   const buttons = document.querySelectorAll('.btn-nav');
   const dots = document.querySelectorAll('.dot');
-  const paper = document.querySelector('.content');
 
-  const dotColors = ['#FFD1D1', '#FFBFA3', '#FFE7AC', '#C5E9C5', '#BCCBFF', '#CBBCFB', '#ECBCFD', '#BCEBF4'];
+  const dotColors = ['#ff0000', '#ff8800', '#ffff00', '#6fff00', '#00f7ff', '#ee00ff', '#ffffff'];
 
   const activateDot = (index) => {
-    dots.forEach((d) => {
-      d.classList.remove('active');
-      d.style.backgroundColor = ''; 
-      d.style.boxShadow = '';       
+    dots.forEach((d) => { 
+      d.classList.remove('active'); 
+      d.style.backgroundColor = '#222'; 
+      d.style.boxShadow = 'inset 0 1px 2px #000, 0 1px 1px rgba(255,255,255,0.05)'; 
     });
     const activeDot = dots[index];
-    if (activeDot) {
-      const color = dotColors[index];
+    if (activeDot && dotColors[index]) {
       activeDot.classList.add('active');
-      activeDot.style.backgroundColor = color;
-      activeDot.style.boxShadow = `0 0 10px ${color}, 0 0 20px ${color}`;
+      activeDot.style.backgroundColor = dotColors[index];
+      activeDot.style.boxShadow = `0 0 12px ${dotColors[index]}, 0 0 24px ${dotColors[index]}, inset 0 0 2px #fff`;
     }
   };
 
   activateDot(0);
-  
-  toggle?.addEventListener('click', (e) => { 
-    e.stopPropagation(); 
-    drawer?.classList.toggle('collapsed'); 
-  });
-
-  paper?.addEventListener('click', () => { 
-    drawer?.classList.add('collapsed'); 
-  });
-
+  toggle?.addEventListener('click', (e) => { e.stopPropagation(); drawer?.classList.toggle('collapsed'); });
   drawer?.addEventListener('click', (e) => e.stopPropagation());
 
   buttons.forEach((btn, index) => {
     btn.addEventListener('click', (e) => {
       e.preventDefault(); 
+      buttons.forEach(b => { b.classList.remove('active'); b.classList.remove('blink-effect'); });
       
-      // Odstranění předchozích stavů
-      buttons.forEach(b => {
-        b.classList.remove('active');
-        b.classList.remove('blink-effect');
-      });
-
-      // Aktivace nového tlačítka a spuštění animace
-      btn.classList.add('active');
       btn.classList.add('blink-effect');
       
-      activateDot(index);
+      // Tvé upravené časy (1s blikání, 1.2s zavření)
+      setTimeout(() => {
+        btn.classList.remove('blink-effect');
+        btn.classList.add('active'); 
+        activateDot(index);
+      }, 1000);
 
-      // Čekáme 1.2s (blikání 0.9s + rezerva na svícení), pak zavřeme
-      setTimeout(() => { 
-        drawer?.classList.add('collapsed'); 
-      }, 1200); 
+      setTimeout(() => { drawer?.classList.add('collapsed'); }, 1200); 
     });
-  });
-
-  window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => { drawer?.classList.remove('collapsed'); }, 500);
   });
 </script>
 
 <style>
-  .side-drawer { 
-    position: fixed; right: 0; top: 50%; transform: translateY(-50%); 
-    display: flex; align-items: center; z-index: 2000; 
-    transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1); 
-  }
+  .side-drawer { position: fixed; right: 0; top: 50%; transform: translateY(-50%); display: flex; align-items: stretch; z-index: 2000; transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1); }
   .side-drawer.collapsed { transform: translateY(-50%) translateX(calc(100% - 24px)); }
   
-  .drawer-handle {
-    width: 24px;
-    height: 120px; 
-    background: linear-gradient(90deg, #222, #111);
-    border: 1px solid #444;
-    border-right: none;
-    border-radius: 10px 0 0 10px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center; 
-    align-items: center;
-    box-shadow: -5px 0 15px rgba(0,0,0,0.5);
-    z-index: 2;
-    padding: 5px 0; 
+  .drawer-handle { 
+    width: 24px; min-height: 120px; background: linear-gradient(90deg, #222, #111); 
+    border: 1px solid #444; border-right: none; border-radius: 10px 0 0 10px; 
+    cursor: pointer; display: flex; justify-content: center; align-items: center; 
+    box-shadow: -5px 0 15px rgba(0,0,0,0.5); z-index: 2; align-self: center;
   }
 
-  .dots-container {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+  .dots-container { display: flex; flex-direction: column; gap: 8px; }
+  
+  .dot { 
+    width: 6px; height: 6px; 
+    background-color: #222; 
+    border-radius: 50%; 
+    border: 1px solid #676767; 
+    transition: all 0.3s ease; 
+    box-shadow: inset 0 1px 2px #000, 0 1px 1px rgba(255,255,255,0.05);
   }
-
-  .dot { width: 6px; height: 6px; background-color: #333; border-radius: 50%; transition: all 0.3s ease; }
+  
   .dot.active { transform: scale(1.4); }
 
-  .rivet {
-    width: 18px; height: 18px;
-    background: radial-gradient(circle at 35% 35%, #666 0%, #333 40%, #111 100%);
-    border-radius: 50%; border: 1px solid #000;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.1);
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-  .axial-top { top: 15px; }
-  .axial-bottom { bottom: 15px; }
-
   .metal-chassis { 
-    background: 
-      linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%),
-      repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.01) 3px);
-    padding: 55px 0; 
-    border: 2px solid #333; 
-    border-right: none; 
-    border-radius: 20px 0 0 20px; 
-    box-shadow: -30px 0 60px rgba(0,0,0,1);
-    position: relative;
-    /* Rozšířeno pro perfektní centrování s okraji */
-    min-width: 240px; 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%), repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.01) 3px); 
+    /* KLÍČOVÉ PRO CENTROVÁNÍ: */
+    width: 210px; 
+    padding: 45px 30px; 
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-sizing: border-box;
+
+    border: 2px solid #333; border-right: none; border-radius: 20px 0 0 20px; 
+    box-shadow: -30px 0 60px rgba(0,0,0,1); 
+    position: relative; 
   }
 
   .nav-group { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 12px; 
-    align-items: center; 
-    width: 100%;
+    display: flex; flex-direction: column; gap: 12px; 
+    align-items: center; width: 100%; 
   }
 
+  .rivet { 
+    width: 18px; height: 18px; background: radial-gradient(circle at 35% 35%, #666 0%, #333 40%, #111 100%); 
+    border-radius: 50%; border: 1px solid #000; box-shadow: 0 2px 4px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.1); 
+    position: absolute; left: 50%; transform: translateX(-50%); 
+  }
+  .axial-top { top: 15px; } .axial-bottom { bottom: 15px; }
+
   .btn-nav {
-    background: linear-gradient(180deg, #2a2a2a 0%, #1c1c1c 100%);
-    color: #555;
-    border: 1px solid #000;
-    width: 190px;
-    height: auto;
+    background: linear-gradient(180deg, #3a3a3a 0%, #1c1c1c 60%, #111 100%);
+    color: #555; border: 1px solid #000; 
+    width: 170px; /* 190 + 30 + 30 = 250px (přesný střed) */
     font-family: 'Orbitron', sans-serif;
-    font-size: 24px; 
-    font-weight: 500;
-    text-transform: capitalize;
-    letter-spacing: 2px;
-    text-decoration: none;
-    border-radius: 4px;
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    transition: all 0.1s ease-out;
-    cursor: pointer; 
-    position: relative; 
-    top: 0;
-    box-shadow: 0 3px 0 #000, 0 5px 10px rgba(0,0,0,0.5);
-    padding: 8px 0;
+    font-size: 26px; font-weight: 500; text-transform: capitalize; letter-spacing: 2px;
+    text-decoration: none; border-radius: 4px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; position: relative; top: 0; box-shadow: 0 3px 0 #000, 0 5px 10px rgba(0,0,0,0.5);
+    padding: 8px 0; transition: background 0.2s ease, top 0.1s ease, color 0.2s ease;
+    text-shadow: none !important;
     margin: 0;
   }
 
-  .btn-nav:active, .btn-nav.active {
-    top: 1px;
-    background: linear-gradient(0deg, #2a2a2a 0%, #1c1c1c 100%);
-    box-shadow: 0 1px 0 #000, inset 0 0 1px rgba(255,255,255,0.1);
+  .btn-nav:hover:not(.active) { 
+    background: linear-gradient(180deg, #1c1c1c 0%, #3a3a3a 50%, #1c1c1c 100%) !important;
+    color: #999;
+    text-shadow: none !important;
   }
+  
+  .b-pink:hover:not(.active)    { color: #b00; }
+  .b-orange:hover:not(.active)  { color: #b50; }
+  .b-yellow:hover:not(.active)  { color: #bb0; }
+  .b-green:hover:not(.active)   { color: #4a0; }
+  .b-blue:hover:not(.active)    { color: #0aa; }
+  .b-purple:hover:not(.active)  { color: #a0a; }
+  .b-magenta:hover:not(.active) { color: #aaa; }
 
-  .btn-nav:hover:not(.active) {
-    filter: brightness(1.1);
-    box-shadow: 0 3px 0 #000, 0 6px 15px rgba(0,0,0,0.4);
+  .btn-nav.active { 
+    top: 2px; background: linear-gradient(180deg, #111 0%, #1c1c1c 40%, #3a3a3a 100%) !important; 
+    box-shadow: 0 1px 0 #000, inset 0 2px 5px rgba(0,0,0,0.7); 
   }
-
-  /* Barvy textu pro jednotlivé sekce */
-  .b-pink:hover:not(.active)    { color: #b39292; }
-  .b-orange:hover:not(.active)  { color: #b38672; }
-  .b-yellow:hover:not(.active)  { color: #b3a279; }
-  .b-green:hover:not(.active)   { color: #8aa38a; }
-  .b-blue:hover:not(.active)    { color: #838eb3; }
-  .b-purple:hover:not(.active)  { color: #8e83b3; }
-  .b-magenta:hover:not(.active) { color: #a583b0; }
-  .b-cyan:hover:not(.active)    { color: #83a4ab; }
-
-  /* Aktivní záře */
-  .b-pink.active    { color: #FFD1D1 !important; text-shadow: 0 0 15px rgba(255, 209, 209, 0.8); }
-  .b-orange.active  { color: #FFBFA3 !important; text-shadow: 0 0 15px rgba(255, 191, 163, 0.8); }
-  .b-yellow.active  { color: #FFE7AC !important; text-shadow: 0 0 15px rgba(255, 231, 172, 0.8); }
-  .b-green.active   { color: #C5E9C5 !important; text-shadow: 0 0 15px rgba(197, 233, 197, 0.8); }
-  .b-blue.active    { color: #BCCBFF !important; text-shadow: 0 0 15px rgba(188, 203, 255, 0.8); }
-  .b-purple.active  { color: #CBBCFB !important; text-shadow: 0 0 15px rgba(203, 188, 251, 0.8); }
-  .b-magenta.active { color: #ECBCFD !important; text-shadow: 0 0 15px rgba(236, 188, 253, 0.8); }
-  .b-cyan.active    { color: #BCEBF4 !important; text-shadow: 0 0 15px rgba(188, 235, 244, 0.8); }
+  
+  .b-pink.active    { color: #f00 !important; text-shadow: 0 0 15px #f00 !important; }
+  .b-orange.active  { color: #f80 !important; text-shadow: 0 0 15px #f80 !important; }
+  .b-yellow.active  { color: #ff0 !important; text-shadow: 0 0 15px #ff0 !important; }
+  .b-green.active   { color: #6f0 !important; text-shadow: 0 0 15px #6f0 !important; }
+  .b-blue.active    { color: #0ff !important; text-shadow: 0 0 15px #0ff !important; }
+  .b-purple.active  { color: #e0f !important; text-shadow: 0 0 15px #e0f !important; }
+  .b-magenta.active { color: #fff !important; text-shadow: 0 0 15px #fff !important; }
 </style>

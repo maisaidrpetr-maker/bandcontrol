@@ -1,67 +1,116 @@
 ---
-/* src/pages/board.astro */
 import MainLayout from '../layouts/MainLayout.astro';
-import NavigationDrawer from '../components/NavigationDrawer.astro';
+import MetalModule from '../components/MetalModule.astro';
+import { getCollection, render } from 'astro:content';
+
+const allActivities = await getCollection('activities');
+const activities = allActivities.sort((a, b) => 
+  new Date(b.data.date.split('.').reverse().join('-')).getTime() - 
+  new Date(a.data.date.split('.').reverse().join('-')).getTime()
+);
 ---
 
-<MainLayout title="BandControl | Board">
-  
-  <div class="board-container">
-    <div class="board-content">
-      <section class="board-header">
-        <h1>Untitled Session</h1>
-        <div class="status-dot"></div>
-      </section>
+<MainLayout title="Board | BandControl">
+  <div class="log-container">
+    {activities.map(async (entry) => {
+      const { Content } = await render(entry);
+      const item = entry.data;
 
-      <div class="board-grid">
-         <div class="placeholder-module">
-            Ready for your first module...
-         </div>
-      </div>
-    </div>
+      return (
+        <article class="log-entry">
+          <MetalModule>
+            <div class="cms-card">
+              <header class="card-header">
+                <h2 class="entry-title">{item.title}</h2>
+              </header>
+              
+              <div class="entry-content">
+                <Content />
+              </div>
+
+              <footer class="card-footer">
+                <div class="footer-meta">
+                  <div class="author-info">
+                    <span class="name">{item.author}</span>
+                    <span class="role">[{item.role}]</span>
+                  </div>
+                  <time class="entry-date">{item.date}</time>
+                </div>
+              </footer>
+            </div>
+          </MetalModule>
+        </article>
+      );
+    })}
   </div>
-
-  {/* TADY JE TEN ŠUPLÍK */}
-  <NavigationDrawer slot="sidebar-right" />
-
 </MainLayout>
 
 <style>
-  .board-container {
-    padding: 60px;
-    color: #222;
-  }
-
-  .board-header {
+  .log-container {
     display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 0; /* Padding už řešíme v MainLayoutu */
+    width: 100%;
+  }
+
+  .log-entry {
+    width: 100%;
+    /* TADY JE TA MEZERA: 
+       Šuplík má 210px, my dáme margin 240px, 
+       aby mezi plechem a šuplíkem zůstalo čistých 30px */
+    padding-right: 210px; 
+    box-sizing: border-box;
+  }
+
+  .cms-card {
+    /* ZMĚNA: Větší vnitřní prostor plechu pro vzdušnost */
+    padding: 15px 25px; 
+    position: relative;
+  }
+
+  .card-header { margin-bottom: 20px; }
+
+  .entry-title {
+    display: inline-block;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: linear-gradient(to bottom, #ffffff 0%, #a0a0a0 50%, #777777 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    padding-bottom: 8px;
+    border-bottom: 2px solid;
+    border-image: linear-gradient(to right, #444, #fff, #888, #333) 1;
+  }
+
+  .entry-content {
+    font-family: 'Courier New', Courier, monospace;
+    color: #bbb;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 30px;
+  }
+
+  .footer-meta {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 20px;
-    border-bottom: 2px solid rgba(0,0,0,0.1);
-    padding-bottom: 20px;
-    margin-bottom: 40px;
+    padding-top: 15px;
+    border-top: 2px solid;
+    border-image: linear-gradient(to right, #444, #fff, #888, #333) 1;
   }
 
-  h1 {
-    font-size: 2.5rem;
-    text-transform: uppercase;
-    font-weight: 800;
-    margin: 0;
-  }
+  .author-info { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; }
+  .author-info .name { color: #ccc; font-weight: 700; }
+  .author-info .role { color: #444; margin-left: 8px; }
 
-  .status-dot {
-    width: 12px;
-    height: 12px;
-    background: #00ff00;
-    border-radius: 50%;
-    box-shadow: 0 0 10px rgba(0,255,0,0.5);
-  }
-
-  .placeholder-module {
-    border: 2px dashed rgba(0,0,0,0.2);
-    padding: 100px;
-    text-align: center;
-    color: rgba(0,0,0,0.4);
-    text-transform: uppercase;
-    font-weight: bold;
+  .entry-date {
+    font-family: 'Orbitron', sans-serif;
+    color: #f80;
+    font-size: 0.95rem;
+    font-weight: 700;
   }
 </style>

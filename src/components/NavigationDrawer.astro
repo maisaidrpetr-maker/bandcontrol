@@ -5,7 +5,7 @@
 <style is:global>
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
-  /* Zrychlené pulzování textu (0.3s) podle tvého nastavení */
+  /* Zrychlené pulzování textu (0.3s) */
   @keyframes pulse-pink { 0%, 100% { color: #f00; text-shadow: 0 0 10px #f00; } 50% { color: #b00; text-shadow: none; } }
   @keyframes pulse-orange { 0%, 100% { color: #f80; text-shadow: 0 0 10px #f80; } 50% { color: #b50; text-shadow: none; } }
   @keyframes pulse-yellow { 0%, 100% { color: #ff0; text-shadow: 0 0 10px #ff0; } 50% { color: #bb0; text-shadow: none; } }
@@ -36,7 +36,7 @@
     <span class="rivet axial-top"></span>
     <span class="rivet axial-bottom"></span>
     <div class="nav-group">
-      <a href="#" class="btn-nav b-pink active">Board</a>
+      <a href="/board" class="btn-nav b-pink active">Board</a>
       <a href="#" class="btn-nav b-orange">Stage</a>
       <a href="#" class="btn-nav b-yellow">Studio</a>
       <a href="#" class="btn-nav b-green">Practice</a>
@@ -69,15 +69,16 @@
     }
   };
 
-  // --- START SYSTÉMU: AUTOMATICKÉ VYSUNUTÍ ---
+  // --- START SYSTÉMU ---
   window.addEventListener('DOMContentLoaded', () => {
     activateDot(0);
-    // Počkáme 500ms po načtení a pak šuplík vysuneme
+    // Pokud startujeme na Boardu, šuplík vysuneme
+    const isBoard = Array.from(buttons).some(b => b.classList.contains('active') && b.textContent.trim() === 'Board');
+    
     setTimeout(() => {
       drawer?.classList.remove('collapsed');
     }, 500);
   });
-  // ------------------------------------------
 
   toggle?.addEventListener('click', (e) => { 
     e.stopPropagation(); 
@@ -88,22 +89,29 @@
 
   buttons.forEach((btn, index) => {
     btn.addEventListener('click', (e) => {
+      // Pokud je tlačítko už aktivní, ignorujeme klik
+      if (btn.classList.contains('active')) {
+        e.preventDefault();
+        return;
+      }
+
       e.preventDefault(); 
       buttons.forEach(b => { b.classList.remove('active'); b.classList.remove('blink-effect'); });
       
       btn.classList.add('blink-effect');
       
-      // Tvé upravené časy (1s blikání, pak aktivace)
       setTimeout(() => {
         btn.classList.remove('blink-effect');
         btn.classList.add('active'); 
         activateDot(index);
-      }, 1000);
 
-      // Zavření šuplíku po 1.2s
-      setTimeout(() => { 
-        drawer?.classList.add('collapsed'); 
-      }, 1200); 
+        // Zavřeme šuplík jen pokud NEJSME na Boardu
+        if (btn.textContent.trim() !== 'Board') {
+          setTimeout(() => { 
+            drawer?.classList.add('collapsed'); 
+          }, 200); 
+        }
+      }, 1000);
     });
   });
 </script>
@@ -134,21 +142,16 @@
 
   .metal-chassis { 
     background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%), repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.01) 3px); 
-    /* KLÍČOVÉ PRO CENTROVÁNÍ: */
     width: 210px; 
     padding: 45px 30px; 
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     box-sizing: border-box;
-
     border: 2px solid #333; border-right: none; border-radius: 20px 0 0 20px; 
     box-shadow: -30px 0 60px rgba(0,0,0,1); 
     position: relative; 
   }
 
-  .nav-group { 
-    display: flex; flex-direction: column; gap: 12px; 
-    align-items: center; width: 100%; 
-  }
+  .nav-group { display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; }
 
   .rivet { 
     width: 18px; height: 18px; background: radial-gradient(circle at 35% 35%, #666 0%, #333 40%, #111 100%); 
@@ -160,7 +163,7 @@
   .btn-nav {
     background: linear-gradient(180deg, #3a3a3a 0%, #1c1c1c 60%, #111 100%);
     color: #555; border: 1px solid #000; 
-    width: 170px; /* 190 + 30 + 30 = 250px (přesný střed) */
+    width: 170px;
     font-family: 'Orbitron', sans-serif;
     font-size: 26px; font-weight: 500; text-transform: capitalize; letter-spacing: 2px;
     text-decoration: none; border-radius: 4px; display: flex; align-items: center; justify-content: center;
@@ -187,6 +190,9 @@
   .btn-nav.active { 
     top: 2px; background: linear-gradient(180deg, #111 0%, #1c1c1c 40%, #3a3a3a 100%) !important; 
     box-shadow: 0 1px 0 #000, inset 0 2px 5px rgba(0,0,0,0.7); 
+    /* Vypnutí interakcí u aktivního tlačítka */
+    pointer-events: none;
+    cursor: default;
   }
   
   .b-pink.active    { color: #f00 !important; text-shadow: 0 0 15px #f00 !important; }

@@ -1,8 +1,7 @@
 import { defineCollection, z } from 'astro:content';
-import { glob } from 'astro/loaders'; // Důležité pro Astro 5
+import { glob } from 'astro/loaders'; 
 
 const songs = defineCollection({
-  // V Astro 5 používáme loader pro hledání souborů
   loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: "./src/content/songs" }),
   schema: z.object({
     title: z.string(),
@@ -13,4 +12,15 @@ const songs = defineCollection({
   }),
 });
 
-export const collections = { songs };
+const activities = defineCollection({
+  loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: "./src/content/activities" }),
+  schema: z.object({
+    title: z.string(),
+    author: z.string(),
+    role: z.string(),
+    date: z.string(),
+    status: z.enum(['ready', 'info', 'alert']),
+  }),
+});
+
+export const collections = { songs, activities };

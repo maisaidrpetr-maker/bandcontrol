@@ -117,9 +117,23 @@
 </script>
 
 <style>
-  .side-drawer { position: fixed; right: 0; top: 50%; transform: translateY(-50%); display: flex; align-items: stretch; z-index: 2000; transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1); }
-  .side-drawer.collapsed { transform: translateY(-50%) translateX(calc(100% - 24px)); }
-  
+  /* ZMĚNA: Místo position: fixed dáme absolute, aby šuplík seděl v r-sidebar */
+.side-drawer { 
+  position: absolute; /* <--- DŮLEŽITÉ */
+  right: 0; 
+  top: 0; 
+  /* Zrušíme transform translateY(-50%), protože v r-sidebar ho chceme odshora dolů */
+  height: 100%; 
+  display: flex; 
+  align-items: center; /* Tlačítka vycentrujeme vertikálně v rámci výšky contentu */
+  z-index: 2000; 
+  transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1); 
+}
+
+/* Upravíme transformaci pro zavřený stav */
+.side-drawer.collapsed { 
+  transform: translateX(calc(100% - 24px)); 
+}  
   .drawer-handle { 
     width: 24px; min-height: 120px; background: linear-gradient(90deg, #222, #111); 
     border: 1px solid #444; border-right: none; border-radius: 10px 0 0 10px; 

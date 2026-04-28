@@ -11,106 +11,48 @@ const activities = allActivities.sort((a, b) =>
 ---
 
 <MainLayout title="Board | BandControl">
-  <div class="log-container">
-    {activities.map(async (entry) => {
-      const { Content } = await render(entry);
-      const item = entry.data;
-
-      return (
-        <article class="log-entry">
-          <MetalModule>
-            <div class="cms-card">
-              <header class="card-header">
-                <h2 class="entry-title">{item.title}</h2>
-              </header>
-              
-              <div class="entry-content">
-                <Content />
-              </div>
-
-              <footer class="card-footer">
-                <div class="footer-meta">
-                  <div class="author-info">
-                    <span class="name">{item.author}</span>
-                    <span class="role">[{item.role}]</span>
-                  </div>
-                  <time class="entry-date">{item.date}</time>
+  <div class="paper-canvas">
+    <div class="log-container">
+      {activities.map(async (entry) => {
+        const { Content } = await render(entry);
+        return (
+          <article class="log-entry">
+            <MetalModule>
+              <div class="module-inner">
+                <h2>{entry.data.title}</h2>
+                <div class="content"><Content /></div>
+                <div class="meta">
+                  <span>{entry.data.author}</span>
+                  <span class="date">{entry.data.date}</span>
                 </div>
-              </footer>
-            </div>
-          </MetalModule>
-        </article>
-      );
-    })}
+              </div>
+            </MetalModule>
+          </article>
+        );
+      })}
+    </div>
   </div>
 </MainLayout>
 
 <style>
+  .paper-canvas {
+    background-color: var(--paper-bg);
+    min-height: 100%;
+    padding: 60px 40px;
+    /* Textura papíru z tvého původního kódu */
+    background-image: radial-gradient(#cba46d 0.5px, transparent 0.5px);
+    background-size: 24px 24px;
+  }
+
   .log-container {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    padding: 0; /* Padding už řešíme v MainLayoutu */
-    width: 100%;
+    gap: 30px;
+    max-width: 900px;
+    margin: 0 auto;
   }
 
-  .log-entry {
-    width: 100%;
-    /* TADY JE TA MEZERA: 
-       Šuplík má 210px, my dáme margin 240px, 
-       aby mezi plechem a šuplíkem zůstalo čistých 30px */
-    padding-right: 210px; 
-    box-sizing: border-box;
-  }
-
-  .cms-card {
-    /* ZMĚNA: Větší vnitřní prostor plechu pro vzdušnost */
-    padding: 15px 25px; 
-    position: relative;
-  }
-
-  .card-header { margin-bottom: 20px; }
-
-  .entry-title {
-    display: inline-block;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 900;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    background: linear-gradient(to bottom, #ffffff 0%, #a0a0a0 50%, #777777 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    padding-bottom: 8px;
-    border-bottom: 2px solid;
-    border-image: linear-gradient(to right, #444, #fff, #888, #333) 1;
-  }
-
-  .entry-content {
-    font-family: 'Courier New', Courier, monospace;
-    color: #bbb;
-    font-size: 1.1rem;
-    line-height: 1.6;
-    margin-bottom: 30px;
-  }
-
-  .footer-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 15px;
-    border-top: 2px solid;
-    border-image: linear-gradient(to right, #444, #fff, #888, #333) 1;
-  }
-
-  .author-info { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; }
-  .author-info .name { color: #ccc; font-weight: 700; }
-  .author-info .role { color: #444; margin-left: 8px; }
-
-  .entry-date {
-    font-family: 'Orbitron', sans-serif;
-    color: #f80;
-    font-size: 0.95rem;
-    font-weight: 700;
-  }
+  .module-inner { padding: 20px; }
+  .module-inner h2 { font-family: 'Orbitron', sans-serif; color: #fff; margin-bottom: 10px; }
+  .meta { display: flex; justify-content: space-between; margin-top: 15px; color: #f80; font-size: 0.8rem; }
 </style>

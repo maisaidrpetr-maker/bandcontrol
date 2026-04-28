@@ -3,139 +3,21 @@ import '../styles/global.css';
 import Header from '../components/Header.astro'; 
 import Footer from '../components/Footer.astro';
 import NavigationDrawer from '../components/NavigationDrawer.astro';
-
-const { title = "BandControl" } = Astro.props;
-
-const isBoard = Astro.url.pathname.includes('/board');
 ---
-<!DOCTYPE html>
-<html lang="cs">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
-</head>
-<body>
-    <div class="app-shell">
-        <Header /> 
+<div class="app-shell">
+  <Header />
+  <div class="main-layout">
+    <aside class="l-sidebar">
+      <slot name="sidebar-left" />
+    </aside>
+    
+    <main class="main-content">
+      <slot />
+    </main>
 
-        <div class={`main-layout ${isBoard ? 'board-layout' : ''}`}>
-            <aside class="library">
-                <span class="rivet-side top-center"></span>
-                <span class="rivet-side bottom-center"></span>
-                <slot name="sidebar-left" />
-            </aside>
-
-            <main class="content">
-                <div class="paper">
-                    <slot />
-                </div>
-            </main>
-
-            <NavigationDrawer /> 
-            
-            <slot name="sidebar-right" />
-        </div>
-
-        <Footer />
-    </div>
-</body>
-</html>
-
-<style>
-    /* PLECH NA LEVÝM SIDEBARU */
-    .library {
-        min-width: 60px; /* Aby plech měl svou šířku */
-        position: relative;
-        /* Kovový vzhled */
-        background: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 50%, #151515 100%);
-        background-image: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(255, 255, 255, 0.01) 2px);
-        border-right: 1px solid #333;
-        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
-        z-index: 10;
-    }
-
-    /* NÝTY */
-    .rivet-side {
-        width: 10px;
-        height: 10px;
-        background: radial-gradient(circle at 35% 35%, #666 0%, #333 40%, #111 100%);
-        border-radius: 50%;
-        border: 1px solid #000;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.1);
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-    }
-    .top-center { top: 15px; }
-    .bottom-center { bottom: 15px; }
-
-    /* ZBYTEK TVÉHO KÓDU - NEDOTČENO */
-    .app-shell {
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-        overflow-x: hidden;
-        background-color: #000;
-    }
-
-    .main-layout {
-        flex: 1;
-        display: flex;
-        position: relative;
-        background-color: #000;
-        transition: padding-right 0.8s cubic-bezier(0.65, 0, 0.35, 1);
-    }
-
-    .board-layout {
-        padding-right: 40px; 
-    }
-
-    .board-layout .content {
-        background-color: #d2b48c; 
-        padding: 30px 20px 30px 30px; 
-        box-shadow: none !important;
-    }
-
-    .board-layout .paper {
-        padding: 0;
-        margin: 0;
-        background: transparent !important;
-        box-shadow: none !important;
-    }
-
-    .board-layout :global(.navigation-drawer) {
-        position: absolute;
-        right: 0;
-        top: 0;
-        height: 100%;
-        width: 210px;
-        z-index: 100;
-        box-shadow: -5px 0 15px rgba(0,0,0,0.5) !important;
-    }
-
-    .board-layout .sidebar-right {
-        width: 40px; 
-        background-color: #111;
-    }
-
-    .content {
-        flex: 1;
-        position: relative;
-        min-width: 0;
-    }
-
-    .paper {
-        width: 100%;
-        height: 100%;
-    }
-
-    @media (max-width: 1024px) {
-        .board-layout {
-            padding-right: 0;
-        }
-        .board-layout .content {
-            padding: 15px;
-        }
-    }
-</style>
+    <aside class="r-sidebar">
+      <NavigationDrawer />
+    </aside>
+  </div>
+  <Footer />
+</div>

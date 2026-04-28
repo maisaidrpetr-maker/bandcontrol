@@ -19,19 +19,18 @@
 
 <style>
     .rack-footer {
-        position: relative;
-        width: 100%;
-        background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
-        padding: 20px 0;
-        border-top: 2px solid #333;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
-        overflow: hidden;
-        margin-top: auto; /* Tlačí patičku dospod, pokud je málo obsahu */
-    }
-
+    height: var(--footer-height);
+    background: linear-gradient(180deg, #151515 0%, #0a0a0a 100%);
+    border-top: 2px solid #333; /* Horní hrana plechu */
+    position: relative;
+    z-index: 10;
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    /* TADY JE TEN STÍN: Vrhá stín nahoru (záporná hodnota Y) */
+    box-shadow: 0 -10px 25px rgba(0,0,0,0.8); 
+  }
+  
     .footer-texture {
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;

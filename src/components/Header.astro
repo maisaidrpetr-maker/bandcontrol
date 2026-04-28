@@ -1,16 +1,35 @@
----
-/* src/components/Header.astro */
----
 <header class="rack-header">
   <div class="logo-plate">
     <span class="rivet top-left"></span>
     <span class="rivet top-right"></span>
-    
-    <h1 class="logo-text">
-      <span class="part-1">Band</span><span class="part-2">Control</span>
-    </h1>
-    
     <span class="rivet bottom-left"></span>
     <span class="rivet bottom-right"></span>
+    <h1 class="logo-text">BandControl</h1>
   </div>
 </header>
+
+<style>
+  .rack-header {
+    height: var(--header-height);
+    background: linear-gradient(180deg, #444 0%, #151515 40%, #0a0a0a 100%);
+    border-bottom: 4px solid #000;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    position: relative; z-index: 10;
+  }
+  .logo-plate {
+    background: radial-gradient(circle at 50% 0%, #555 0%, #2a2a2a 70%, #1a1a1a 100%);
+    padding: 15px 60px; border-radius: 12px; border: 1px solid #000;
+    border-top: 1px solid #999; position: relative;
+    box-shadow: inset 0 1px 3px rgba(255,255,255,0.2), 0 10px 25px rgba(0,0,0,0.9);
+  }
+  .logo-text {
+    font-family: 'Arial Black', sans-serif; font-size: 85px; line-height: 0.8;
+    background: linear-gradient(180deg, #fff, #888, #333);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 5px 4px #000);
+  }
+  .rivet { width: 14px; height: 14px; border-radius: 50%; position: absolute; background: radial-gradient(circle at 35% 35%, #888, #111); }
+  .top-left { top: 8px; left: 8px; } .top-right { top: 8px; right: 8px; }
+  .bottom-left { bottom: 8px; left: 8px; } .bottom-right { bottom: 8px; right: 8px; }
+</style>

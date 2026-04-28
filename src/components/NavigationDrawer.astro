@@ -55,6 +55,12 @@
 
   const dotColors = ['#ff0000', '#ff8800', '#ffff00', '#6fff00', '#00f7ff', '#ee00ff', '#ffffff'];
 
+  // Funkce pro detekci, zda je sekce Board aktivní
+  const isBoardActive = () => {
+    const boardBtn = Array.from(buttons).find(b => b.textContent.trim() === 'Board');
+    return boardBtn?.classList.contains('active');
+  };
+
   const activateDot = (index) => {
     dots.forEach((d) => { 
       d.classList.remove('active'); 
@@ -72,16 +78,24 @@
   // --- START SYSTÉMU ---
   window.addEventListener('DOMContentLoaded', () => {
     activateDot(0);
-    // Pokud startujeme na Boardu, šuplík vysuneme
-    const isBoard = Array.from(buttons).some(b => b.classList.contains('active') && b.textContent.trim() === 'Board');
     
-    setTimeout(() => {
-      drawer?.classList.remove('collapsed');
-    }, 500);
+    // Pokud startujeme na Boardu, šuplík vysuneme
+    if (isBoardActive()) {
+      setTimeout(() => {
+        drawer?.classList.remove('collapsed');
+      }, 500);
+    }
   });
 
+  // OVLÁDÁNÍ MADLA (LOCK NA BOARDU)
   toggle?.addEventListener('click', (e) => { 
     e.stopPropagation(); 
+    
+    // ZÁMEK: Pokud jsme na Boardu, kliknutí na madlo šuplík nezasune
+    if (isBoardActive()) {
+      return;
+    }
+
     drawer?.classList.toggle('collapsed'); 
   });
 
@@ -89,7 +103,6 @@
 
   buttons.forEach((btn, index) => {
     btn.addEventListener('click', (e) => {
-      // Pokud je tlačítko už aktivní, ignorujeme klik
       if (btn.classList.contains('active')) {
         e.preventDefault();
         return;
@@ -105,11 +118,14 @@
         btn.classList.add('active'); 
         activateDot(index);
 
-        // Zavřeme šuplík jen pokud NEJSME na Boardu
+        // Pokud nově zvolená sekce není Board, šuplík uklidíme
         if (btn.textContent.trim() !== 'Board') {
           setTimeout(() => { 
             drawer?.classList.add('collapsed'); 
           }, 200); 
+        } else {
+          // Pokud jsme se vrátili na Board, ujistíme se, že je otevřený
+          drawer?.classList.remove('collapsed');
         }
       }, 1000);
     });
@@ -117,28 +133,36 @@
 </script>
 
 <style>
-  /* ZMĚNA: Místo position: fixed dáme absolute, aby šuplík seděl v r-sidebar */
-.side-drawer { 
-  position: absolute; /* <--- DŮLEŽITÉ */
-  right: 0; 
-  top: 0; 
-  /* Zrušíme transform translateY(-50%), protože v r-sidebar ho chceme odshora dolů */
-  height: 100%; 
-  display: flex; 
-  align-items: center; /* Tlačítka vycentrujeme vertikálně v rámci výšky contentu */
-  z-index: 2000; 
-  transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1); 
-}
+  .side-drawer { 
+    position: absolute; 
+    right: 0; 
+    top: 0; 
+    height: 100%; 
+    display: flex; 
+    align-items: center; 
+    z-index: 2000; 
+    transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1); 
+  }
 
-/* Upravíme transformaci pro zavřený stav */
-.side-drawer.collapsed { 
-  transform: translateX(calc(100% - 24px)); 
-}  
+  .side-drawer.collapsed { 
+    transform: translateX(calc(100% - 24px)); 
+  }  
+
   .drawer-handle { 
     width: 24px; min-height: 120px; background: linear-gradient(90deg, #222, #111); 
     border: 1px solid #444; border-right: none; border-radius: 10px 0 0 10px; 
     cursor: pointer; display: flex; justify-content: center; align-items: center; 
     box-shadow: -5px 0 15px rgba(0,0,0,0.5); z-index: 2; align-self: center;
+  }
+
+  /* Vizuální indikace zamčeného šuplíku na Boardu */
+  .side-drawer:not(.collapsed) .drawer-handle:has(+ .metal-chassis .b-pink.active) {
+    cursor: default;
+  }
+  /* Alternativní selektor pro starší prohlížeče/jistotu přes JS stav */
+  #right-drawer:not(.collapsed) .btn-nav.b-pink.active ~ .drawer-handle {
+     /* Toto v CSS funguje jen pro sourozence dál v DOMu, 
+        takže to řešíme spíše logikou v JS výše */
   }
 
   .dots-container { display: flex; flex-direction: column; gap: 8px; }
@@ -204,7 +228,6 @@
   .btn-nav.active { 
     top: 2px; background: linear-gradient(180deg, #111 0%, #1c1c1c 40%, #3a3a3a 100%) !important; 
     box-shadow: 0 1px 0 #000, inset 0 2px 5px rgba(0,0,0,0.7); 
-    /* Vypnutí interakcí u aktivního tlačítka */
     pointer-events: none;
     cursor: default;
   }

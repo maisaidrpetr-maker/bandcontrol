@@ -1,9 +1,16 @@
 ---
 // src/pages/index.astro
-import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="BandControl - Dashboard">
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BandControl - Dashboard</title>
+</head>
+<body>
+
   <div id="login-screen" class="login-overlay">
     <div class="login-card">
       <h1>BandControl Login</h1>
@@ -70,7 +77,9 @@ import Layout from '../layouts/Layout.astro';
 
     </div>
   </main>
-</Layout>
+
+</body>
+</html>
 
 <style>
   :root {
@@ -86,7 +95,16 @@ import Layout from '../layouts/Layout.astro';
     --green: #15803d;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+  html, body {
+    background: var(--bg-dark);
+    color: var(--text-main);
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   .hidden { display: none !important; }
 
   .login-overlay {
@@ -217,7 +235,7 @@ import Layout from '../layouts/Layout.astro';
 </style>
 
 <script>
-  const MASTER_PASSWORD = "kapela2026"; // Tvoje heslo pro kluky
+  const MASTER_PASSWORD = "kapela2026";
 
   const loginScreen = document.getElementById('login-screen');
   const dashboardContent = document.getElementById('dashboard-content');

@@ -17,7 +17,7 @@
       <input 
         type="password" 
         id="password-input" 
-        placeholder="Zadej heslo kapely" 
+        placeholder="Zadej své heslo" 
       />
       <button id="login-btn">Vstoupit do systému</button>
       <p id="login-error" class="error-msg">Nesprávné heslo!</p>
@@ -28,7 +28,7 @@
     <header class="main-header">
       <div>
         <h1 class="brand-title">BANDCONTROL v1.0</h1>
-        <p class="brand-sub">Režim: Mobilní stage-ready verze</p>
+        <p class="brand-sub">Aktivní uživatel: <strong id="user-welcome" class="text-amber">---</strong></p>
       </div>
       <div class="header-actions">
         <button id="fullscreen-btn" class="btn-sec">🖥️ Fullscreen</button>
@@ -235,49 +235,71 @@
 </style>
 
 <script>
-  const MASTER_PASSWORD = "kapela2026";
+  // 1. Definujeme si TypeScript rozhraní pro uživatele
+  interface UserDatabase {
+    [password: string]: string;
+  }
 
-  const loginScreen = document.getElementById('login-screen');
-  const dashboardContent = document.getElementById('dashboard-content');
-  const passwordInput = document.getElementById('password-input') as HTMLInputElement;
-  const loginBtn = document.getElementById('login-btn');
-  const loginError = document.getElementById('login-error');
-  const logoutBtn = document.getElementById('logout-btn');
-  const fullscreenBtn = document.getElementById('fullscreen-btn');
+  // 2. Databáze hesel a jmen (tady si definuj kluky z kapely a jejich hesla)
+  const USERS: UserDatabase = {
+    "petr2026": "Petr (Maker)",
+    "kytara99": "Honza (Kytara)",
+    "buben123": "Marek (Bicí)",
+    "basa456": "Aleš (Basa)"
+  };
 
-  function checkAuth() {
-    if (sessionStorage.getItem('band_authenticated') === 'true') {
-      if(loginScreen) loginScreen.style.display = 'none';
-      if(dashboardContent) dashboardContent.classList.remove('hidden');
+  // 3. Selektory s TypeScript typováním
+  const loginScreen = document.getElementById('login-screen') as HTMLDivElement | null;
+  const dashboardContent = document.getElementById('dashboard-content') as HTMLTextAreaElement | null;
+  const passwordInput = document.getElementById('password-input') as HTMLInputElement | null;
+  const loginBtn = document.getElementById('login-btn') as HTMLButtonElement | null;
+  const loginError = document.getElementById('login-error') as HTMLParagraphElement | null;
+  const logoutBtn = document.getElementById('logout-btn') as HTMLButtonElement | null;
+  const fullscreenBtn = document.getElementById('fullscreen-btn') as HTMLButtonElement | null;
+  const userWelcome = document.getElementById('user-welcome') as HTMLElement | null;
+
+  function checkAuth(): void {
+    const savedUser = sessionStorage.getItem('band_user');
+    if (savedUser) {
+      if (loginScreen) loginScreen.style.display = 'none';
+      if (dashboardContent) dashboardContent.classList.remove('hidden');
+      if (userWelcome) userWelcome.innerText = savedUser;
     } else {
-      if(loginScreen) loginScreen.style.display = 'flex';
-      if(dashboardContent) dashboardContent.classList.add('hidden');
+      if (loginScreen) loginScreen.style.display = 'flex';
+      if (dashboardContent) dashboardContent.classList.add('hidden');
     }
   }
 
   loginBtn?.addEventListener('click', () => {
-    if (passwordInput.value === MASTER_PASSWORD) {
-      sessionStorage.setItem('band_authenticated', 'true');
-      if(loginError) loginError.style.display = 'none';
+    if (!passwordInput) return;
+    
+    const password = passwordInput.value;
+    
+    // TypeScript bezpečně zkontroluje, zda heslo existuje v naší mapě
+    if (password in USERS) {
+      const userName = USERS[password];
+      sessionStorage.setItem('band_user', userName);
+      if (loginError) loginError.style.display = 'none';
+      passwordInput.value = "";
       checkAuth();
     } else {
-      if(loginError) loginError.style.display = 'block';
+      if (loginError) loginError.style.display = 'block';
       passwordInput.value = "";
     }
   });
 
-  passwordInput?.addEventListener('keypress', (e) => {
+  passwordInput?.addEventListener('keypress', (e: KeyboardEvent) => {
     if (e.key === 'Enter') loginBtn?.click();
   });
 
   logoutBtn?.addEventListener('click', () => {
-    sessionStorage.removeItem('band_authenticated');
+    sessionStorage.removeItem('band_user');
     checkAuth();
   });
 
   fullscreenBtn?.addEventListener('click', () => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch((err) => {
+      document.documentElement.requestFullscreen().catch((err: Error) => {
         alert(`Chyba fullscreenu: ${err.message}`);
       });
     } else {
@@ -285,5 +307,6 @@
     }
   });
 
+  // Prvotní kontrola při načtení stránky
   checkAuth();
 </script>

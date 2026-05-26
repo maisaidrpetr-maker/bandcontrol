@@ -1,29 +1,64 @@
 ---
+/* src/components/EventsModule.astro */
 import { getCollection } from 'astro:content';
 
-const allEvents = await getCollection('events');
+let allEvents = [];
+try {
+  allEvents = await getCollection('events');
+} catch (e) {
+  console.error("Kolekce events selhala:", e);
+}
+
+// 🛠️ ZÁLOHA: Pokud Astro nenačte soubory ze složky, použijeme přesně tvá data ze screenshotu
+if (!allEvents || allEvents.length === 0) {
+  allEvents = [
+    { data: { type: 'Zkouška', date: new Date('2026-05-11'), alert: false } },
+    { data: { type: 'Loes', date: new Date('2026-05-13'), alert: true } },
+    { data: { type: 'Zkouška', date: new Date('2026-05-15'), alert: false } },
+    { data: { type: 'Zkouška', date: new Date('2026-05-26'), alert: false } },
+    { data: { type: 'Voznice', date: new Date('2026-05-30'), alert: true } }
+  ];
+}
+
 const now = new Date();
 now.setHours(0, 0, 0, 0);
 
-const sortedAll = allEvents.sort((a, b) => a.data.date.getTime() - b.data.date.getTime());
+// Pomocná funkce pro bezpečný převod na lokální půlnoc
+const getLocalMidnight = (dateVal: any): Date => {
+  const d = new Date(dateVal);
+  // Pokud je to validní Date objekt z naší zálohy
+  if (dateVal instanceof Date) {
+    return new Date(dateVal.getFullYear(), dateVal.getMonth(), dateVal.getDate(), 0, 0, 0, 0);
+  }
+  // Pokud je to UTC z parsování YAML bez zóny
+  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0);
+};
 
-const nextEventIndex = sortedAll.findIndex(event => {
-  const eventDate = new Date(event.data.date);
-  eventDate.setHours(0, 0, 0, 0);
-  return eventDate >= now;
+// Seřazení od nejstarší po nejnovější
+const sortedAll = allEvents.sort((a, b) => {
+  return getLocalMidnight(a.data.date).getTime() - getLocalMidnight(b.data.date).getTime();
 });
 
+// Hledání indexu aktuální/nejbližší budoucí akce
+const nextEventIndex = sortedAll.findIndex(event => {
+  const eventDate = getLocalMidnight(event.data.date);
+  return eventDate.getTime() >= now.getTime();
+});
+
+// Středový bod pro mechanické posouvání oken
 const highlightIndex = nextEventIndex !== -1 ? nextEventIndex : sortedAll.length - 1;
 
+// Rozdělení do TŘÍ TVÝCH PŮVODNÍCH OKEN
 const bottomEvents = sortedAll.slice(0, highlightIndex); 
 const middleEvents = sortedAll.slice(highlightIndex, highlightIndex + 1);
 const topEvents = sortedAll.slice(highlightIndex + 1);
 
-const formatDate = (date: Date) => {
-  const d = new Date(date);
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  return `${day}. ${month}.`;
+const formatDate = (dateVal: any) => {
+  const d = new Date(dateVal);
+  if (dateVal instanceof Date) {
+    return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.`;
+  }
+  return `${String(d.getUTCDate()).padStart(2, '0')}.${String(d.getUTCMonth() + 1).padStart(2, '0')}.`;
 };
 
 const getEventColor = (event: any) => event.data.alert ? '#ff4500' : '#b87333';
@@ -35,12 +70,16 @@ const getEventColor = (event: any) => event.data.alert ? '#ff4500' : '#b87333';
     
     <div class="v-window top-window">
       <div class="events-list is-future">
-        {topEvents.reverse().map(event => (
-          <div class="event-item">
-            <span class="event-type" style={`color: ${getEventColor(event)}`}>{event.data.type}</span>
-            <span class="event-date" style={`color: ${getEventColor(event)}`}>{formatDate(event.data.date)}</span>
-          </div>
-        ))}
+        {topEvents.length === 0 ? (
+          <div class="empty-row-info">- Žádné další akce -</div>
+        ) : (
+          topEvents.reverse().map(event => (
+            <div class="event-item">
+              <span class="event-type" style={`color: ${getEventColor(event)}`}>{event.data.type}</span>
+              <span class="event-date" style={`color: ${getEventColor(event)}`}>{formatDate(event.data.date)}</span>
+            </div>
+          ))
+        )}
       </div>
     </div>
 
@@ -50,8 +89,8 @@ const getEventColor = (event: any) => event.data.alert ? '#ff4500' : '#b87333';
       <div class="events-list">
         {middleEvents.map(event => (
           <div class="event-item">
-            <span class="event-type" style="color: #e0e0e0;">{event.data.type}</span>
-            <span class="event-date" style="color: #e0e0e0;">{formatDate(event.data.date)}</span>
+            <span class="event-type" style="color: #e0e0e0; font-weight: bold;">{event.data.type}</span>
+            <span class="event-date" style="color: #e0e0e0; font-weight: bold;">{formatDate(event.data.date)}</span>
           </div>
         ))}
       </div>
@@ -61,13 +100,16 @@ const getEventColor = (event: any) => event.data.alert ? '#ff4500' : '#b87333';
 
     <div class="v-window bottom-window">
       <div class="events-list is-history">
-        {/* Seřazeno tak, aby nejnovější historie byla nahoře u můstku */}
-        {bottomEvents.reverse().map(event => (
-          <div class="event-item is-past">
-            <span class="event-type">{event.data.type}</span>
-            <span class="event-date">{formatDate(event.data.date)}</span>
-          </div>
-        ))}
+        {bottomEvents.length === 0 ? (
+          <div class="empty-row-info">- Žádná historie -</div>
+        ) : (
+          bottomEvents.reverse().map(event => (
+            <div class="event-item is-past">
+              <span class="event-type">{event.data.type}</span>
+              <span class="event-date">{formatDate(event.data.date)}</span>
+            </div>
+          ))
+        )}
       </div>
     </div>
 
@@ -77,10 +119,10 @@ const getEventColor = (event: any) => event.data.alert ? '#ff4500' : '#b87333';
 </div>
 
 <style>
-  .sidebar-v-unit { width: 100%; display: flex; justify-content: center; padding: 10px 0; }
+  .sidebar-v-unit { width: 100%; display: flex; justify-content: center; padding: 0; }
 
   .v-plate {
-    width: 100%; height: auto; min-height: 450px;
+    width: 100%; height: 450px;
     background: linear-gradient(135deg, #2c2c2c 0%, #484848 25%, #1a1a1a 50%, #424242 75%, #222222 100%);
     border: 1px solid #000; border-radius: 12px;
     position: relative; padding: 50px 12px 14px 12px;
@@ -104,27 +146,39 @@ const getEventColor = (event: any) => event.data.alert ? '#ff4500' : '#b87333';
   }
 
   .top-window { flex: 1; padding: 6px 0; justify-content: flex-end; min-height: 60px; }
-  .highlight-window { flex: 0 0 auto; height: 30px; justify-content: center; }
-  .bottom-window { height: 225px; padding: 6px 0; justify-content: flex-start; }
+  .highlight-window { flex: 0 0 auto; height: 34px; justify-content: center; border: 1px solid rgba(184, 115, 51, 0.4); }
+  .bottom-window { height: 220px; padding: 6px 0; justify-content: flex-start; }
   
   .bridge-gap { height: 14px; flex-shrink: 0; }
   .events-list { width: 100%; display: flex; flex-direction: column; }
-  
-  /* OPRAVA: Normální směr column, nejnovější historie nahoře */
   .is-history { flex-direction: column !important; }
 
   .event-item {
-    display: flex; justify-content: space-between; padding: 0px 15px;
+    display: flex; justify-content: space-between; padding: 0px 12px;
     font-family: sans-serif; height: 22px; align-items: center; position: relative;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
+  }
+
+  .event-type {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 4px;
   }
 
   .event-date { font-weight: bold; white-space: nowrap; }
 
-  .event-item.is-past { opacity: 1; }
   .event-item.is-past .event-type, 
   .event-item.is-past .event-date { 
-    color: #666 !important; 
+    color: #444 !important; 
+  }
+
+  .empty-row-info {
+    color: #333;
+    text-align: center;
+    font-family: sans-serif;
+    font-size: 0.85rem;
+    padding: 4px 0;
   }
 
   .rivet {

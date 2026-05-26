@@ -5,8 +5,11 @@
   
   <div class="user-display-wrapper">
     <div class="user-display">
-      <span class="user-char">PETR MAIŠAIDR</span>
-      <span class="user-char-instrument">(KYTARA)</span>
+      <div class="user-info">
+        <span class="user-char">PETR MAIŠAIDR</span>
+        <span class="user-char-instrument">(KYTARA)</span>
+      </div>
+      <button id="header-logout-btn" class="rack-logout-btn" title="Odhlásit se">LOGOUT</button>
     </div>
   </div>
 
@@ -19,14 +22,15 @@
 
   <div class="clock-display-wrapper">
     <div class="clock-display">
-      <div id="header-date" class="clock-container"></div>
-      <div class="clock-dot-separator">:</div>
+      <div id="header-date" class="clock-container date-hide-mobile"></div>
+      <div class="clock-dot-separator date-hide-mobile">:</div>
       <div id="header-time" class="clock-container"></div>
     </div>
   </div>
 </header>
 
 <script>
+  // Fullscreen logika
   const btn = document.getElementById('fullscreen-btn');
   btn?.addEventListener('click', () => {
     if (!document.fullscreenElement) {
@@ -34,6 +38,14 @@
     } else {
       document.exitFullscreen();
     }
+  });
+
+  // Logout logika (napojení na tvůj stávající logout systém)
+  const logoutBtn = document.getElementById('header-logout-btn');
+  logoutBtn?.addEventListener('click', () => {
+    // Tady se spustí tvá funkce odhlášení, např:
+    // window.location.href = '/login';
+    console.log('Odhlášeno');
   });
 
   function updateClock() {
@@ -59,7 +71,7 @@
     }
     if (timeEl) {
       const timeStr = now.toLocaleTimeString('cs-CZ', {
-        hour: '2-digit', minute: '2-digit', second: '2-digit'
+        hour: '2-digit', minute: '2-digit' // Na mobilu stačí hodiny:minuty pro úsporu místa
       });
       timeEl.innerHTML = createFixedChars(timeStr);
     }
@@ -83,27 +95,24 @@
   }
 
   .rack-header {
-    min-height: 60px;
+    height: var(--header-height, 60px);
     background: linear-gradient(180deg, #555558 0%, #222224 45%, #111112 100%);
     border-bottom: 4px solid #000000;
-    
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    padding: 10px 20px;
+    padding: 0 20px;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.9);
     position: relative;
     z-index: 100;
     width: 100%;
     box-sizing: border-box;
-    gap: 10px;
   }
 
   .user-display-wrapper { justify-self: start; }
   .controls { justify-self: center; }
   .clock-display-wrapper { justify-self: end; }
 
-  /* 🖥️ UNIFORMÍ KOMPAKTNÍ DISPLEJE */
   .user-display, .clock-display {
     background: #000;
     height: 34px;
@@ -113,80 +122,64 @@
     box-shadow: inset 0 0 15px rgba(0,0,0,1);
     display: flex;
     align-items: center;
-    justify-content: center; /* Všechno tlačíme hezky na střed */
-    padding: 0px 16px;
+    padding: 0px 12px;
   }
 
   .user-display {
-    width: 250px;
+    width: 290px;
     color: #08d1ce;
     font-family: 'Segment7', monospace;
-    font-size: 14px;
+    font-size: 13px;
     text-shadow: 0 0 8px rgba(8, 209, 206, 0.5);
-    gap: 8px; /* Těsnější, přirozená mezera */
+    justify-content: space-between;
   }
 
-  .user-char {
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  /* 🛠️ OPRAVA: Krásně čitelný nástroj v závorce */
-  .user-char-instrument {
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #04908e; /* Jemně utlumená azurová, ale perfektně čitelná */
-  }
-
-  /* 🛠️ OPRAVA HODIN: Žádné obří mezery, vše u sebe na středu */
-  .clock-display {
-    width: 220px; /* Menší, kompaktnější šířka */
-    color: #08d1ce;
-    font-family: 'Segment7', monospace;
-    font-size: 14px;
-    text-shadow: 0 0 8px rgba(8, 209, 206, 0.5);
-    gap: 12px; /* Přesná mezera mezi datem a časem */
-  }
-
-  .clock-container {
+  .user-info {
     display: flex;
-    align-items: center;
+    gap: 6px;
   }
 
-  /* Malá jemná tečka/dvojtečka mezi blokem data a času */
-  .clock-dot-separator {
-    opacity: 0.3;
-    font-size: 12px;
-    margin-top: -2px;
+  .user-char { text-transform: uppercase; letter-spacing: 0.5px; }
+  .user-char-instrument { text-transform: uppercase; color: #04908e; }
+
+  /* 🛠️ INTEGRACE LOGOUT TLAČÍTKA */
+  .rack-logout-btn {
+    background: #200;
+    border: 1px solid #511;
+    color: #f55;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+    text-shadow: 0 0 5px rgba(255,0,0,0.5);
+    transition: all 0.2s;
+  }
+  .rack-logout-btn:hover {
+    background: #500;
+    color: #fff;
   }
 
-  /* FIXNÍ ŠÍŘKY DIOD */
-  :global(.char.num) {
-    display: inline-block;
-    width: 10px;
-    text-align: center;
+  .clock-display {
+    width: 180px;
+    color: #08d1ce;
+    font-family: 'Segment7', monospace;
+    font-size: 13px;
+    text-shadow: 0 0 8px rgba(8, 209, 206, 0.5);
+    justify-content: center;
+    gap: 8px;
   }
 
-  :global(.char.sep) {
-    display: inline-block;
-    position: relative;
-    opacity: 0.8;
-  }
+  .clock-container { display: flex; align-items: center; }
+  .clock-dot-separator { opacity: 0.3; font-size: 11px; }
 
-  :global(.char.colon) {
-    width: 5px;
-    text-align: center;
-    top: -1px; 
-  }
+  /* HARDWAROVÉ ZNAKY */
+  :global(.char.num) { display: inline-block; width: 9px; text-align: center; }
+  :global(.char.sep) { display: inline-block; position: relative; opacity: 0.8; }
+  :global(.char.colon) { width: 5px; text-align: center; }
+  :global(.char.dot) { width: 3px; text-align: left; }
 
-  :global(.char.dot) {
-    width: 4px;
-    text-align: left;
-    margin-left: -1px;
-    top: 0px;
-  }
-
-  /* FULLSCREEN BTN */
+  /* FULLSCREEN BUTTON */
   .rack-button {
     background: #222;
     border: 1px solid #444;
@@ -201,36 +194,42 @@
     align-items: center;
     gap: 8px;
   }
+  .led { width: 8px; height: 8px; background: rgb(100, 20, 20); border-radius: 50%; }
+  .led.active { background: rgb(81, 237, 73); box-shadow: 0 0 10px rgb(81, 237, 73); }
 
-  .led {
-    width: 8px;
-    height: 8px;
-    background: rgb(100, 20, 20);
-    border-radius: 50%;
-    transition: all 0.3s;
-  }
-
-  .led.active {
-    background: rgb(81, 237, 73);
-    box-shadow: 0 0 10px rgb(81, 237, 73);
-  }
-
-  .label { text-shadow: 0 1px 0 #000; }
-
-  /* 🛠️ RESPONSIVITA: Skládání pod sebe na malých displejích / při smrštění */
+  /* 🛠️ ULTRA KOMPAKTNÍ MOBILNÍ ZOBRAZENÍ (VŠE NA JEDNOM ŘÁDKU) */
   @media (max-width: 768px) {
     .rack-header {
-      grid-template-columns: 1fr; /* Změna gridu na jeden sloupec */
-      justify-items: center;
-      padding: 12px;
-      height: auto;
+      grid-template-columns: 1fr auto; /* Jen jméno a čas, fullscreen mizí */
+      padding: 0 10px;
+      height: 44px; /* Krásně nízký header */
     }
-    .user-display-wrapper, .controls, .clock-display-wrapper {
-      justify-self: center; /* Všechno vycentrovat pod sebou */
+    .controls {
+      display: none; /* Schováme nefunkční fullscreen na mobilu */
     }
-    .user-display, .clock-display {
-      width: 100%;
-      max-width: 280px; /* Na mobilu lehce roztáhnout do stran */
+    .user-display-wrapper, .clock-display-wrapper {
+      justify-self: stretch;
+    }
+    .user-display {
+      width: auto;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+    }
+    .clock-display {
+      width: auto;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      justify-content: flex-end;
+    }
+    .date-hide-mobile {
+      display: none !important; /* Na mobilu schováme datum, necháme jen čas, ať to nezabírá šířku */
+    }
+    .user-char-instrument {
+      display: none; /* Na mobilu schováme nástroj, stačí jméno a logout */
     }
   }
 </style>

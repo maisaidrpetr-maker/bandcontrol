@@ -61,10 +61,9 @@ const isActive = (path: string) => {
   const dots = document.querySelectorAll('.dot');
   const dotColors = ['#ff0000', '#ff8800', '#ffff00', '#6fff00', '#00f7ff', '#ee00ff', '#ffffff'];
 
-  // Funkce pro detekci, zda je sekce Board aktivní
   const isBoardActive = () => {
-  const boardBtn = Array.from(buttons).find(b => b.textContent.trim() === 'Board');
-     return boardBtn?.classList.contains('active');
+    const boardBtn = Array.from(buttons).find(b => b.textContent.trim() === 'Board');
+    return boardBtn?.classList.contains('active');
   };
 
   const activateDot = (index) => {
@@ -85,23 +84,18 @@ const isActive = (path: string) => {
   window.addEventListener('DOMContentLoaded', () => {
     activateDot(0);
     
-    // Pokud startujeme na Boardu, šuplík vysuneme
-    if (isBoardActive()) {
+    // 🛠️ ZMĚNA: Na Boardu se automaticky vysune POUZE na počítači. Na mobilu zůstane schovaný.
+    if (isBoardActive() && window.innerWidth > 768) {
       setTimeout(() => {
         drawer?.classList.remove('collapsed');
       }, 500);
     }
   });
 
-  // OVLÁDÁNÍ MADLA (LOCK NA BOARDU)
+  // OVLÁDÁNÍ MADLA (ZÁMEK ODSTRANĚN)
   toggle?.addEventListener('click', (e) => { 
     e.stopPropagation(); 
-    
-    // ZÁMEK: Pokud jsme na Boardu, kliknutí na madlo šuplík nezasune
-    if (isBoardActive()) {
-      return;
-    }
-
+    // 🛠️ OPRAVA: Žádný return! Madlo teď funguje kdykoliv a kdekoliv, i na sekci Board.
     drawer?.classList.toggle('collapsed'); 
   });
 
@@ -124,14 +118,16 @@ const isActive = (path: string) => {
         btn.classList.add('active'); 
         activateDot(index);
 
-        // Pokud nově zvolená sekce není Board, šuplík uklidíme
+        // Po kliknutí na jakékoliv jiné tlačítko šuplík schováme
         if (btn.textContent.trim() !== 'Board') {
           setTimeout(() => { 
             drawer?.classList.add('collapsed'); 
           }, 200); 
         } else {
-          // Pokud jsme se vrátili na Board, ujistíme se, že je otevřený
-          drawer?.classList.remove('collapsed');
+          // Pokud klikneš na Board, na desktopu ho otevřeme, na mobilu ho necháme zavřený
+          if (window.innerWidth > 768) {
+            drawer?.classList.remove('collapsed');
+          }
         }
       }, 1000);
     });
@@ -139,7 +135,7 @@ const isActive = (path: string) => {
 </script>
 
 <style>
-.side-drawer { 
+  .side-drawer { 
     position: fixed; 
     right: 0; 
     top: 0; 
@@ -161,15 +157,7 @@ const isActive = (path: string) => {
     box-shadow: -5px 0 15px rgba(0,0,0,0.5); z-index: 2; align-self: center;
   }
 
-  /* Vizuální indikace zamčeného šuplíku na Boardu */
-  .side-drawer:not(.collapsed) .drawer-handle:has(+ .metal-chassis .b-pink.active) {
-    cursor: default;
-  }
-  /* Alternativní selektor pro starší prohlížeče/jistotu přes JS stav */
-  #right-drawer:not(.collapsed) .btn-nav.b-pink.active ~ .drawer-handle {
-     /* Toto v CSS funguje jen pro sourozence dál v DOMu, 
-        takže to řešíme spíše logikou v JS výše */
-  }
+  /* 🛠️ OPRAVA CSS: Odstraněno pravidlo měnící kurzor na "default" pro aktivní Board */
 
   .dots-container { display: flex; flex-direction: column; gap: 8px; }
   
@@ -198,27 +186,17 @@ const isActive = (path: string) => {
   .nav-group { display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; }
 
   .rivet { 
-    /* Rozměry sjednoceny na ty hezčí */
     width: 10px; 
     height: 10px; 
-    
-    /* Přesná kopie gradientu z board.astro pro ten správný odlesk */
     background: radial-gradient(circle at 35% 35%, #ffffff 0%, #aaaaaa 20%, #222222 80%, #000000 100%); 
-    
     border-radius: 50%; 
-    
-    /* Jemnější okraj, aby nýt nepůsobil jako kreslený */
     border: 0.5px solid rgba(255,255,255,0.1); 
-    
-    /* Silnější stín pro hloubku */
     box-shadow: 2px 3px 5px rgba(0,0,0,0.9); 
-    
     position: absolute; 
     left: 50%; 
     transform: translateX(-50%); 
   }
 
-  /* Pozice zůstávají stejné */
   .axial-top { top: 15px; } 
   .axial-bottom { bottom: 15px; }
   
@@ -263,4 +241,16 @@ const isActive = (path: string) => {
   .b-blue.active    { color: #0ff !important; text-shadow: 0 0 15px #0ff !important; }
   .b-purple.active  { color: #e0f !important; text-shadow: 0 0 15px #e0f !important; }
   .b-magenta.active { color: #fff !important; text-shadow: 0 0 15px #fff !important; }
+
+  /* 🛠️ ASYMETRICKÉ ÚPRAVY PRO MOBILY PRO LEPŠÍ ERGONOMII */
+  @media (max-width: 768px) {
+    .metal-chassis {
+      width: 190px; /* Drobný materiálový zářez pro úsporu displeje mobilu */
+      padding: 30px 15px;
+    }
+    .btn-nav {
+      width: 150px;
+      font-size: 20px; /* Přirozeně zmenšené knoflíky pro prsty */
+    }
+  }
 </style>

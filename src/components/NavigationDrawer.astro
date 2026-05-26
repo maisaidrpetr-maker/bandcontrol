@@ -30,7 +30,7 @@ const isActive = (path: string) => {
   .b-magenta.blink-effect { animation: pulse-magenta 0.3s ease-in-out 3; }
 </style>
 
-<div id="right-drawer" class="side-drawer collapsed">
+<div id="right-drawer" class="side-drawer">
   <div class="drawer-handle" id="drawer-toggle">
     <div class="dots-container">
       <span class="dot"></span><span class="dot"></span><span class="dot"></span>
@@ -80,23 +80,35 @@ const isActive = (path: string) => {
     }
   };
 
-  // --- START SYSTÉMU ---
-  window.addEventListener('DOMContentLoaded', () => {
+  function runDrawerLogic() {
     activateDot(0);
-    
-    // 🛠️ ZMĚNA: Na Boardu se automaticky vysune POUZE na počítači. Na mobilu zůstane schovaný.
-    if (isBoardActive() && window.innerWidth > 768) {
-      setTimeout(() => {
-        drawer?.classList.remove('collapsed');
-      }, 500);
-    }
-  });
 
-  // OVLÁDÁNÍ MADLA (ZÁMEK ODSTRANĚN)
+    if (window.innerWidth > 768) {
+      // DESKTOP: Na boardu trvale viditelný
+      if (isBoardActive()) {
+        drawer?.classList.remove('collapsed');
+      } else {
+        drawer?.classList.add('collapsed');
+      }
+    } else {
+      // MOBIL: Nejdřív ho ukážeme (vysuneme)...
+      drawer?.classList.remove('collapsed');
+      
+      // ...a po 1.8 vteřině plynule schováme, aby uživatel věděl, že tam je!
+      setTimeout(() => {
+        drawer?.classList.add('collapsed');
+      }, 1800);
+    }
+  }
+
+  // Odchytnutí Astro načítání i klasického refreshování
+  window.addEventListener('DOMContentLoaded', runDrawerLogic);
+  document.addEventListener('astro:page-load', runDrawerLogic);
+
+  // Kliknutí na madlo (Přepíná stav odevšad na mobilu)
   toggle?.addEventListener('click', (e) => { 
-    e.stopPropagation(); 
-    // 🛠️ OPRAVA: Žádný return! Madlo teď funguje kdykoliv a kdekoliv, i na sekci Board.
-    drawer?.classList.toggle('collapsed'); 
+    e.stopPropagation();
+    drawer?.classList.toggle('collapsed');
   });
 
   drawer?.addEventListener('click', (e) => e.stopPropagation());
@@ -105,12 +117,12 @@ const isActive = (path: string) => {
     btn.addEventListener('click', (e) => {
       if (btn.classList.contains('active')) {
         e.preventDefault();
+        if (window.innerWidth <= 768) drawer?.classList.add('collapsed');
         return;
       }
 
       e.preventDefault(); 
       buttons.forEach(b => { b.classList.remove('active'); b.classList.remove('blink-effect'); });
-      
       btn.classList.add('blink-effect');
       
       setTimeout(() => {
@@ -118,15 +130,14 @@ const isActive = (path: string) => {
         btn.classList.add('active'); 
         activateDot(index);
 
-        // Po kliknutí na jakékoliv jiné tlačítko šuplík schováme
-        if (btn.textContent.trim() !== 'Board') {
-          setTimeout(() => { 
-            drawer?.classList.add('collapsed'); 
-          }, 200); 
+        // Po kliknutí na mobilu schováme hned, na desktopu jen pokud opouštíme Board
+        if (window.innerWidth <= 768) {
+          drawer?.classList.add('collapsed');
         } else {
-          // Pokud klikneš na Board, na desktopu ho otevřeme, na mobilu ho necháme zavřený
-          if (window.innerWidth > 768) {
-            drawer?.classList.remove('collapsed');
+          if (btn.textContent.trim() !== 'Board') {
+            drawer?.classList.add('collapsed'); 
+          } else {
+            drawer?.classList.remove('collapsed'); 
           }
         }
       }, 1000);
@@ -143,7 +154,8 @@ const isActive = (path: string) => {
     display: flex; 
     align-items: center; 
     z-index: 9999; 
-    transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1); 
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    transform: translateX(0); /* Výchozí stav je plně vyjetý */
   }
 
   .side-drawer.collapsed { 
@@ -157,68 +169,39 @@ const isActive = (path: string) => {
     box-shadow: -5px 0 15px rgba(0,0,0,0.5); z-index: 2; align-self: center;
   }
 
-  /* 🛠️ OPRAVA CSS: Odstraněno pravidlo měnící kurzor na "default" pro aktivní Board */
-
   .dots-container { display: flex; flex-direction: column; gap: 8px; }
-  
   .dot { 
-    width: 6px; height: 6px; 
-    background-color: #222; 
-    border-radius: 50%; 
-    border: 1px solid #676767; 
-    transition: all 0.3s ease; 
+    width: 6px; height: 6px; background-color: #222; border-radius: 50%; 
+    border: 1px solid #676767; transition: all 0.3s ease; 
     box-shadow: inset 0 1px 2px #000, 0 1px 1px rgba(255,255,255,0.05);
   }
-  
   .dot.active { transform: scale(1.4); }
 
   .metal-chassis { 
     background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%), repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.01) 3px); 
-    width: 210px; 
-    padding: 45px 30px; 
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    box-sizing: border-box;
-    border: 2px solid #333; border-right: none; border-radius: 20px 0 0 20px; 
-    box-shadow: -30px 0 60px rgba(0,0,0,1); 
-    position: relative; 
+    width: 210px; padding: 45px 30px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-sizing: border-box; border: 2px solid #333; border-right: none; border-radius: 20px 0 0 20px; 
+    box-shadow: -30px 0 60px rgba(0,0,0,1); position: relative; 
   }
 
   .nav-group { display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; }
-
   .rivet { 
-    width: 10px; 
-    height: 10px; 
-    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #aaaaaa 20%, #222222 80%, #000000 100%); 
-    border-radius: 50%; 
-    border: 0.5px solid rgba(255,255,255,0.1); 
-    box-shadow: 2px 3px 5px rgba(0,0,0,0.9); 
-    position: absolute; 
-    left: 50%; 
-    transform: translateX(-50%); 
+    width: 10px; height: 10px; background: radial-gradient(circle at 35% 35%, #ffffff 0%, #aaaaaa 20%, #222222 80%, #000000 100%); 
+    border-radius: 50%; border: 0.5px solid rgba(255,255,255,0.1); box-shadow: 2px 3px 5px rgba(0,0,0,0.9); position: absolute; left: 50%; transform: translateX(-50%); 
   }
-
-  .axial-top { top: 15px; } 
-  .axial-bottom { bottom: 15px; }
+  .axial-top { top: 15px; } .axial-bottom { bottom: 15px; }
   
   .btn-nav {
     background: linear-gradient(180deg, #3a3a3a 0%, #1c1c1c 60%, #111 100%);
-    color: #555; border: 1px solid #000; 
-    width: 170px;
-    font-family: 'Orbitron', sans-serif;
+    color: #555; border: 1px solid #000; width: 170px; font-family: 'Orbitron', sans-serif;
     font-size: 26px; font-weight: 500; text-transform: capitalize; letter-spacing: 2px;
     text-decoration: none; border-radius: 4px; display: flex; align-items: center; justify-content: center;
     cursor: pointer; position: relative; top: 0; box-shadow: 0 3px 0 #000, 0 5px 10px rgba(0,0,0,0.5);
     padding: 8px 0; transition: background 0.2s ease, top 0.1s ease, color 0.2s ease;
-    text-shadow: none !important;
-    margin: 0;
+    text-shadow: none !important; margin: 0;
   }
 
-  .btn-nav:hover:not(.active) { 
-    background: linear-gradient(180deg, #1c1c1c 0%, #3a3a3a 50%, #1c1c1c 100%) !important;
-    color: #999;
-    text-shadow: none !important;
-  }
-  
+  .btn-nav:hover:not(.active) { background: linear-gradient(180deg, #1c1c1c 0%, #3a3a3a 50%, #1c1c1c 100%) !important; color: #999; }
   .b-pink:hover:not(.active)    { color: #b00; }
   .b-orange:hover:not(.active)  { color: #b50; }
   .b-yellow:hover:not(.active)  { color: #bb0; }
@@ -227,13 +210,7 @@ const isActive = (path: string) => {
   .b-purple:hover:not(.active)  { color: #a0a; }
   .b-magenta:hover:not(.active) { color: #aaa; }
 
-  .btn-nav.active { 
-    top: 2px; background: linear-gradient(180deg, #111 0%, #1c1c1c 40%, #3a3a3a 100%) !important; 
-    box-shadow: 0 1px 0 #000, inset 0 2px 5px rgba(0,0,0,0.7); 
-    pointer-events: none;
-    cursor: default;
-  }
-  
+  .btn-nav.active { top: 2px; background: linear-gradient(180deg, #111 0%, #1c1c1c 40%, #3a3a3a 100%) !important; box-shadow: 0 1px 0 #000, inset 0 2px 5px rgba(0,0,0,0.7); pointer-events: none; cursor: default; }
   .b-pink.active    { color: #f00 !important; text-shadow: 0 0 15px #f00 !important; }
   .b-orange.active  { color: #f80 !important; text-shadow: 0 0 15px #f80 !important; }
   .b-yellow.active  { color: #ff0 !important; text-shadow: 0 0 15px #ff0 !important; }
@@ -242,15 +219,8 @@ const isActive = (path: string) => {
   .b-purple.active  { color: #e0f !important; text-shadow: 0 0 15px #e0f !important; }
   .b-magenta.active { color: #fff !important; text-shadow: 0 0 15px #fff !important; }
 
-  /* 🛠️ ASYMETRICKÉ ÚPRAVY PRO MOBILY PRO LEPŠÍ ERGONOMII */
   @media (max-width: 768px) {
-    .metal-chassis {
-      width: 190px; /* Drobný materiálový zářez pro úsporu displeje mobilu */
-      padding: 30px 15px;
-    }
-    .btn-nav {
-      width: 150px;
-      font-size: 20px; /* Přirozeně zmenšené knoflíky pro prsty */
-    }
+    .metal-chassis { width: 190px; padding: 30px 15px; }
+    .btn-nav { width: 150px; font-size: 20px; }
   }
 </style>

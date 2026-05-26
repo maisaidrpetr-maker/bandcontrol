@@ -1,314 +1,350 @@
 ---
 // src/pages/index.astro
+import NavigationDrawer from '../components/NavigationDrawer.astro';
+
+// 1. Definice typu pro databázi uživatelů
+interface UserDatabase {
+  [key: string]: string;
+}
+
+// 2. Databáze hesel a jmen (kluci z kapely a jejich přístupy)
+const USERS: UserDatabase = {
+  "petrm": "Petr Maišaidr (Kytara)",
+  "jank": "Honza Kolář (Mandolína)",
+  "janan": "Jana Novotná (Housle)",
+  "zuzkab": "Zuzana Bartoňová (Zpěv)",
+  "zbynekb": "Zbyněk Bartoň (Banjo)",
+  "martink": "Martin Král (Kontrabas)"
+};
 ---
 
-<!DOCTYPE html>
 <html lang="cs">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BandControl - Dashboard</title>
+  <title>BandControl</title>
+  <style>
+    /* --- GLOBÁLNÍ DESIGN (CHYTRÝ & RESPONSIVNÍ) --- */
+    :root {
+      --bg-dark: #09090b;
+      --bg-card: #141416;
+      --border-color: #27272a;
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --amber: #f59e0b;
+      --green: #22c55e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* --- 1. LOGIN FORMULÁŘ --- */
+    .login-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 40px 30px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+
+    .login-card h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+
+    .login-card p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .login-input {
+      width: 100%;
+      background: #09090b;
+      border: 1px solid var(--border-color);
+      padding: 14px;
+      border-radius: 6px;
+      color: white;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .login-input:focus {
+      border-color: var(--blue);
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--blue);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .error-msg {
+      color: var(--red);
+      font-size: 14px;
+      margin-top: 15px;
+      display: none;
+    }
+
+    /* --- 2. HLAVNÍ DASHBOARD --- */
+    .dashboard-layout {
+      padding: 20px;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .main-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 30px;
+      gap: 15px;
+    }
+
+    .user-info h2 {
+      font-size: 20px;
+    }
+
+    .user-info p {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-sec {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn-ghost:hover {
+      color: var(--red);
+    }
+
+    /* Mřížka modulů - plně responsivní */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    /* Pomocná třída pro skrytí prvků */
+    .hidden {
+      display: none !important;
+    }
+
+    /* --- CSS PRO PŘETLAČENÍ ŠUPLÍKU NA PRAVOU STRANU (Nešahej na komponentu) --- */
+    #drawer-handle, .drawer-hardware-handle {
+      left: auto !important;
+      right: 0 !important;
+      border-left: 1px solid var(--border-color) !important;
+      border-right: none !important;
+      border-radius: 8px 0 0 8px !important;
+    }
+
+    #drawer-handle.open, .drawer-hardware-handle.open {
+      left: auto !important;
+      right: 300px !important;
+      border-radius: 0 !important;
+      border-left: none !important;
+    }
+
+    #navigation-drawer, .nav-drawer {
+      left: auto !important;
+      right: -300px !important;
+      border-left: 1px solid var(--border-color) !important;
+      border-right: none !important;
+      box-shadow: -5px 0 25px rgba(0, 0, 0, 0.7) !important;
+    }
+
+    #navigation-drawer.open, .nav-drawer.open {
+      left: auto !important;
+      right: 0 !important;
+    }
+  </style>
 </head>
 <body>
 
-  <div id="login-screen" class="login-overlay">
+  <div id="login-screen" class="login-container">
     <div class="login-card">
-      <h1>BandControl Login</h1>
-      <input 
-        type="password" 
-        id="password-input" 
-        placeholder="Zadej své heslo" 
-      />
-      <button id="login-btn">Vstoupit do systému</button>
-      <p id="login-error" class="error-msg">Nesprávné heslo!</p>
+      <h1>BANDCONTROL</h1>
+      <p>Vstup pro členy kapely</p>
+      
+      <form id="login-form" onsubmit="return false;">
+        <div class="input-group">
+          <label for="band-password">Zadej své osobní heslo</label>
+          <input 
+            type="password" 
+            id="band-password" 
+            class="login-input" 
+            placeholder="••••••••" 
+            autocomplete="current-password"
+          />
+        </div>
+        <button type="submit" id="login-submit-btn" class="btn-primary">Vstoupit do aplikace</button>
+        <p id="login-error" class="error-msg">⚠️ Nesprávné heslo, zkus to znovu.</p>
+      </form>
     </div>
   </div>
 
   <main id="dashboard-content" class="dashboard-layout hidden">
+    
+    <NavigationDrawer />
+
     <header class="main-header">
-      <div>
-        <h1 class="brand-title">BANDCONTROL v1.0</h1>
-        <p class="brand-sub">Aktivní uživatel: <strong id="user-welcome" class="text-amber">---</strong></p>
+      <div class="user-info">
+        <h2 id="welcome-user">Ahoj!</h2>
+        <p>Vítej v palubním počítači</p>
       </div>
       <div class="header-actions">
-        <button id="fullscreen-btn" class="btn-sec">🖥️ Fullscreen</button>
+        <button id="fullscreen-btn" class="btn-sec">🖥️ Celá obrazovka</button>
         <button id="logout-btn" class="btn-ghost">Odhlásit</button>
       </div>
     </header>
 
     <div class="grid-container">
-      
-      <section class="card border-red">
-        <div>
-          <h2 class="text-red">📅 NEJBLIŽŠÍ AKCE</h2>
-          <div class="widget-box">
-            <p class="date-highlight">Čtvrtek 28. 5.</p>
-            <p class="details">Řádná zkouška v klubu (18:00)</p>
-          </div>
-        </div>
-        <div class="button-group">
-          <button class="btn-green">JDU</button>
-          <button class="btn-dark">NEJDU</button>
-        </div>
-      </section>
-
-      <section class="card border-blue">
-        <h2 class="text-blue">⏱️ RYCHLÝ METRONOM</h2>
-        <div class="widget-box center-text">
-          <span class="bpm-counter">120</span>
-          <span class="bpm-label">BPM</span>
-        </div>
-        <button class="btn-blue">START</button>
-      </section>
-
-      <section class="card border-amber">
-        <h2 class="text-amber">🎵 AKTUÁLNÍ SONGY</h2>
-        <ul class="song-list">
-          <li>
-            <span class="song-title">1. Intro (Písek)</span>
-            <span class="badge">Akordy</span>
-          </li>
-          <li>
-            <span class="song-title">2. Kovová rampa</span>
-            <span class="badge-dark">Text</span>
-          </li>
-        </ul>
-      </section>
-
-    </div>
+      </div>
   </main>
 
+  <script define:vars={{ USERS }}>
+    const loginScreen = document.getElementById('login-screen');
+    const dashboardContent = document.getElementById('dashboard-content');
+    const passwordInput = document.getElementById('band-password');
+    const loginBtn = document.getElementById('login-submit-btn');
+    const loginError = document.getElementById('login-error');
+    const welcomeUser = document.getElementById('welcome-user');
+    const logoutBtn = document.getElementById('logout-btn');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+
+    // Kontrola, zda je uživatel už přihlášen
+    function checkAuth() {
+      const loggedUser = sessionStorage.getItem('band_user');
+      if (loggedUser) {
+        if (loginScreen) loginScreen.classList.add('hidden');
+        if (dashboardContent) dashboardContent.classList.remove('hidden');
+        if (welcomeUser) welcomeUser.textContent = `Ahoj, ${loggedUser}!`;
+      } else {
+        if (loginScreen) loginScreen.classList.remove('hidden');
+        if (dashboardContent) dashboardContent.classList.add('hidden');
+      }
+    }
+
+    // Vyhodnocení hesla
+    function handleLogin() {
+      if (!passwordInput) return;
+      const password = passwordInput.value.trim().toLowerCase();
+
+      if (password in USERS) {
+        const userName = USERS[password];
+        sessionStorage.setItem('band_user', userName);
+        if (loginError) loginError.style.display = 'none';
+        passwordInput.value = "";
+        checkAuth();
+      } else {
+        if (loginError) loginError.style.display = 'block';
+        passwordInput.value = "";
+        passwordInput.focus();
+      }
+    }
+
+    // Event Listenery pro přihlášení
+    loginBtn?.addEventListener('click', handleLogin);
+    passwordInput?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleLogin();
+    });
+
+    // Odhlášení
+    logoutBtn?.addEventListener('click', () => {
+      sessionStorage.removeItem('band_user');
+      checkAuth();
+    });
+
+    // Fullscreen režim pro stage
+    fullscreenBtn?.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // Spuštění kontroly při načtení stránky
+    checkAuth();
+  </script>
 </body>
 </html>
-
-<style>
-  :root {
-    --bg-dark: #09090b;
-    --bg-card: #18181b;
-    --bg-input: #27272a;
-    --border-color: #27272a;
-    --text-main: #f4f4f5;
-    --text-muted: #a1a1aa;
-    --red: #dc2626;
-    --blue: #2563eb;
-    --amber: #d97706;
-    --green: #15803d;
-  }
-
-  html, body {
-    background: var(--bg-dark);
-    color: var(--text-main);
-    font-family: sans-serif;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  .hidden { display: none !important; }
-
-  .login-overlay {
-    position: fixed;
-    inset: 0;
-    background: var(--bg-dark);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    padding: 20px;
-  }
-  .login-card {
-    background: var(--bg-card);
-    padding: 30px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    width: 100%;
-    max-width: 360px;
-    text-align: center;
-  }
-  .login-card h1 { color: white; margin-bottom: 20px; font-size: 24px; }
-  .login-card input {
-    width: 100%;
-    padding: 12px;
-    background: var(--bg-input);
-    border: 1px solid var(--border-color);
-    color: white;
-    border-radius: 4px;
-    text-align: center;
-    font-size: 16px;
-    margin-bottom: 15px;
-  }
-  .login-card button {
-    width: 100%;
-    padding: 12px;
-    background: var(--red);
-    color: white;
-    border: none;
-    font-weight: bold;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-  }
-  .error-msg { color: var(--red); margin-top: 10px; font-size: 14px; display: none; }
-
-  .dashboard-layout {
-    background: var(--bg-dark);
-    min-height: 100vh;
-    color: var(--text-main);
-    padding: 20px;
-  }
-  .main-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 20px;
-    margin-bottom: 25px;
-    border-bottom: 1px solid var(--border-color);
-  }
-  .brand-title { font-size: 24px; font-weight: 800; color: white; }
-  .brand-sub { font-size: 14px; color: var(--text-muted); }
-  .header-actions { display: flex; gap: 10px; }
-
-  .btn-sec { background: var(--bg-card); color: white; border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 4px; cursor: pointer; }
-  .btn-ghost { background: transparent; color: var(--text-muted); border: none; cursor: pointer; padding: 8px 16px; }
-
-  .grid-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  @media (min-width: 768px) { .grid-container { grid-template-columns: repeat(2, 1fr); } }
-  @media (min-width: 1024px) { .grid-container { grid-template-columns: repeat(3, 1fr); } }
-
-  .card {
-    background: var(--bg-card);
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-height: 200px;
-  }
-  .border-red { border-top: 4px solid var(--red); }
-  .border-blue { border-top: 4px solid var(--blue); }
-  .border-amber { border-top: 4px solid var(--amber); }
-
-  .text-red { color: var(--red); font-size: 16px; margin-bottom: 15px; }
-  .text-blue { color: var(--blue); font-size: 16px; margin-bottom: 15px; }
-  .text-amber { color: var(--amber); font-size: 16px; margin-bottom: 15px; }
-
-  .widget-box { background: var(--bg-dark); padding: 15px; border-radius: 4px; border: 1px solid var(--border-color); margin-bottom: 15px; }
-  .center-text { text-align: center; }
-  
-  .date-highlight { font-size: 20px; font-weight: bold; color: white; }
-  .details { color: var(--text-muted); font-size: 14px; }
-  
-  .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .btn-green { background: var(--green); color: white; border: none; padding: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-  .btn-dark { background: var(--bg-dark); color: var(--text-muted); border: 1px solid var(--border-color); padding: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-  .btn-blue { background: var(--blue); color: white; border: none; padding: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; }
-
-  .bpm-counter { font-size: 48px; font-weight: 900; color: white; display: block; }
-  .bpm-label { font-size: 12px; color: var(--text-muted); }
-
-  .song-list { list-style: none; }
-  .song-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--bg-dark);
-    padding: 12px;
-    border-radius: 4px;
-    margin-bottom: 8px;
-    border: 1px solid var(--border-color);
-  }
-  .song-title { color: white; font-weight: 500; }
-  .badge { background: rgba(217, 119, 6, 0.1); color: var(--amber); padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-  .badge-dark { background: var(--border-color); color: var(--text-muted); padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-
-  @media (max-width: 500px) {
-    .main-header { flex-direction: column; text-align: center; gap: 15px; }
-    .header-actions { width: 100%; }
-    .header-actions button { flex: 1; }
-  }
-</style>
-
-<script>
-  // 1. Definujeme si TypeScript rozhraní pro uživatele
-  interface UserDatabase {
-    [password: string]: string;
-  }
-
-  // 2. Databáze hesel a jmen (tady si definuj kluky z kapely a jejich hesla)
-  const USERS: UserDatabase = {
-    "petrm": "Petr Maišaidr (Kytara)",
-    "jank": "Honza Kolář (Mandolína)",
-    "janan": "Jana Novotná (Housle)",
-    "zuzkab": "Zuzana Bartoňová (Zpěv)",
-    "zbynekb": "Zbyněk Bartoň (Banjo)",
-    "martink": "Martin Král (Kontrabas)"
-  };
-
-  // 3. Selektory s TypeScript typováním
-  const loginScreen = document.getElementById('login-screen') as HTMLDivElement | null;
-  const dashboardContent = document.getElementById('dashboard-content') as HTMLTextAreaElement | null;
-  const passwordInput = document.getElementById('password-input') as HTMLInputElement | null;
-  const loginBtn = document.getElementById('login-btn') as HTMLButtonElement | null;
-  const loginError = document.getElementById('login-error') as HTMLParagraphElement | null;
-  const logoutBtn = document.getElementById('logout-btn') as HTMLButtonElement | null;
-  const fullscreenBtn = document.getElementById('fullscreen-btn') as HTMLButtonElement | null;
-  const userWelcome = document.getElementById('user-welcome') as HTMLElement | null;
-
-  function checkAuth(): void {
-    const savedUser = sessionStorage.getItem('band_user');
-    if (savedUser) {
-      if (loginScreen) loginScreen.style.display = 'none';
-      if (dashboardContent) dashboardContent.classList.remove('hidden');
-      if (userWelcome) userWelcome.innerText = savedUser;
-    } else {
-      if (loginScreen) loginScreen.style.display = 'flex';
-      if (dashboardContent) dashboardContent.classList.add('hidden');
-    }
-  }
-
-  loginBtn?.addEventListener('click', () => {
-    if (!passwordInput) return;
-    
-    const password = passwordInput.value;
-    
-    // TypeScript bezpečně zkontroluje, zda heslo existuje v naší mapě
-    if (password in USERS) {
-      const userName = USERS[password];
-      sessionStorage.setItem('band_user', userName);
-      if (loginError) loginError.style.display = 'none';
-      passwordInput.value = "";
-      checkAuth();
-    } else {
-      if (loginError) loginError.style.display = 'block';
-      passwordInput.value = "";
-    }
-  });
-
-  passwordInput?.addEventListener('keypress', (e: KeyboardEvent) => {
-    if (e.key === 'Enter') loginBtn?.click();
-  });
-
-  logoutBtn?.addEventListener('click', () => {
-    sessionStorage.removeItem('band_user');
-    checkAuth();
-  });
-
-  fullscreenBtn?.addEventListener('click', () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch((err: Error) => {
-        alert(`Chyba fullscreenu: ${err.message}`);
-      });
-    } else {
-      document.exitFullscreen();
-    }
-  });
-
-  // Prvotní kontrola při načtení stránky
-  checkAuth();
-</script>

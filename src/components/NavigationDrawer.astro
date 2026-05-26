@@ -1,0 +1,266 @@
+---
+/* src/components/NavigationDrawer.astro */
+
+const pathname = new URL(Astro.request.url).pathname;
+const currentPath = pathname.replace(/\/$/, "") || "/";
+const isActive = (path: string) => {
+  if (path === 'board') return currentPath === "/" || currentPath.includes('board');
+  return currentPath.includes(path);
+};
+---
+
+<style is:global>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+  /* Zrychlené pulzování textu (0.3s) */
+  @keyframes pulse-pink { 0%, 100% { color: #f00; text-shadow: 0 0 10px #f00; } 50% { color: #b00; text-shadow: none; } }
+  @keyframes pulse-orange { 0%, 100% { color: #f80; text-shadow: 0 0 10px #f80; } 50% { color: #b50; text-shadow: none; } }
+  @keyframes pulse-yellow { 0%, 100% { color: #ff0; text-shadow: 0 0 10px #ff0; } 50% { color: #bb0; text-shadow: none; } }
+  @keyframes pulse-green { 0%, 100% { color: #6f0; text-shadow: 0 0 10px #6f0; } 50% { color: #4a0; text-shadow: none; } }
+  @keyframes pulse-blue { 0%, 100% { color: #0ff; text-shadow: 0 0 10px #0ff; } 50% { color: #0aa; text-shadow: none; } }
+  @keyframes pulse-purple { 0%, 100% { color: #e0f; text-shadow: 0 0 10px #e0f; } 50% { color: #a0a; text-shadow: none; } }
+  @keyframes pulse-magenta { 0%, 100% { color: #fff; text-shadow: 0 0 10px #fff; } 50% { color: #aaa; text-shadow: none; } }
+
+  .b-pink.blink-effect { animation: pulse-pink 0.3s ease-in-out 3; }
+  .b-orange.blink-effect { animation: pulse-orange 0.3s ease-in-out 3; }
+  .b-yellow.blink-effect { animation: pulse-yellow 0.3s ease-in-out 3; }
+  .b-green.blink-effect { animation: pulse-green 0.3s ease-in-out 3; }
+  .b-blue.blink-effect { animation: pulse-blue 0.3s ease-in-out 3; }
+  .b-purple.blink-effect { animation: pulse-purple 0.3s ease-in-out 3; }
+  .b-magenta.blink-effect { animation: pulse-magenta 0.3s ease-in-out 3; }
+</style>
+
+<div id="right-drawer" class="side-drawer collapsed">
+  <div class="drawer-handle" id="drawer-toggle">
+    <div class="dots-container">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+  </div>
+
+  <div class="drawer-content metal-chassis">
+    <span class="rivet axial-top"></span>
+    <span class="rivet axial-bottom"></span>
+    <div class="nav-group">
+      <a href="/board" class="btn-nav b-pink active">Board</a>
+      <a href="#" class="btn-nav b-orange">Stage</a>
+      <a href="#" class="btn-nav b-yellow">Studio</a>
+      <a href="#" class="btn-nav b-green">Practice</a>
+      <a href="#" class="btn-nav b-blue">Library</a>
+      <a href="#" class="btn-nav b-purple">Agenda</a>
+      <a href="#" class="btn-nav b-magenta">Settings</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const drawer = document.getElementById('right-drawer');
+  const toggle = document.getElementById('drawer-toggle');
+  const buttons = document.querySelectorAll('.btn-nav');
+  const dots = document.querySelectorAll('.dot');
+  const dotColors = ['#ff0000', '#ff8800', '#ffff00', '#6fff00', '#00f7ff', '#ee00ff', '#ffffff'];
+
+  // Funkce pro detekci, zda je sekce Board aktivní
+  const isBoardActive = () => {
+  const boardBtn = Array.from(buttons).find(b => b.textContent.trim() === 'Board');
+     return boardBtn?.classList.contains('active');
+  };
+
+  const activateDot = (index) => {
+    dots.forEach((d) => { 
+      d.classList.remove('active'); 
+      d.style.backgroundColor = '#222'; 
+      d.style.boxShadow = 'inset 0 1px 2px #000, 0 1px 1px rgba(255,255,255,0.05)'; 
+    });
+    const activeDot = dots[index];
+    if (activeDot && dotColors[index]) {
+      activeDot.classList.add('active');
+      activeDot.style.backgroundColor = dotColors[index];
+      activeDot.style.boxShadow = `0 0 12px ${dotColors[index]}, 0 0 24px ${dotColors[index]}, inset 0 0 2px #fff`;
+    }
+  };
+
+  // --- START SYSTÉMU ---
+  window.addEventListener('DOMContentLoaded', () => {
+    activateDot(0);
+    
+    // Pokud startujeme na Boardu, šuplík vysuneme
+    if (isBoardActive()) {
+      setTimeout(() => {
+        drawer?.classList.remove('collapsed');
+      }, 500);
+    }
+  });
+
+  // OVLÁDÁNÍ MADLA (LOCK NA BOARDU)
+  toggle?.addEventListener('click', (e) => { 
+    e.stopPropagation(); 
+    
+    // ZÁMEK: Pokud jsme na Boardu, kliknutí na madlo šuplík nezasune
+    if (isBoardActive()) {
+      return;
+    }
+
+    drawer?.classList.toggle('collapsed'); 
+  });
+
+  drawer?.addEventListener('click', (e) => e.stopPropagation());
+
+  buttons.forEach((btn, index) => {
+    btn.addEventListener('click', (e) => {
+      if (btn.classList.contains('active')) {
+        e.preventDefault();
+        return;
+      }
+
+      e.preventDefault(); 
+      buttons.forEach(b => { b.classList.remove('active'); b.classList.remove('blink-effect'); });
+      
+      btn.classList.add('blink-effect');
+      
+      setTimeout(() => {
+        btn.classList.remove('blink-effect');
+        btn.classList.add('active'); 
+        activateDot(index);
+
+        // Pokud nově zvolená sekce není Board, šuplík uklidíme
+        if (btn.textContent.trim() !== 'Board') {
+          setTimeout(() => { 
+            drawer?.classList.add('collapsed'); 
+          }, 200); 
+        } else {
+          // Pokud jsme se vrátili na Board, ujistíme se, že je otevřený
+          drawer?.classList.remove('collapsed');
+        }
+      }, 1000);
+    });
+  });
+</script>
+
+<style>
+.side-drawer { 
+    position: fixed; 
+    right: 0; 
+    top: 0; 
+    height: 100vh; 
+    display: flex; 
+    align-items: center; 
+    z-index: 9999; 
+    transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1); 
+  }
+
+  .side-drawer.collapsed { 
+    transform: translateX(calc(100% - 24px)); 
+  }  
+
+  .drawer-handle { 
+    width: 24px; min-height: 120px; background: linear-gradient(90deg, #222, #111); 
+    border: 1px solid #444; border-right: none; border-radius: 10px 0 0 10px; 
+    cursor: pointer; display: flex; justify-content: center; align-items: center; 
+    box-shadow: -5px 0 15px rgba(0,0,0,0.5); z-index: 2; align-self: center;
+  }
+
+  /* Vizuální indikace zamčeného šuplíku na Boardu */
+  .side-drawer:not(.collapsed) .drawer-handle:has(+ .metal-chassis .b-pink.active) {
+    cursor: default;
+  }
+  /* Alternativní selektor pro starší prohlížeče/jistotu přes JS stav */
+  #right-drawer:not(.collapsed) .btn-nav.b-pink.active ~ .drawer-handle {
+     /* Toto v CSS funguje jen pro sourozence dál v DOMu, 
+        takže to řešíme spíše logikou v JS výše */
+  }
+
+  .dots-container { display: flex; flex-direction: column; gap: 8px; }
+  
+  .dot { 
+    width: 6px; height: 6px; 
+    background-color: #222; 
+    border-radius: 50%; 
+    border: 1px solid #676767; 
+    transition: all 0.3s ease; 
+    box-shadow: inset 0 1px 2px #000, 0 1px 1px rgba(255,255,255,0.05);
+  }
+  
+  .dot.active { transform: scale(1.4); }
+
+  .metal-chassis { 
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%), repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.01) 3px); 
+    width: 210px; 
+    padding: 45px 30px; 
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-sizing: border-box;
+    border: 2px solid #333; border-right: none; border-radius: 20px 0 0 20px; 
+    box-shadow: -30px 0 60px rgba(0,0,0,1); 
+    position: relative; 
+  }
+
+  .nav-group { display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; }
+
+  .rivet { 
+    /* Rozměry sjednoceny na ty hezčí */
+    width: 10px; 
+    height: 10px; 
+    
+    /* Přesná kopie gradientu z board.astro pro ten správný odlesk */
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #aaaaaa 20%, #222222 80%, #000000 100%); 
+    
+    border-radius: 50%; 
+    
+    /* Jemnější okraj, aby nýt nepůsobil jako kreslený */
+    border: 0.5px solid rgba(255,255,255,0.1); 
+    
+    /* Silnější stín pro hloubku */
+    box-shadow: 2px 3px 5px rgba(0,0,0,0.9); 
+    
+    position: absolute; 
+    left: 50%; 
+    transform: translateX(-50%); 
+  }
+
+  /* Pozice zůstávají stejné */
+  .axial-top { top: 15px; } 
+  .axial-bottom { bottom: 15px; }
+  
+  .btn-nav {
+    background: linear-gradient(180deg, #3a3a3a 0%, #1c1c1c 60%, #111 100%);
+    color: #555; border: 1px solid #000; 
+    width: 170px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 26px; font-weight: 500; text-transform: capitalize; letter-spacing: 2px;
+    text-decoration: none; border-radius: 4px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; position: relative; top: 0; box-shadow: 0 3px 0 #000, 0 5px 10px rgba(0,0,0,0.5);
+    padding: 8px 0; transition: background 0.2s ease, top 0.1s ease, color 0.2s ease;
+    text-shadow: none !important;
+    margin: 0;
+  }
+
+  .btn-nav:hover:not(.active) { 
+    background: linear-gradient(180deg, #1c1c1c 0%, #3a3a3a 50%, #1c1c1c 100%) !important;
+    color: #999;
+    text-shadow: none !important;
+  }
+  
+  .b-pink:hover:not(.active)    { color: #b00; }
+  .b-orange:hover:not(.active)  { color: #b50; }
+  .b-yellow:hover:not(.active)  { color: #bb0; }
+  .b-green:hover:not(.active)   { color: #4a0; }
+  .b-blue:hover:not(.active)    { color: #0aa; }
+  .b-purple:hover:not(.active)  { color: #a0a; }
+  .b-magenta:hover:not(.active) { color: #aaa; }
+
+  .btn-nav.active { 
+    top: 2px; background: linear-gradient(180deg, #111 0%, #1c1c1c 40%, #3a3a3a 100%) !important; 
+    box-shadow: 0 1px 0 #000, inset 0 2px 5px rgba(0,0,0,0.7); 
+    pointer-events: none;
+    cursor: default;
+  }
+  
+  .b-pink.active    { color: #f00 !important; text-shadow: 0 0 15px #f00 !important; }
+  .b-orange.active  { color: #f80 !important; text-shadow: 0 0 15px #f80 !important; }
+  .b-yellow.active  { color: #ff0 !important; text-shadow: 0 0 15px #ff0 !important; }
+  .b-green.active   { color: #6f0 !important; text-shadow: 0 0 15px #6f0 !important; }
+  .b-blue.active    { color: #0ff !important; text-shadow: 0 0 15px #0ff !important; }
+  .b-purple.active  { color: #e0f !important; text-shadow: 0 0 15px #e0f !important; }
+  .b-magenta.active { color: #fff !important; text-shadow: 0 0 15px #fff !important; }
+</style>

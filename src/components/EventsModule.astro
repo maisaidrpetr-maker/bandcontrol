@@ -1,0 +1,137 @@
+---
+import { getCollection } from 'astro:content';
+
+const allEvents = await getCollection('events');
+const now = new Date();
+now.setHours(0, 0, 0, 0);
+
+const sortedAll = allEvents.sort((a, b) => a.data.date.getTime() - b.data.date.getTime());
+
+const nextEventIndex = sortedAll.findIndex(event => {
+  const eventDate = new Date(event.data.date);
+  eventDate.setHours(0, 0, 0, 0);
+  return eventDate >= now;
+});
+
+const highlightIndex = nextEventIndex !== -1 ? nextEventIndex : sortedAll.length - 1;
+
+const bottomEvents = sortedAll.slice(0, highlightIndex); 
+const middleEvents = sortedAll.slice(highlightIndex, highlightIndex + 1);
+const topEvents = sortedAll.slice(highlightIndex + 1);
+
+const formatDate = (date: Date) => {
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  return `${day}. ${month}.`;
+};
+
+const getEventColor = (event: any) => event.data.alert ? '#ff4500' : '#b87333';
+---
+
+<div class="sidebar-v-unit">
+  <div class="v-plate">
+    <div class="engraved-label">Events</div>
+    
+    <div class="v-window top-window">
+      <div class="events-list is-future">
+        {topEvents.reverse().map(event => (
+          <div class="event-item">
+            <span class="event-type" style={`color: ${getEventColor(event)}`}>{event.data.type}</span>
+            <span class="event-date" style={`color: ${getEventColor(event)}`}>{formatDate(event.data.date)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="bridge-gap"></div>
+
+    <div class="v-window highlight-window">
+      <div class="events-list">
+        {middleEvents.map(event => (
+          <div class="event-item">
+            <span class="event-type" style="color: #e0e0e0;">{event.data.type}</span>
+            <span class="event-date" style="color: #e0e0e0;">{formatDate(event.data.date)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="bridge-gap"></div>
+
+    <div class="v-window bottom-window">
+      <div class="events-list is-history">
+        {/* Seřazeno tak, aby nejnovější historie byla nahoře u můstku */}
+        {bottomEvents.reverse().map(event => (
+          <div class="event-item is-past">
+            <span class="event-type">{event.data.type}</span>
+            <span class="event-date">{formatDate(event.data.date)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="rivet t-l"></div>
+    <div class="rivet t-r"></div>
+  </div>
+</div>
+
+<style>
+  .sidebar-v-unit { width: 100%; display: flex; justify-content: center; padding: 10px 0; }
+
+  .v-plate {
+    width: 100%; height: auto; min-height: 450px;
+    background: linear-gradient(135deg, #2c2c2c 0%, #484848 25%, #1a1a1a 50%, #424242 75%, #222222 100%);
+    border: 1px solid #000; border-radius: 12px;
+    position: relative; padding: 50px 12px 14px 12px;
+    box-sizing: border-box; display: flex; flex-direction: column;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.8), inset 0px 1px 0px rgba(255, 255, 255, 0.4);
+  }
+
+  .engraved-label {
+    position: absolute; top: 12px; left: 0; right: 0;
+    text-align: center; color: #b87333; font-family: sans-serif;
+    font-size: 1.5rem; font-weight: 550; 
+    text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.2), 0px -1px 2px rgba(0, 0, 0, 0.9);
+  }
+
+  .v-window {
+    width: 100%; background: #000; border-radius: 9px;
+    box-shadow: inset 6px 6px 15px rgba(0, 0, 0, 1), 0px 2px 0px rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(0, 0, 0, 0.9); 
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+
+  .top-window { flex: 1; padding: 6px 0; justify-content: flex-end; min-height: 60px; }
+  .highlight-window { flex: 0 0 auto; height: 30px; justify-content: center; }
+  .bottom-window { height: 225px; padding: 6px 0; justify-content: flex-start; }
+  
+  .bridge-gap { height: 14px; flex-shrink: 0; }
+  .events-list { width: 100%; display: flex; flex-direction: column; }
+  
+  /* OPRAVA: Normální směr column, nejnovější historie nahoře */
+  .is-history { flex-direction: column !important; }
+
+  .event-item {
+    display: flex; justify-content: space-between; padding: 0px 15px;
+    font-family: sans-serif; height: 22px; align-items: center; position: relative;
+    font-size: 1.1rem;
+  }
+
+  .event-date { font-weight: bold; white-space: nowrap; }
+
+  .event-item.is-past { opacity: 1; }
+  .event-item.is-past .event-type, 
+  .event-item.is-past .event-date { 
+    color: #666 !important; 
+  }
+
+  .rivet {
+    position: absolute; width: 9px; height: 9px;
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #aaaaaa 20%, #222222 80%, #000000 100%);
+    box-shadow: 1px 2px 3px rgba(0,0,0,0.8);
+    border-radius: 50%;
+  }
+  .t-l { top: 12px; left: 12px; } .t-r { top: 12px; right: 12px; }
+</style>

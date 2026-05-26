@@ -1,0 +1,273 @@
+---
+// src/components/SplashScreen.astro
+import CyberGlow from './CyberGlow.astro';
+---
+
+<div class="splash-screen" id="global-splash-wrapper">
+  <div class="content-box" id="global-content-box">
+    
+    <div class="logo-wrapper">
+      <CyberGlow />
+      
+      <img src="/images/io4.png" alt="BandControl Logo" class="splash-logo" />
+      
+      <div id="chip-ui" class="chip-interface">
+        
+        <div id="fake-input-field" class="custom-input-field">
+          <input 
+            type="password" 
+            id="password-input"
+            autocomplete="off"
+            maxlength="12"
+            placeholder=""
+          />
+        </div>
+        
+        <button type="button" id="submit-btn" class="engraved-submit">
+          RUN
+        </button>
+        
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const realInput = document.getElementById('password-input') as HTMLInputElement;
+  const globalWrapper = document.getElementById('global-splash-wrapper') as HTMLDivElement;
+  const contentBox = document.getElementById('global-content-box') as HTMLDivElement;
+  const fakeField = document.getElementById('fake-input-field') as HTMLDivElement;
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+  const glowElement = document.getElementById('cyber-glow-element');
+  const chipUi = document.getElementById('chip-ui');
+
+  // Automatický focus při načtení
+  if (realInput) {
+    realInput.focus();
+  }
+
+  // Kliknutí na pozadí vrátí focus do skrytého pole
+  globalWrapper?.addEventListener('click', () => {
+    if (realInput && !realInput.disabled) {
+      realInput.focus();
+    }
+  });
+
+  // Zabránění ztráty focusu při kliknutí na RUN
+  submitBtn?.addEventListener('mousedown', (e) => {
+    e.preventDefault(); 
+  });
+
+  // Hlavní odesílací logika
+  submitBtn?.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    if (!realInput || !glowElement || !chipUi || !fakeField || !contentBox) return;
+
+    const enteredPassword = realInput.value;
+    realInput.disabled = true;
+    submitBtn.disabled = true;
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: enteredPassword })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // 1. KROK: Okamžitá vizuální změna na čipu (stále v okně)
+        glowElement.className = 'glow-under green';
+        chipUi.innerHTML = `<div class="status-display success">SYSTEM ACTIVE</div>`;
+        
+        // 2. KROK: Počkáme 1.5 vteřiny, než si uživatel užije úspěch
+        setTimeout(() => {
+          // 3. KROK: Plynulé skrytí celého obsahu do černé tmy
+          contentBox.style.opacity = '0';
+
+          // Pouhá mikrosekundová pojistka, aby stihla doběhnout průhlednost
+          setTimeout(() => {
+            // 4. KROK: Přechod na board, kde se hned odpálí čistý fullscreen
+            window.location.href = '/board';
+          }, 150);
+        }, 1500);
+
+      } else {
+        triggerErrorState();
+      }
+
+    } catch (error) {
+      console.error("API Error:", error);
+      triggerErrorState();
+    }
+
+    // Chybový stav (Špatné heslo)
+    function triggerErrorState() {
+      if (!realInput || !glowElement || !submitBtn || !fakeField) return;
+      
+      glowElement.className = 'glow-under blink-red';
+      submitBtn.innerText = 'LOGIN ERROR';
+      submitBtn.classList.add('text-error');
+      fakeField.classList.add('field-error');
+
+      setTimeout(() => {
+        glowElement.className = 'glow-under off';
+        submitBtn.innerText = 'RUN';
+        submitBtn.classList.remove('text-error');
+        fakeField.classList.remove('field-error');
+        
+        realInput.disabled = false;
+        submitBtn.disabled = false;
+        realInput.value = '';
+        realInput.focus();
+      }, 2000);
+    }
+  });
+
+  // Odesílání klávesou Enter
+  realInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      submitBtn?.click();
+    }
+  });
+</script>
+
+<style>
+  /* Fix proti ošklivým stylům automatického doplňování hesel */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #3a3a3a !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  .splash-screen {
+    position: fixed;
+    inset: 0;
+    background-color: #000;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    cursor: text;
+  }
+
+  /* Plynulá animace opacity pro odchod do tmy */
+  .content-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    transition: opacity 0.2s ease-in-out;
+    opacity: 1;
+  }
+
+  /* Logo wrapper musí držet striktně velikost obrázku, aby se od něj mohlo zaměřovat */
+  .logo-wrapper {
+    position: relative;
+    display: inline-flex; /* Změna z flex na inline-flex, aby wrapper neobtékal do šířky */
+    justify-content: center;
+    align-items: center;
+    max-width: 600px;
+    width: 90%;
+  }
+
+  /* Obrázek už nemá width: 90% sám o sobě, tu má teď celý wrapper */
+  .splash-logo {
+    width: 100%;
+    height: auto;
+    position: relative;
+    z-index: 2;
+    display: block;
+  }
+
+  /* Šuplík s heslem je teď absolutně fixovaný k rozměrům obrázku, takže NIKDY neuhne */
+  .chip-interface {
+    position: absolute;
+    bottom: 18%; /* Tohle procento určuje výšku rýhy na čipu */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 280px;
+  }
+
+  .custom-input-field {
+    position: relative;
+    width: 180px; 
+    height: 32px;
+    background: #0a0a0a !important;
+    border: 1px solid #161616;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.95);
+    transition: border-color 0.3s ease;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .custom-input-field.field-error {
+    border-color: rgba(255, 0, 0, 0.5);
+  }
+
+  #password-input {
+    width: 100%;
+    height: 100%;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    padding: 0 12px;
+    box-sizing: border-box;
+    color: #3a3a3a !important; 
+    font-size: 20px; 
+    letter-spacing: 5px; 
+    font-family: monospace;
+    caret-color: transparent !important; 
+    text-align: left;
+  }
+
+  #password-input:disabled {
+    color: #3a3a3a !important;
+  }
+
+  .engraved-submit {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: #2b2b2b;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+  }
+
+  .engraved-submit:hover:not(:disabled) {
+    color: #444;
+  }
+
+  .text-error {
+    color: #ff3333 !important;
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+  }
+
+  .status-display.success {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: #33ff33;
+    text-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
+    white-space: nowrap;
+  }
+</style>

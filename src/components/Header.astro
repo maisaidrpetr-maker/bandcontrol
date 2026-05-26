@@ -1,0 +1,176 @@
+---
+/* src/components/Header.astro */
+---
+<header class="rack-header">
+  <div class="controls">
+    <button id="fullscreen-btn" class="rack-button" title="Fullscreen Režim">
+      <span class="led"></span>
+      <span class="label">FULLSCREEN</span>
+    </button>
+  </div>
+
+  <div class="clock-display">
+    <div id="header-date" class="container"></div>
+    <div class="main-spacer"></div>
+    <div id="header-time" class="container"></div>
+  </div>
+</header>
+
+<script>
+  const btn = document.getElementById('fullscreen-btn');
+  btn?.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => console.error(err));
+    } else {
+      document.exitFullscreen();
+    }
+  });
+
+  function updateClock() {
+    const now = new Date();
+    const dateEl = document.getElementById('header-date');
+    const timeEl = document.getElementById('header-time');
+
+    const createFixedChars = (str) => {
+      return str.split('').map(char => {
+        let type = 'num';
+        let specific = '';
+        if (char === '.') { type = 'sep'; specific = 'dot'; }
+        else if (char === ':') { type = 'sep'; specific = 'colon'; }
+        return `<span class="char ${type} ${specific}">${char}</span>`;
+      }).join('');
+    };
+
+    if (dateEl) {
+      const d = String(now.getDate()).padStart(2, '0');
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const y = now.getFullYear();
+      dateEl.innerHTML = createFixedChars(`${d}.${m}.${y}`);
+    }
+    if (timeEl) {
+      const timeStr = now.toLocaleTimeString('cs-CZ', {
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+      timeEl.innerHTML = createFixedChars(timeStr);
+    }
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  document.addEventListener('fullscreenchange', () => {
+    const led = document.querySelector('.led');
+    document.fullscreenElement ? led?.classList.add('active') : led?.classList.remove('active');
+  });
+</script>
+
+<style>
+  @font-face {
+    font-family: 'Segment7';
+    src: url('/fonts/LED_Dot-Matrix.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  .rack-header {
+    height: var(--header-height, 60px);
+    background: linear-gradient(180deg, #444 0%, #151515 40%, #0a0a0a 100%);
+    border-bottom: 4px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    position: relative;
+    z-index: 100;
+  }
+
+  .clock-display {
+    color: #08d1ce;
+    font-family: 'Segment7', monospace;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    background: #000;
+    padding: 0px 0px;
+    border-radius: 4px;
+    border: 1px solid #222;
+    box-shadow: inset 0 0 15px rgba(0,0,0,1);
+    text-shadow: 0 0 10px rgba(8, 209, 206, 0.5);
+  }
+
+  /* Číslice - pevná šířka pro stabilitu */
+  :global(.char.num) {
+    display: inline-block;
+    width: 18px;
+    text-align: center;
+  }
+
+  /* Společný základ pro oddělovače */
+  :global(.char.sep) {
+    display: inline-block;
+    position: relative;
+    opacity: 0.8;
+    font-size: 1em;
+  }
+
+  /* DVOJTEČKA V ČASE */
+  :global(.char.colon) {
+    width: px;
+    text-align: center;
+    top: -3px; 
+  }
+
+  /* TEČKA V DATU - JEMNÉ LADĚNÍ */
+  :global(.char.dot) {
+    width: 10px;      /* Šířka boxu vytváří mezeru vpravo */
+    text-align: left; /* Tečka se drží vlevo */
+    
+    /* FINÁLNÍ ÚPRAVA: margin a top */
+    margin-left: -4px; /* O 2px doprava oproti minule */
+    top: 0px;         /* O 3px nahoru oproti minule */
+  }
+
+  .container {
+    display: flex;
+    align-items: center;
+  }
+
+  .main-spacer {
+    width: 2px;
+    height: 30px;
+    background: #333;
+    margin: 0 15px;
+    flex-shrink: 0;
+  }
+
+  .rack-button {
+    background: #222;
+    border: 1px solid #444;
+    border-bottom: 3px solid #000;
+    color: #888;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .led {
+    width: 8px;
+    height: 8px;
+    background: rgb(100, 20, 20);
+    border-radius: 50%;
+    transition: all 0.3s;
+  }
+
+  .led.active {
+    background: rgb(81, 237, 73);
+    box-shadow: 0 0 10px rgb(81, 237, 73);
+  }
+
+  .label { text-shadow: 0 1px 0 #000; }
+</style>

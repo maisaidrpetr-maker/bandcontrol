@@ -1,0 +1,105 @@
+---
+// src/pages/dashboard.astro
+import { USERS } from '../data/users.js';
+import NavigationDrawer from '../components/NavigationDrawer.astro';
+import Header from '../components/Header.astro';
+import OverviewModule from '../components/OverviewModule.astro';
+import EventsModule from '../components/EventsModule.astro';
+---
+
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BandControl</title>
+  <style>
+    :root {
+      --bg-dark: #050505;
+      --border-color: #27272a;
+      --text-main: #f4f4f5;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: system-ui, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .dashboard-layout {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modules-rack-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      padding: 24px;
+      align-items: flex-start;
+    }
+
+    .compact-hardware-box {
+      width: 250px;
+      flex: 0 0 250px;
+    }
+
+    /* Responzivní úprava pro mobily */
+    @media (max-width: 600px) {
+      .modules-rack-row { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <script>
+    if (!sessionStorage.getItem('jePrihlasen')) {
+      window.location.href = '/login';
+    }
+  </script>
+
+  <main id="dashboard-content" class="dashboard-layout">
+    <NavigationDrawer />
+    <Header />
+
+    <div class="modules-rack-row">
+      <div class="compact-hardware-box">
+        <EventsModule />
+      </div>
+      <div class="compact-hardware-box">
+        <OverviewModule />
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Funkce pro zobrazení jména uživatele v headeru
+    function updateHeaderWithUser() {
+      const loggedUser = sessionStorage.getItem('band_user');
+      const hwName = document.getElementById('header-user-name');
+      
+      if (loggedUser && hwName) {
+        // Zobrazíme celé uložené jméno (např. "Petr Maišaidr (Kytara)")
+        hwName.textContent = loggedUser;
+      }
+    }
+
+    // Odhlášení
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (target && target.id === 'logout-btn') {
+        sessionStorage.removeItem('band_user');
+        sessionStorage.removeItem('jePrihlasen');
+        window.location.href = '/login';
+      }
+    });
+
+    updateHeaderWithUser();
+  </script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+---
+// src/pages/splashscreen.astro
+---
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <title>Start | BandControl</title>
+    <style>
+      body {
+        margin: 0;
+        background-color: #050505;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .logo {
+        width: 300px;
+        animation: fadeIn 2s ease-in;
+      }
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+  </head>
+  <body>
+    <img src="/bms.png" alt="Logo" class="logo" />
+
+    <script>
+      // Přesměruje tě na /login, protože tak jsme si pojmenovali soubor Login.astro
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 2500);
+    </script>
+  </body>
+</html>

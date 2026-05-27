@@ -1,200 +1,37 @@
 ---
 // src/pages/index.astro
-import SplashScreen from '../components/SplashScreen.astro';
-import NavigationDrawer from '../components/NavigationDrawer.astro';
-import Header from '../components/Header.astro';
-import OverviewModule from '../components/OverviewModule.astro';
-import EventsModule from '../components/EventsModule.astro';
-
-interface UserDatabase {
-  [key: string]: string;
-}
-
-const USERS: UserDatabase = {
-  "petrm": "Petr Maišaidr (Kytara)",
-  "jank": "Honza Kolář (Mandolína)",
-  "janan": "Jana Novotná (Housle)",
-  "zuzkab": "Zuzana Bartoňová (Zpěv)",
-  "zbynekb": "Zbyněk Bartoň (Banjo)",
-  "martink": "Martin Král (Kontrabas)"
-};
 ---
-
 <html lang="cs">
-<head>
-  <meta charset="utf-8" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BandControl</title>
-  <style>
-    :root {
-      --bg-dark: #050505;
-      --border-color: #27272a;
-      --text-main: #f4f4f5;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      font-family: system-ui, sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* --- LOGIN SYSTEM --- */
-    .login-container {
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-    .login-card {
-      background: #141416;
-      border: 1px solid #27272a;
-      padding: 40px;
-      border-radius: 8px;
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
-    }
-    .login-input {
-      width: 100%;
-      background: #000;
-      border: 1px solid #333;
-      padding: 12px;
-      color: #fff;
-      margin: 20px 0;
-      font-size: 16px;
-      text-align: center;
-    }
-    .btn-primary {
-      width: 100%;
-      background: #27272a;
-      color: #fff;
-      border: 1px solid #3f3f46;
-      padding: 12px;
-      cursor: pointer;
-    }
-
-    /* --- DASHBOARD LAYOUT --- */
-    .dashboard-layout {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .modules-rack-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 24px;
-      padding: 24px;
-      align-items: flex-start;
-    }
-
-    /* 🛠️ MAXIMÁLNÍ ZÚŽENÍ MODULŮ PODLE TVÉHO PŘÁNÍ */
-    .compact-hardware-box {
-      width: 250px;
-      flex: 0 0 250px;
-    }
-
-    .hidden { display: none !important; }
-
-    /* --- NAV DRAWER RIGHT OVERRIDE --- */
-    #drawer-handle, .drawer-hardware-handle {
-      left: auto !important; right: 0 !important;
-      border-left: 1px solid var(--border-color) !important;
-      border-right: none !important;
-      border-radius: 8px 0 0 8px !important;
-    }
-    #drawer-handle.open, .drawer-hardware-handle.open { right: 300px !important; left: auto !important; }
-    #navigation-drawer, .nav-drawer { left: auto !important; right: -300px !important; border-left: 1px solid var(--border-color) !important; }
-    #navigation-drawer.open, .nav-drawer.open { right: 0 !important; left: auto !important; }
-  </style>
-</head>
-<body>
-  <SplashScreen />
-
-  <div id="login-screen" class="login-container">
-    <div class="login-card">
-      <h1 style="letter-spacing: 4px; font-size: 18px; color: #52525b; margin-bottom: 10px;">BandControl</h1>
-      <form id="login-form" onsubmit="return false;">
-        <input type="password" id="band-password" class="login-input" placeholder="Insert Password" />
-        <button type="submit" id="login-submit-btn" class="btn-primary">Enter System</button>
-      </form>
-      <p id="login-error" class="hidden" style="color: #ef4444; margin-top: 15px; font-size: 12px;">ACCESS DENIED</p>
-    </div>
-  </div>
-
-  <main id="dashboard-content" class="dashboard-layout hidden">
-    <NavigationDrawer />
-
-    <Header />
-
-    <div class="modules-rack-row">
-      <div class="compact-hardware-box">
-        <EventsModule />
-      </div>
-      <div class="compact-hardware-box">
-        <OverviewModule />
-      </div>
-    </div>
- </main>
-
-  <script define:vars={{ USERS }}>
-    const loginScreen = document.getElementById('login-screen');
-    const dashboardContent = document.getElementById('dashboard-content');
-    const passwordInput = document.getElementById('band-password');
-    const loginBtn = document.getElementById('login-submit-btn');
-    const loginError = document.getElementById('login-error');
-    const logoutBtn = document.getElementById('logout-btn');
-
-    function checkAuth() {
-      const loggedUser = sessionStorage.getItem('band_user');
-      if (loggedUser) {
-        if (loginScreen) loginScreen.classList.add('hidden');
-        if (dashboardContent) dashboardContent.classList.remove('hidden');
-        
-        const parts = loggedUser.split(' (');
-        const name = parts[0];
-        const role = parts[1] ? parts[1].replace(')', '') : 'MEMBER';
-
-        /* 🛠️ SPÁROVANÁ IDČKA S NOVÝM HEADEREM */
-        const hwName = document.getElementById('header-user-name');
-        const hwRole = document.getElementById('header-user-role');
-        if (hwName) hwName.textContent = name;
-        if (hwRole) hwRole.textContent = role;
-      } else {
-        if (loginScreen) loginScreen.classList.remove('hidden');
-        if (dashboardContent) dashboardContent.add('hidden');
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        margin: 0;
+        background-color: #050505;
+        height: 100vh;
+        /* Flexbox pro vystředění na všech zařízeních */
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
-    }
-
-    function handleLogin() {
-      if (!passwordInput) return;
-      const password = passwordInput.value.trim().toLowerCase();
-      
-      if (password in USERS) {
-        sessionStorage.setItem('band_user', USERS[password]);
-        if (loginError) loginError.classList.add('hidden');
-        checkAuth();
-      } else {
-        if (loginError) loginError.classList.remove('hidden');
-        passwordInput.value = "";
-        passwordInput.focus();
+      .logo {
+        /* Responzivní šířka: obrázek nikdy nepřesáhne 80 % šířky displeje */
+        width: 80%;
+        /* Maximální šířka, aby logo nebylo na desktopu zbytečně obří */
+        max-width: 400px;
+        height: auto; /* Zachová poměr stran */
+        display: block;
       }
-    }
+    </style>
+  </head>
+  <body>
+    <img src="/images/bms.png" alt="BandControl Logo" class="logo" />
 
-    loginBtn?.addEventListener('click', handleLogin);
-    passwordInput?.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
-    logoutBtn?.addEventListener('click', () => {
-      sessionStorage.removeItem('band_user');
-      location.reload();
-    });
-
-    checkAuth();
-  </script>
-</body>
+    <script>
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 2000);
+    </script>
+  </body>
 </html>

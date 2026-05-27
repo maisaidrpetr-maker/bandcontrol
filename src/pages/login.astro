@@ -1,0 +1,129 @@
+---
+import { USERS } from '../data/users.js';
+---
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <title>Login - BandControl</title>
+    <style>
+      body { margin: 0; background: #050505; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; }
+
+      .v-plate {
+        width: 360px;
+        background: linear-gradient(135deg, #2c2c2c 0%, #484848 25%, #1a1a1a 50%, #424242 75%, #222222 100%);
+        border: 1px solid #000;
+        border-radius: 12px;
+        position: relative;
+        padding: 13px 20px 20px 20px; /* Horní padding upraven pro nápis */
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.8), inset 0px 1px 0px rgba(255, 255, 255, 0.3);
+      }
+
+      /* Zarovnáno doleva, odsazení odpovídá okrajům okna */
+      .label-wrapper {
+        margin-bottom: 15px;
+        padding-left: 5px;
+      }
+
+      .engraved-label {
+        color: #b87333; font-size: 1.2rem; font-weight: 550;
+        text-shadow: 0px 1px 1px rgba(255,255,255,0.25), 0px -1px 2px rgba(0,0,0,0.9);
+      }
+
+      .login-row { display: flex; gap: 10px; align-items: center; }
+
+      .v-window {
+        flex: 1; height: 45px; background: #000; border-radius: 6px;
+        display: flex; align-items: center; padding: 0 15px;
+        border: 1px solid rgba(0,0,0,0.9);
+        box-shadow: inset 6px 6px 15px rgba(0, 0, 0, 1), 0px 1px 0px rgba(255, 255, 255, 0.2);
+        position: relative; overflow: hidden; cursor: text;
+      }
+
+      #display { color: #b87333; font-size: 18px; letter-spacing: 5px; display: flex; align-items: center; }
+      #placeholder { color: #555; font-size: 14px; position: absolute; left: 15px; pointer-events: none; transition: opacity 0.2s; }
+      
+      .cursor { width: 6px; height: 16px; background: #b87333; animation: blink 1s infinite; margin-left: 2px; }
+      @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+      @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+      .denied-text { color: #ff3333; font-size: 14px; letter-spacing: 2px; animation: slideUp 0.3s ease-out; display: none; font-weight: bold; }
+
+      button { 
+        width: 80px; height: 45px;
+        background: linear-gradient(to bottom, #444, #222);
+        border: 1px solid #000;
+        color: #b87333; font-weight: bold; cursor: pointer; border-radius: 4px;
+        text-transform: uppercase; font-size: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 #666;
+        outline: none;
+      }
+      button:hover { background: #333; }
+      button:active { transform: translateY(1px); }
+    </style>
+  </head>
+  <body>
+    <div class="v-plate">
+      <div class="label-wrapper">
+        <div class="engraved-label">BandControl - Login</div>
+      </div>
+      
+      <div class="login-row">
+        <div class="v-window" id="wrapper">
+          <div id="placeholder">PASSWORD</div>
+          <div id="display"></div>
+          <div id="errorMsg" class="denied-text">Access Denied</div>
+          <div class="cursor" id="cursor"></div>
+        </div>
+        <button id="runBtn">RUN</button>
+      </div>
+
+      <input type="text" id="hiddenInput" style="opacity:0; position:absolute; left:-9999px;" />
+    </div>
+
+    <script define:vars={{ USERS }}>
+      const wrapper = document.getElementById('wrapper');
+      const hiddenInput = document.getElementById('hiddenInput');
+      const display = document.getElementById('display');
+      const placeholder = document.getElementById('placeholder');
+      const cursor = document.getElementById('cursor');
+      const errorMsg = document.getElementById('errorMsg');
+      const runBtn = document.getElementById('runBtn');
+
+      window.onload = () => hiddenInput.focus();
+      wrapper.addEventListener('click', () => hiddenInput.focus());
+      
+      hiddenInput.addEventListener('input', () => {
+        const val = hiddenInput.value;
+        display.textContent = '●'.repeat(val.length);
+        placeholder.style.opacity = val.length > 0 ? '0' : '1';
+        errorMsg.style.display = 'none';
+      });
+
+      function resetLogin() {
+        hiddenInput.value = '';
+        display.textContent = '';
+        placeholder.style.opacity = '1';
+        errorMsg.style.display = 'none';
+        display.style.display = 'flex';
+        hiddenInput.focus();
+      }
+
+      function tryLogin() {
+        const password = hiddenInput.value.trim();
+        if (USERS.hasOwnProperty(password)) {
+          sessionStorage.setItem('jePrihlasen', 'true');
+          sessionStorage.setItem('band_user', USERS[password]);
+          window.location.href = '/dashboard';
+        } else {
+          display.style.display = 'none';
+          placeholder.style.opacity = '0';
+          errorMsg.style.display = 'block';
+          setTimeout(resetLogin, 2000);
+        }
+      }
+
+      runBtn.addEventListener('click', tryLogin);
+      hiddenInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') tryLogin(); });
+    </script>
+  </body>
+</html>

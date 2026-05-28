@@ -5,7 +5,7 @@ import { USERS } from '../data/users.js';
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Login - BandControl</title>
+    <title>BandControl</title>
     <style>
       body { margin: 0; background: #050505; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; }
 
@@ -15,19 +15,44 @@ import { USERS } from '../data/users.js';
         border: 1px solid #000;
         border-radius: 12px;
         position: relative;
-        padding: 15px 20px 20px 20px;
+        padding: 25px 20px 20px 20px;
         box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.8), inset 0px 1px 0px rgba(255, 255, 255, 0.3);
       }
+
+      /* Kontejner pro jazyk - fixní pozice */
+      .lang-control-box {
+        position: absolute; top: 12px; right: 20px;
+        display: flex; flex-direction: column; align-items: center; gap: 6px;
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      .led-box { display: flex; gap: 14px; font-size: 8px; color: #777; font-family: sans-serif; margin-bottom: -2px; }
+      .led { width: 5px; height: 5px; border-radius: 50%; background: #331100; margin: 2px auto 0; transition: 0.3s; }
+      .active-led { background: #ff4500; box-shadow: 0 0 6px #ff4500; }
+
+      /* Přepínač dle tvých rozměrů */
+      .slider-container {
+        width: 40px; height: 14px; background: #1a1a1a;
+        border-radius: 8px; border: 1px solid #000;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,1);
+        display: flex; align-items: center; padding: 1px;
+      }
+      .slider-knob {
+        width: 14px; height: 14px;
+        background: linear-gradient(145deg, #a0a0a0, #707070);
+        border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      /* Pro tvůj rozměr 40px - 14px knoflík = posun o 26px */
+      .lang-control-box.active .slider-knob { transform: translateX(24px); }
 
       .label-wrapper { margin-bottom: 20px; padding-left: 5px; }
       .engraved-label { color: #b87333; font-size: 1.2rem; font-weight: 550; text-shadow: 0px 1px 1px rgba(255,255,255,0.25), 0px -1px 2px rgba(0,0,0,0.9); }
 
       .login-row { display: flex; gap: 10px; align-items: center; }
-
-      /* Input nyní není přes všechno, je schovaný mimo cestu myši */
-      #hiddenInput {
-        position: absolute; left: -9999px;
-      }
+      #hiddenInput { position: absolute; left: -9999px; }
 
       .v-window {
         flex: 1; height: 45px; background: #000; border-radius: 6px;
@@ -43,87 +68,101 @@ import { USERS } from '../data/users.js';
       .cursor { width: 6px; height: 16px; background: #b87333; animation: blink 1s infinite; margin-left: 2px; }
       @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-      @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-      .denied-text { color: #ff3333; font-size: 14px; letter-spacing: 2px; animation: slideUp 0.3s ease-out; display: none; font-weight: bold; }
+      .denied-text { color: #ff3333; font-size: 14px; letter-spacing: 2px; display: none; font-weight: bold; }
 
       button { 
         width: 80px; height: 45px; background: linear-gradient(to bottom, #444, #222); border: 1px solid #000;
         color: #b87333; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; font-size: 15px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 #666; outline: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 #666;
       }
       button:active { transform: translateY(1px); }
     </style>
   </head>
   <body>
     <div class="v-plate">
-      <div class="label-wrapper"><div class="engraved-label">BandControl - Login</div></div>
+      <div class="lang-control-box" id="langSlider" onclick="toggleLang()">
+        <div class="led-box">
+          <div>EN<div id="led-en" class="led"></div></div>
+          <div>CS<div id="led-cs" class="led"></div></div>
+        </div>
+        <div class="slider-container">
+          <div class="slider-knob"></div>
+        </div>
+      </div>
+
+      <div class="label-wrapper"><div class="engraved-label t-login_title">BandControl - Login</div></div>
       
       <div class="login-row">
-        <input type="text" id="hiddenInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
-        
+        <input type="text" id="hiddenInput" autocomplete="off" />
         <div class="v-window" id="wrapper">
-          <div id="placeholder">PASSWORD</div>
+          <div id="placeholder" class="t-placeholder">PASSWORD</div>
           <div id="display"></div>
-          <div id="errorMsg" class="denied-text">ACCES DENIED</div>
-          <div class="cursor" id="cursor"></div>
+          <div id="errorMsg" class="denied-text t-access_denied">ACCESS DENIED</div>
+          <div class="cursor"></div>
         </div>
-        <button id="runBtn">RUN</button>
+        <button id="runBtn" class="t-run_button">RUN</button>
       </div>
     </div>
 
     <script define:vars={{ USERS }}>
-      const wrapper = document.getElementById('wrapper');
+      window.toggleLang = () => {
+        const isAlt = localStorage.getItem('user_lang') === 'alt';
+        localStorage.setItem('user_lang', isAlt ? 'en' : 'alt');
+        location.reload();
+      };
+
+      async function applyLanguage() {
+        const lang = localStorage.getItem('user_lang') || 'en';
+        const slider = document.getElementById('langSlider');
+        
+        if (lang === 'alt') slider.classList.add('active');
+        document.getElementById('led-en').classList.toggle('active-led', lang === 'en');
+        document.getElementById('led-cs').classList.toggle('active-led', lang === 'alt');
+
+        try {
+          const resp = await fetch('/lang.json');
+          const data = await resp.json();
+          const map = { 't-login_title': 'login_title', 't-placeholder': 'placeholder', 't-access_denied': 'access_denied', 't-run_button': 'run_button' };
+          
+          Object.keys(map).forEach(cls => {
+            const el = document.querySelector('.' + cls);
+            if (el) el.textContent = data[map[cls]][lang];
+          });
+        } catch (e) { console.log("Jazyk načten z cache"); }
+      }
+      applyLanguage();
+
       const hiddenInput = document.getElementById('hiddenInput');
       const display = document.getElementById('display');
       const placeholder = document.getElementById('placeholder');
-      const cursor = document.getElementById('cursor');
       const errorMsg = document.getElementById('errorMsg');
-      const runBtn = document.getElementById('runBtn');
 
-      // Fokus - kliknutí na displej nebo tlačítko aktivuje input
-      wrapper.addEventListener('click', () => hiddenInput.focus());
-      
+      document.getElementById('wrapper').addEventListener('click', () => hiddenInput.focus());
       hiddenInput.addEventListener('input', () => {
         display.textContent = '●'.repeat(hiddenInput.value.length);
         placeholder.style.opacity = hiddenInput.value.length > 0 ? '0' : '1';
         errorMsg.style.display = 'none';
       });
 
-      function resetLogin() {
-        hiddenInput.value = '';
-        display.textContent = '';
-        placeholder.style.opacity = '1';
-        errorMsg.style.display = 'none';
-        display.style.display = 'flex';
-        hiddenInput.focus();
-      }
-
       function tryLogin() {
-        // Převod na malá písmena přímo při čtení
         const password = hiddenInput.value.trim().toLowerCase();
-        
-        // Vytvoření objektu, kde klíče převedeme na malá písmena pro kontrolu
-        const lowerCaseUsers = {};
-        for (let key in USERS) {
-          lowerCaseUsers[key.toLowerCase()] = USERS[key];
-        }
+        const users = {};
+        for(let key in USERS) users[key.toLowerCase()] = USERS[key];
 
-        if (lowerCaseUsers.hasOwnProperty(password)) {
+        if (users.hasOwnProperty(password)) {
           sessionStorage.setItem('jePrihlasen', 'true');
-          sessionStorage.setItem('band_user', lowerCaseUsers[password]);
           window.location.href = '/dashboard';
         } else {
-          display.style.display = 'none';
-          placeholder.style.opacity = '0';
+          display.style.display = 'none'; placeholder.style.opacity = '0';
           errorMsg.style.display = 'block';
-          setTimeout(resetLogin, 2000);
+          setTimeout(() => {
+            hiddenInput.value = ''; display.textContent = ''; placeholder.style.opacity = '1';
+            errorMsg.style.display = 'none'; display.style.display = 'flex'; hiddenInput.focus();
+          }, 2000);
         }
       }
-
-      runBtn.addEventListener('click', tryLogin);
+      document.getElementById('runBtn').addEventListener('click', tryLogin);
       hiddenInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') tryLogin(); });
-      
-      // Auto-fokus při načtení
       setTimeout(() => hiddenInput.focus(), 100);
     </script>
   </body>

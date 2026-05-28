@@ -160,9 +160,26 @@
   .led { width: 8px; height: 8px; background: rgb(100, 20, 20); border-radius: 50%; }
   .led.active { background: rgb(81, 237, 73); box-shadow: 0 0 10px rgb(81, 237, 73); }
 
+  <style>
+  /* Původní styly zůstávají, jen upravíme tento media query blok */
   @media (max-width: 768px) {
-    .rack-header { grid-template-columns: auto auto 1fr; padding: 0 5px; }
-    .clock-display-wrapper { display: none; }
-    .user-display { width: 145px; }
+    .rack-header { 
+      grid-template-columns: repeat(2, 1fr); /* 2 sloupce místo 4 */
+      padding: 5px;
+      height: auto; /* necháme header růst podle potřeby */
+      gap: 5px;
+    }
+    
+    .band-name-wrapper { order: 1; }
+    .controls { order: 2; }
+    .user-display-wrapper { order: 3; grid-column: span 2; width: 100%; }
+    
+    .user-display { 
+      width: 100% !important; /* plná šířka na mobilu */
+      justify-content: space-between;
+    }
+    
+    .clock-display-wrapper { display: none; } /* na iPhonu čas skrýváme */
   }
+</style>
 </style>

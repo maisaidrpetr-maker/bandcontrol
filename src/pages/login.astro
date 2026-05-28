@@ -106,6 +106,10 @@ import { USERS } from '../data/users.js';
 
     <script define:vars={{ USERS }}>
       window.toggleLang = () => {
+        // Uložíme rozepsané heslo do dočasné paměti
+        const inputVal = document.getElementById('hiddenInput').value;
+        sessionStorage.setItem('temp_password', inputVal);
+
         const isAlt = localStorage.getItem('user_lang') === 'alt';
         localStorage.setItem('user_lang', isAlt ? 'en' : 'alt');
         location.reload();
@@ -151,6 +155,8 @@ import { USERS } from '../data/users.js';
 
         if (users.hasOwnProperty(password)) {
           sessionStorage.setItem('jePrihlasen', 'true');
+          // Uložíme jméno uživatele, které máme v datech
+          sessionStorage.setItem('uzivatelJmeno', users[password]);
           window.location.href = '/dashboard';
         } else {
           display.style.display = 'none'; placeholder.style.opacity = '0';
@@ -164,6 +170,19 @@ import { USERS } from '../data/users.js';
       document.getElementById('runBtn').addEventListener('click', tryLogin);
       hiddenInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') tryLogin(); });
       setTimeout(() => hiddenInput.focus(), 100);
+
+      // Obnovení hesla po reloadu
+      const savedPass = sessionStorage.getItem('temp_password');
+      if (savedPass) {
+        const input = document.getElementById('hiddenInput');
+        const display = document.getElementById('display');
+        const placeholder = document.getElementById('placeholder');
+        
+        input.value = savedPass;
+        display.textContent = '●'.repeat(savedPass.length);
+        placeholder.style.opacity = '0';
+        sessionStorage.removeItem('temp_password'); // Vyčistíme paměť
+      }
     </script>
   </body>
 </html>

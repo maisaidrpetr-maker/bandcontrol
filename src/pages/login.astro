@@ -15,7 +15,7 @@ import { USERS } from '../data/users.js';
         border: 1px solid #000;
         border-radius: 12px;
         position: relative;
-        padding: 30px 20px 20px 20px;
+        padding: 15px 20px 20px 20px;
         box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.8), inset 0px 1px 0px rgba(255, 255, 255, 0.3);
       }
 
@@ -48,7 +48,7 @@ import { USERS } from '../data/users.js';
 
       button { 
         width: 80px; height: 45px; background: linear-gradient(to bottom, #444, #222); border: 1px solid #000;
-        color: #b87333; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; font-size: 11px;
+        color: #b87333; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; font-size: 15px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 #666; outline: none;
       }
       button:active { transform: translateY(1px); }
@@ -56,7 +56,7 @@ import { USERS } from '../data/users.js';
   </head>
   <body>
     <div class="v-plate">
-      <div class="label-wrapper"><div class="engraved-label">BandControl Login</div></div>
+      <div class="label-wrapper"><div class="engraved-label">BandControl - Login</div></div>
       
       <div class="login-row">
         <input type="text" id="hiddenInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
@@ -64,7 +64,7 @@ import { USERS } from '../data/users.js';
         <div class="v-window" id="wrapper">
           <div id="placeholder">PASSWORD</div>
           <div id="display"></div>
-          <div id="errorMsg" class="denied-text">PŘÍSTUP ZAMÍTNUT</div>
+          <div id="errorMsg" class="denied-text">ACCES DENIED</div>
           <div class="cursor" id="cursor"></div>
         </div>
         <button id="runBtn">RUN</button>

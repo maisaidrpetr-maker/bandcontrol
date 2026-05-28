@@ -1,6 +1,6 @@
 {
-  "login_title": { "en": "BandControl - Login", "alt": "BandControl - Přihlášení" },
+  "login_title": { "en": "Band Control System", "alt": "Band Control Systém" },
   "placeholder": { "en": "PASSWORD", "alt": "HESLO" },
-  "run_button": { "en": "RUN", "alt": "SPUSTIT" },
+  "run_button": { "en": "RUN", "alt": "START" },
   "access_denied": { "en": "ACCESS DENIED", "alt": "PŘÍSTUP ZAMÍTNUT" }
 }

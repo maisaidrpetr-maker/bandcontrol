@@ -1,6 +1,5 @@
 ---
 // src/pages/dashboard.astro
-import { USERS } from '../data/users.js';
 import NavigationDrawer from '../components/NavigationDrawer.astro';
 import Header from '../components/Header.astro';
 import OverviewModule from '../components/OverviewModule.astro';
@@ -49,7 +48,6 @@ import EventsModule from '../components/EventsModule.astro';
       flex: 0 0 250px;
     }
 
-    /* Responzivní úprava pro mobily */
     @media (max-width: 600px) {
       .modules-rack-row { justify-content: center; }
     }
@@ -57,7 +55,8 @@ import EventsModule from '../components/EventsModule.astro';
 </head>
 <body>
 
-  <script>
+  <!-- Kontrola přihlášení -->
+  <script is:inline>
     if (!sessionStorage.getItem('jePrihlasen')) {
       window.location.href = '/login';
     }
@@ -77,29 +76,15 @@ import EventsModule from '../components/EventsModule.astro';
     </div>
   </main>
 
-  <script>
-    // Funkce pro zobrazení jména uživatele v headeru
-    function updateHeaderWithUser() {
-      const loggedUser = sessionStorage.getItem('band_user');
-      const hwName = document.getElementById('header-user-name');
-      
-      if (loggedUser && hwName) {
-        // Zobrazíme celé uložené jméno (např. "Petr Maišaidr (Kytara)")
-        hwName.textContent = loggedUser;
-      }
-    }
-
-    // Odhlášení
+  <!-- Globální odhlašovací logika -->
+  <script is:inline>
     document.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      if (target && target.id === 'logout-btn') {
-        sessionStorage.removeItem('band_user');
-        sessionStorage.removeItem('jePrihlasen');
+      // Použijeme closest pro jistotu, že zachytíme klik i na vnitřní prvky tlačítka
+      if (e.target.closest('#logout-btn')) {
+        sessionStorage.clear();
         window.location.href = '/login';
       }
     });
-
-    updateHeaderWithUser();
   </script>
 </body>
 </html>

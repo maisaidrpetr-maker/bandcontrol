@@ -1,185 +1,137 @@
 <header class="rack-header">
+  <div class="band-name">BLUE HEART</div>
   
-  <div class="band-name-wrapper">
-    <div class="band-name">BLUE HEART</div>
+  <div class="user-display">
+    <span id="header-user-name" class="user-char">---</span>
+    <span id="header-user-role" class="user-role">(---)</span>
   </div>
-
-  <div class="user-display-wrapper">
-    <div class="user-display">
-      <div class="user-info-row">
-        <span id="header-user-name" class="user-char">---</span>
-        <span class="user-role">(KYTARA)</span>
-      </div>
-      <a href="#" id="logout-btn" class="rack-logout-btn">LOGOUT</a>
-    </div>
-  </div>
-
-  <div class="controls">
-    <button id="fullscreen-btn" class="rack-button" title="Přepnout Fullscreen">
-      <span class="led"></span>
-      <span class="label">FULLSCREEN</span>
-    </button>
-  </div>
-
-  <div class="clock-display-wrapper">
-    <div class="clock-display">
-      <div id="header-date" class="clock-container date-hide-mobile"></div>
-      <div class="clock-dot-separator date-hide-mobile">:</div>
-      <div id="header-time" class="clock-container"></div>
-    </div>
+  
+  <a href="#" id="logout-btn" class="rack-btn-logout">LOGOUT</a>
+  
+  <button id="fullscreen-btn" class="rack-btn-fs">
+    <span class="led"></span>
+    <span class="label">FULLSCREEN</span>
+  </button>
+  
+  <div class="right-section">
+    <div class="clock-box" id="header-date">--.--.----</div>
+    <div class="clock-box" id="header-time">--:--</div>
   </div>
 </header>
 
-<script>
-  const userNameEl = document.getElementById('header-user-name');
-  const savedName = sessionStorage.getItem('uzivatelJmeno');
-  if (savedName) {
-    userNameEl.textContent = savedName.split('(')[0].trim().toUpperCase();
-  }
+<script is:inline>
+  // Načtení jména a nástroje
+  const nameEl = document.getElementById('header-user-name');
+  const roleEl = document.getElementById('header-user-role');
+  const jmeno = sessionStorage.getItem('uzivatelJmeno');
+  const nastroj = sessionStorage.getItem('uzivatelNastroj');
 
+  if (nameEl && jmeno) nameEl.textContent = jmeno;
+  if (roleEl && nastroj) roleEl.textContent = `(${nastroj})`;
+
+  // Fullscreen logika
   const btn = document.getElementById('fullscreen-btn');
   const led = document.querySelector('.led');
   btn?.addEventListener('click', () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(err => console.log(err));
-    } else {
-      document.exitFullscreen();
-    }
+    !document.fullscreenElement ? document.documentElement.requestFullscreen() : document.exitFullscreen();
   });
-
-  function updateClock() {
-    const now = new Date();
-    const dateEl = document.getElementById('header-date');
-    const timeEl = document.getElementById('header-time');
-
-    const createFixedChars = (str) => {
-      return str.split('').map(char => {
-        let type = 'num';
-        let specific = '';
-        if (char === '.') { type = 'sep'; specific = 'dot'; }
-        else if (char === ':') { type = 'sep'; specific = 'colon'; }
-        return `<span class="char ${type} ${specific}">${char}</span>`;
-      }).join('');
-    };
-
-    if (dateEl) {
-      const d = String(now.getDate()).padStart(2, '0');
-      const m = String(now.getMonth() + 1).padStart(2, '0');
-      const y = now.getFullYear();
-      dateEl.innerHTML = createFixedChars(`${d}.${m}.${y}`);
-    }
-    if (timeEl) {
-      const timeStr = now.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
-      timeEl.innerHTML = createFixedChars(timeStr);
-    }
-  }
-
-  updateClock();
-  setInterval(updateClock, 1000);
-
   document.addEventListener('fullscreenchange', () => {
     document.fullscreenElement ? led?.classList.add('active') : led?.classList.remove('active');
   });
+
+  // Hodiny a datum
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('header-date').textContent = now.toLocaleDateString('cs-CZ');
+    document.getElementById('header-time').textContent = now.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
 </script>
 
 <style>
   .rack-header {
-    height: 60px;
     background: linear-gradient(180deg, #555558 0%, #222224 45%, #111112 100%);
     border-bottom: 4px solid #000;
-    display: grid;
-    grid-template-columns: auto auto 1fr auto;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    padding: 10px;
     gap: 10px;
-    padding: 0 15px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.9);
-    width: 100%;
-    box-sizing: border-box;
+    min-height: 60px;
   }
 
-  .band-name, .user-display, .clock-display {
-    background: #000;
+  /* Společné boxy - sjednocený margin na 0, aby je řídil gap v headeru */
+  .band-name, .user-display, .rack-btn-logout, .rack-btn-fs, .clock-box {
     height: 34px;
-    box-sizing: border-box;
-    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    white-space: nowrap;
+    font-size: 15px;
+    margin: 0; 
+  }
+
+  /* Boxy (statické) */
+  .band-name, .user-display, .clock-box {
+    background: #000;
     border: 1px solid #222;
-    box-shadow: inset 0 0 15px rgba(0,0,0,1);
-    display: flex;
-    align-items: center;
-    color: #08d1ce;
-    font-family: 'Orbitron', sans-serif;
-  }
-
-  .band-name { padding: 0 15px; font-size: 12px; font-weight: bold; letter-spacing: 2px; }
-  
-  .user-display {
-    width: 320px;
-    padding: 0 12px;
-    justify-content: space-between;
-  }
-  
-  .user-info-row { 
-    display: flex; 
-    align-items: center; 
-    gap: 8px; 
-    white-space: nowrap; 
-    overflow: hidden;
-  }
-  
-  .user-char { font-size: 11px; font-weight: 700; }
-  .user-role { font-size: 10px; color: #888; }
-
-  .rack-logout-btn {
-    background: #200;
-    border: 1px solid #511;
-    color: #f55;
-    font-size: 9px;
-    padding: 3px 8px;
-    border-radius: 3px;
-    text-decoration: none;
-    cursor: pointer;
-  }
-  .rack-logout-btn:hover { background: #500; color: #fff; }
-
-  .clock-display { padding: 0 20px; font-size: 14px; justify-content: center; gap: 4px; }
-
-  .rack-button {
-    background: #222;
-    border: 1px solid #444;
-    border-bottom: 3px solid #000;
-    color: #888;
-    padding: 6px 12px;
     border-radius: 4px;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 10px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
   }
-  .led { width: 8px; height: 8px; background: rgb(100, 20, 20); border-radius: 50%; }
-  .led.active { background: rgb(81, 237, 73); box-shadow: 0 0 10px rgb(81, 237, 73); }
 
-  <style>
-  /* Původní styly zůstávají, jen upravíme tento media query blok */
-  @media (max-width: 768px) {
-    .rack-header { 
-      grid-template-columns: repeat(2, 1fr); /* 2 sloupce místo 4 */
-      padding: 5px;
-      height: auto; /* necháme header růst podle potřeby */
-      gap: 5px;
-    }
-    
-    .band-name-wrapper { order: 1; }
-    .controls { order: 2; }
-    .user-display-wrapper { order: 3; grid-column: span 2; width: 100%; }
-    
-    .user-display { 
-      width: 100% !important; /* plná šířka na mobilu */
-      justify-content: space-between;
-    }
-    
-    .clock-display-wrapper { display: none; } /* na iPhonu čas skrýváme */
+  /* Tlačítka (interaktivní) - styl Drawer */
+  .rack-btn-logout, .rack-btn-fs {
+    justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid #000;
+    background: linear-gradient(180deg, #3a3a3a 0%, #1c1c1c 60%, #111 100%);
+    box-shadow: 0 3px 0 #000, 0 5px 10px rgba(0,0,0,0.5);
+    position: relative;
+    top: 0;
+    transition: all 0.2s ease;
+    text-decoration: none;
   }
-</style>
+
+  /* Hover efekty - sjednocené rozsvícení */
+  .rack-btn-logout:hover, .rack-btn-fs:hover {
+    background: linear-gradient(180deg, #1c1c1c 0%, #3a3a3a 50%, #1c1c1c 100%);
+  }
+
+  /* Logout: tmavě červená -> světle červená + glow */
+  .rack-btn-logout { color: #800; }
+  .rack-btn-logout:hover { color: #f55; text-shadow: 0 0 8px #f55; }
+
+  /* Fullscreen: šedá -> bílá + glow */
+  .rack-btn-fs { color: #888; gap: 8px; }
+  .rack-btn-fs:hover { color: #fff; text-shadow: 0 0 8px #fff; }
+
+  /* Aktivní stav (stisknutí) */
+  .rack-btn-logout:active, .rack-btn-fs:active {
+    top: 2px;
+    box-shadow: 0 1px 0 #000, inset 0 2px 5px rgba(0,0,0,0.7);
+  }
+
+  /* Specifické fonty a barvy */
+  .band-name, .clock-box { font-family: 'Orbitron', sans-serif; }
+  .user-display { font-family: 'Rajdhani', sans-serif; font-weight: 600; }
+  .user-role { margin-left: 6px; color: #aaa; }
+  .clock-box { color: #058c8a; font-weight: bold; }
+  
+  /* LED kontrolka */
+  .led { width: 8px; height: 8px; background: #300; border-radius: 50%; }
+  .led.active { background: #5f5; box-shadow: 0 0 10px #5f5; }
+
+  /* Rozmístění hodin */
+  .right-section {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+  }
+
+  @media (max-width: 768px) {
+    .right-section { margin-left: 0; }
+  }
 </style>

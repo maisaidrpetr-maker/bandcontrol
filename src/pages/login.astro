@@ -150,13 +150,19 @@ import { USERS } from '../data/users.js';
 
       function tryLogin() {
         const password = hiddenInput.value.trim().toLowerCase();
-        const users = {};
-        for(let key in USERS) users[key.toLowerCase()] = USERS[key];
+        
+        // Získáme řetězec z tvého users.js (např. "Petr Maišaidr (Kytara)")
+        const userValue = USERS[password]; 
 
-        if (users.hasOwnProperty(password)) {
+        if (userValue) {
+          // Rozdělíme na jméno a nástroj
+          const namePart = userValue.split('(')[0].trim();
+          const rolePart = userValue.split('(')[1]?.replace(')', '').trim() || 'Člen';
+
           sessionStorage.setItem('jePrihlasen', 'true');
-          // Uložíme jméno uživatele, které máme v datech
-          sessionStorage.setItem('uzivatelJmeno', users[password]);
+          sessionStorage.setItem('uzivatelJmeno', namePart);
+          sessionStorage.setItem('uzivatelNastroj', rolePart);
+          
           window.location.href = '/dashboard';
         } else {
           display.style.display = 'none'; placeholder.style.opacity = '0';

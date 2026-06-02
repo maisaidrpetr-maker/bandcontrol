@@ -1,5 +1,4 @@
 ---
-/* src/components/OverviewModule.astro */
 import { getCollection } from 'astro:content';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -11,11 +10,7 @@ const countFilesInDir = (dirPath: string, ext: string) => {
 };
 
 const [songs, lyrics, tabs, events, notes] = await Promise.all([
-  getCollection('songs'),
-  getCollection('lyrics'),
-  getCollection('tabs'),
-  getCollection('events'),
-  getCollection('activities')
+  getCollection('songs'), getCollection('lyrics'), getCollection('tabs'), getCollection('events'), getCollection('activities')
 ]);
 
 const mp3Count = countFilesInDir('public/audio', '.mp3');
@@ -57,59 +52,21 @@ const stats = [
   .sidebar-v-unit { display: flex; justify-content: center; width: 100%; }
   
   .v-plate {
-    width: 95%;              /* Mobil: 95 % šířky */
-    max-width: 280px;        /* Desktop: max 280px */
-    margin: 0 auto;          /* Vycentrování */
+    width: 95%; max-width: 280px; margin: 0 auto;
     height: fit-content;
     background: linear-gradient(135deg, #2c2c2c 0%, #484848 25%, #1a1a1a 50%, #424242 75%, #222222 100%);
-    border: 1px solid #000;
-    border-radius: 12px;
-    position: relative;
-    padding: 50px 12px 14px 12px;
-    display: flex;
-    flex-direction: column;
+    border: 1px solid #000; border-radius: 12px;
+    position: relative; padding: 50px 12px 14px 12px;
+    display: flex; flex-direction: column;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.8), inset 0px 1px 0px rgba(255, 255, 255, 0.45), inset 0px -2px 3px rgba(0, 0, 0, 0.6);
   }
 
-  .engraved-label {
-    position: absolute;
-    top: 12px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    color: #b87333;
-    font-family: sans-serif;
-    font-size: 1.5rem;
-    font-weight: 550;
-    letter-spacing: 0.5px;
-    text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.25), 0px -1px 2px rgba(0, 0, 0, 0.9);
-  }
-
-  .v-window {
-    width: 100%;
-    background: #000;
-    border-radius: 9px;
-    border: 1px solid rgba(0, 0, 0, 0.9);
-    box-shadow: inset 6px 6px 15px rgba(0, 0, 0, 1), 0px 2px 0px rgba(255, 255, 255, 0.2);
-    padding: 6px 0;
-  }
-
+  .engraved-label { position: absolute; top: 12px; left: 0; right: 0; text-align: center; color: #b87333; font-family: sans-serif; font-size: 1.5rem; font-weight: 550; text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.25), 0px -1px 2px rgba(0, 0, 0, 0.9); }
+  .v-window { width: 100%; background: #000; border-radius: 9px; border: 1px solid rgba(0, 0, 0, 0.9); box-shadow: inset 6px 6px 15px rgba(0, 0, 0, 1), 0px 2px 0px rgba(255, 255, 255, 0.2); padding: 6px 0; }
   .overview-content { display: flex; flex-direction: column; }
-
-  .stat-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 0px 12px;
-    height: 22px;
-    align-items: center;
-    font-size: 0.95rem;
-    font-family: sans-serif;
-  }
-
+  .stat-row { display: flex; justify-content: space-between; padding: 0px 12px; height: 22px; align-items: center; font-size: 0.95rem; font-family: sans-serif; }
   .stat-label { color: #b87333; }
   .stat-value { color: #e0e0e0; font-weight: bold; }
-
   .rivet { position: absolute; width: 9px; height: 9px; background: radial-gradient(circle at 35% 35%, #fff 0%, #222 100%); border-radius: 50%; }
-  .t-l { top: 12px; left: 12px; }
-  .t-r { top: 12px; right: 12px; }
+  .t-l { top: 12px; left: 12px; } .t-r { top: 12px; right: 12px; }
 </style>

@@ -92,8 +92,21 @@ const getEventColor = (event: any) => event.data.alert ? '#ff4500' : '#b87333';
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.8), inset 0px 1px 0px rgba(255, 255, 255, 0.45), inset 0px -2px 3px rgba(0, 0, 0, 0.6);
   }
 
-  .engraved-label { position: absolute; top: 12px; left: 0; right: 0; text-align: center; color: #b87333; font-family: sans-serif; font-size: 1.5rem; font-weight: 550; letter-spacing: 0.5px; }
-  
+  .engraved-label {
+    position: absolute;
+    top: 12px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #b87333;
+    font-family: sans-serif;
+    font-size: 1.5rem;
+    font-weight: 550;
+    letter-spacing: 0.5px;
+    text-shadow: 
+      0px 1px 1px rgba(255, 255, 255, 0.25),
+      0px -1px 2px rgba(0, 0, 0, 0.9);
+  }
   .v-window { 
     width: 100%; 
     background: #000; 
@@ -105,8 +118,18 @@ const getEventColor = (event: any) => event.data.alert ? '#ff4500' : '#b87333';
   
   .top-window, .bottom-window { padding: 6px 0; }
   
-  .highlight-window { height: 34px; border: 1px solid rgba(184, 115, 51, 0.4); display: flex; align-items: center; background: #000; border-radius: 6px; flex-grow: 0; }
-  
+  /* Sjednocení highlight-window s ostatními okny */
+  .highlight-window { 
+    height: 34px; 
+    width: 100%; 
+    background: #000; 
+    border-radius: 9px; /* Sjednocené zakulacení */
+    border: 1px solid rgba(0, 0, 0, 0.9); 
+    box-shadow: inset 6px 6px 15px rgba(0, 0, 0, 1), 0px 2px 0px rgba(255, 255, 255, 0.2); /* Sjednocený stín/hrana */
+    display: flex; 
+    align-items: center; 
+    flex-grow: 0;
+  }  
   .bridge-gap { height: 14px; flex-shrink: 0; }
   .event-item { display: flex; justify-content: space-between; padding: 0px 12px; height: 22px; align-items: center; font-size: 0.95rem; font-family: sans-serif; }
   .highlight-item { color: #e0e0e0; font-weight: bold; width: 100%; }

@@ -4,27 +4,32 @@ import { getCollection } from 'astro:content';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const songs = await getCollection('songs');
-const songsCount = songs.length;
+const countFilesInDir = (dirPath: string, ext: string) => {
+  const fullPath = path.join(process.cwd(), dirPath);
+  if (!fs.existsSync(fullPath)) return 0;
+  return fs.readdirSync(fullPath).filter(f => f.toLowerCase().endsWith(ext)).length;
+};
 
-const activities = await getCollection('activities');
-const activitiesCount = activities.length;
+const [songs, lyrics, tabs, events, notes] = await Promise.all([
+  getCollection('songs'),
+  getCollection('lyrics'),
+  getCollection('tabs'),
+  getCollection('events'),
+  getCollection('activities')
+]);
 
-const audioDir = path.join(process.cwd(), 'public', 'audio');
-let mp3Count = 0;
-
-try {
-  if (fs.existsSync(audioDir)) {
-    const files = fs.readdirSync(audioDir);
-    mp3Count = files.filter(file => file.toLowerCase().endsWith('.mp3')).length;
-  }
-} catch (err) {
-  console.warn("Audio directory not found, defaulting to 0.");
-}
+const mp3Count = countFilesInDir('public/audio', '.mp3');
+const docsCount = countFilesInDir('public/docs', '');
 
 const stats = [
-  { label: "Lyrics (.md)", value: songsCount },
-  { label: "Audio (.mp3)", value: mp3Count },
+  { label: "Songs", value: songs.length },
+  { label: "Lyrics", value: lyrics.length },
+  { label: "Audio Files", value: mp3Count },
+  { label: "Tabs", value: tabs.length },
+  { label: "Playlists", value: "—" },
+  { label: "Events", value: events.length },
+  { label: "Notes", value: notes.length },
+  { label: "Docs", value: docsCount },
 ];
 ---
 
@@ -49,25 +54,21 @@ const stats = [
 </div>
 
 <style>
-  .sidebar-v-unit {
-    width: 100%;
-  }
-
+  .sidebar-v-unit { display: flex; justify-content: center; width: 100%; }
+  
   .v-plate {
-    width: 100%;
-    height: 450px; /* 🛠️ PERFEKTNÍ SHODA S EVENTS MODULEM */
+    width: 95%;              /* Mobil: 95 % šířky */
+    max-width: 280px;        /* Desktop: max 280px */
+    margin: 0 auto;          /* Vycentrování */
+    height: fit-content;
     background: linear-gradient(135deg, #2c2c2c 0%, #484848 25%, #1a1a1a 50%, #424242 75%, #222222 100%);
     border: 1px solid #000;
     border-radius: 12px;
     position: relative;
     padding: 50px 12px 14px 12px;
-    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    box-shadow: 
-      0px 4px 10px rgba(0, 0, 0, 0.8),
-      inset 0px 1px 0px rgba(255, 255, 255, 0.45),
-      inset 0px -2px 3px rgba(0, 0, 0, 0.6);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.8), inset 0px 1px 0px rgba(255, 255, 255, 0.45), inset 0px -2px 3px rgba(0, 0, 0, 0.6);
   }
 
   .engraved-label {
@@ -81,63 +82,34 @@ const stats = [
     font-size: 1.5rem;
     font-weight: 550;
     letter-spacing: 0.5px;
-    text-shadow: 
-      0px 1px 1px rgba(255, 255, 255, 0.25),
-      0px -1px 2px rgba(0, 0, 0, 0.9);
+    text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.25), 0px -1px 2px rgba(0, 0, 0, 0.9);
   }
 
   .v-window {
     width: 100%;
-    flex: 1; /* Vyplní celý panel dolů */
     background: #000;
     border-radius: 9px;
-    display: flex;
-    align-items: flex-start; /* Data začnou nahoře */
-    padding: 15px 0;
-    box-shadow: 
-      inset 6px 6px 15px rgba(0, 0, 0, 1),
-      0px 2px 0px rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(0, 0, 0, 0.9);
-    overflow: hidden;
+    box-shadow: inset 6px 6px 15px rgba(0, 0, 0, 1), 0px 2px 0px rgba(255, 255, 255, 0.2);
+    padding: 6px 0;
   }
 
-  .overview-content {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
+  .overview-content { display: flex; flex-direction: column; }
 
   .stat-row {
     display: flex;
     justify-content: space-between;
-    padding: 0px 20px;
-    font-family: sans-serif;
+    padding: 0px 12px;
     height: 22px;
     align-items: center;
+    font-size: 0.95rem;
+    font-family: sans-serif;
   }
 
-  .stat-label {
-    color: #b87333;
-    font-size: 1.1rem;
-  }
+  .stat-label { color: #b87333; }
+  .stat-value { color: #e0e0e0; font-weight: bold; }
 
-  .stat-value {
-    color: #e0e0e0;
-    font-size: 1.2rem;
-    font-weight: bold;
-    white-space: nowrap;
-  }
-
-  .rivet {
-    position: absolute;
-    width: 9px;
-    height: 9px;
-    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #aaaaaa 20%, #222222 80%, #000000 100%);
-    box-shadow: 1px 2px 3px rgba(0,0,0,0.8);
-    border-radius: 50%;
-  }
-
+  .rivet { position: absolute; width: 9px; height: 9px; background: radial-gradient(circle at 35% 35%, #fff 0%, #222 100%); border-radius: 50%; }
   .t-l { top: 12px; left: 12px; }
   .t-r { top: 12px; right: 12px; }
 </style>

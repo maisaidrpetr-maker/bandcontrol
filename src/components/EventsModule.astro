@@ -17,7 +17,6 @@ let middle = nextEventIndex !== -1 ? sortedAll.slice(nextEventIndex, nextEventIn
 let past = nextEventIndex !== -1 ? sortedAll.slice(0, nextEventIndex) : sortedAll;
 
 const MAX_TOTAL = 15;
-// Řazení: Budoucí (nejvzdálenější nahoře), Aktuální, Historie (dnešek nahoře)
 let finalFuture = future.reverse(); 
 let finalPast = past.reverse();
 
@@ -76,12 +75,13 @@ const getEventColor = (event: any) => event.data.alert ? '#ff4500' : '#b87333';
 </div>
 
 <style>
-  .sidebar-v-unit { display: flex; justify-content: center; }
+  .sidebar-v-unit { display: flex; justify-content: center; width: 100%; }
   
   .v-plate {
-    width: 280px;            /* Pevná šířka */
-    height: fit-content;     /* Změna: výška dle obsahu */
-    min-height: 0;           /* Změna: pryč s fixním minimem */
+    width: 95%;              /* Mobil: 95 % šířky */
+    max-width: 280px;        /* Desktop: max 280px */
+    margin: 0 auto;          /* Vycentrování */
+    height: fit-content;
     background: linear-gradient(135deg, #2c2c2c 0%, #484848 25%, #1a1a1a 50%, #424242 75%, #222222 100%);
     border: 1px solid #000; 
     border-radius: 12px;
@@ -103,29 +103,27 @@ const getEventColor = (event: any) => event.data.alert ? '#ff4500' : '#b87333';
     font-size: 1.5rem;
     font-weight: 550;
     letter-spacing: 0.5px;
-    text-shadow: 
-      0px 1px 1px rgba(255, 255, 255, 0.25),
-      0px -1px 2px rgba(0, 0, 0, 0.9);
+    text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.25), 0px -1px 2px rgba(0, 0, 0, 0.9);
   }
+
   .v-window { 
     width: 100%; 
     background: #000; 
     border-radius: 9px; 
     border: 1px solid rgba(0, 0, 0, 0.9); 
     box-shadow: inset 6px 6px 15px rgba(0, 0, 0, 1), 0px 2px 0px rgba(255, 255, 255, 0.2); 
-    flex-grow: 0;            /* Změna: okno neroste */
+    flex-grow: 0;
   }
   
   .top-window, .bottom-window { padding: 6px 0; }
   
-  /* Sjednocení highlight-window s ostatními okny */
   .highlight-window { 
     height: 34px; 
     width: 100%; 
     background: #000; 
-    border-radius: 9px; /* Sjednocené zakulacení */
+    border-radius: 9px; 
     border: 1px solid rgba(0, 0, 0, 0.9); 
-    box-shadow: inset 6px 6px 15px rgba(0, 0, 0, 1), 0px 2px 0px rgba(255, 255, 255, 0.2); /* Sjednocený stín/hrana */
+    box-shadow: inset 6px 6px 15px rgba(0, 0, 0, 1), 0px 2px 0px rgba(255, 255, 255, 0.2); 
     display: flex; 
     align-items: center; 
     flex-grow: 0;

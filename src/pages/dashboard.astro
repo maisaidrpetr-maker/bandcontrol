@@ -1,5 +1,5 @@
 ---
-// src/pages/dashboard.astro
+/* src/pages/dashboard.astro */
 import NavigationDrawer from '../components/NavigationDrawer.astro';
 import Header from '../components/Header.astro';
 import OverviewModule from '../components/OverviewModule.astro';
@@ -40,22 +40,13 @@ import EventsModule from '../components/EventsModule.astro';
       flex-wrap: wrap;
       gap: 24px;
       padding: 24px;
+      justify-content: center; /* Moduly budou na středu */
       align-items: flex-start;
-    }
-
-    .compact-hardware-box {
-      width: 250px;
-      flex: 0 0 250px;
-    }
-
-    @media (max-width: 600px) {
-      .modules-rack-row { justify-content: center; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Kontrola přihlášení -->
   <script is:inline>
     if (!sessionStorage.getItem('jePrihlasen')) {
       window.location.href = '/login';
@@ -67,19 +58,13 @@ import EventsModule from '../components/EventsModule.astro';
     <Header />
 
     <div class="modules-rack-row">
-      <div class="compact-hardware-box">
-        <EventsModule />
-      </div>
-      <div class="compact-hardware-box">
-        <OverviewModule />
-      </div>
+      <EventsModule />
+      <OverviewModule />
     </div>
   </main>
 
-  <!-- Globální odhlašovací logika -->
   <script is:inline>
     document.addEventListener('click', (e) => {
-      // Použijeme closest pro jistotu, že zachytíme klik i na vnitřní prvky tlačítka
       if (e.target.closest('#logout-btn')) {
         sessionStorage.clear();
         window.location.href = '/login';

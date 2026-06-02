@@ -3,7 +3,6 @@ import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
 const events = defineCollection({
-  // Opravená cesta, protože konfig je teď přímo v src/
   loader: glob({ pattern: '**/[^_]*.md', base: "./src/content/events" }),
   schema: z.object({
     type: z.string(),
@@ -26,4 +25,19 @@ const activities = defineCollection({
   }).optional()
 });
 
-export const collections = { events, songs, activities };
+// Nově přidané kolekce pro OverviewModule
+const lyrics = defineCollection({
+  loader: glob({ pattern: '**/[^_]*.md', base: "./src/content/lyrics" }),
+});
+
+const tabs = defineCollection({
+  loader: glob({ pattern: '**/[^_]*.md', base: "./src/content/tabs" }),
+});
+
+export const collections = { 
+  events, 
+  songs, 
+  activities, 
+  lyrics, 
+  tabs 
+};

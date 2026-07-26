@@ -3,16 +3,12 @@
 
 const pathname = new URL(Astro.request.url).pathname;
 const currentPath = pathname.replace(/\/$/, "") || "/";
-const isActive = (path: string) => {
-  if (path === 'board') return currentPath === "/" || currentPath.includes('board');
-  return currentPath.includes(path);
-};
+const isBoard = currentPath === "/" || currentPath.includes('board') || currentPath.includes('dashboard');
 ---
 
 <style is:global>
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
-  /* Zrychlené pulzování textu (0.3s) */
   @keyframes pulse-pink { 0%, 100% { color: #f00; text-shadow: 0 0 10px #f00; } 50% { color: #b00; text-shadow: none; } }
   @keyframes pulse-orange { 0%, 100% { color: #f80; text-shadow: 0 0 10px #f80; } 50% { color: #b50; text-shadow: none; } }
   @keyframes pulse-yellow { 0%, 100% { color: #ff0; text-shadow: 0 0 10px #ff0; } 50% { color: #bb0; text-shadow: none; } }
@@ -30,7 +26,8 @@ const isActive = (path: string) => {
   .b-magenta.blink-effect { animation: pulse-magenta 0.3s ease-in-out 3; }
 </style>
 
-<div id="right-drawer" class="side-drawer">
+<!-- Pokud nejsme na Boardu, třída "collapsed" se vloží už při serverovém renderu -->
+<div id="right-drawer" class:list={["side-drawer", { "collapsed": !isBoard }]}>
   <div class="drawer-handle" id="drawer-toggle">
     <div class="dots-container">
       <span class="dot"></span><span class="dot"></span><span class="dot"></span>
@@ -43,13 +40,13 @@ const isActive = (path: string) => {
     <span class="rivet axial-top"></span>
     <span class="rivet axial-bottom"></span>
     <div class="nav-group">
-      <a href="/board" class="btn-nav b-pink active">Board</a>
+      <a href="/dashboard" class="btn-nav b-pink">Board</a>
       <a href="#" class="btn-nav b-orange">Stage</a>
       <a href="#" class="btn-nav b-yellow">Studio</a>
       <a href="#" class="btn-nav b-green">Practice</a>
       <a href="#" class="btn-nav b-blue">Library</a>
       <a href="#" class="btn-nav b-purple">Agenda</a>
-      <a href="#" class="btn-nav b-magenta">Settings</a>
+      <a href="/admin" class="btn-nav b-magenta">Admin</a>
     </div>
   </div>
 </div>
@@ -61,12 +58,19 @@ const isActive = (path: string) => {
   const dots = document.querySelectorAll('.dot');
   const dotColors = ['#ff0000', '#ff8800', '#ffff00', '#6fff00', '#00f7ff', '#ee00ff', '#ffffff'];
 
-  const isBoardActive = () => {
-    const boardBtn = Array.from(buttons).find(b => b.textContent.trim() === 'Board');
-    return boardBtn?.classList.contains('active');
-  };
+  const currentPath = window.location.pathname.replace(/\/$/, "") || "/";
+  const isBoardPage = currentPath === "/" || currentPath.includes('board') || currentPath.includes('dashboard');
 
-  const activateDot = (index) => {
+  buttons.forEach((btn, idx) => {
+    const href = btn.getAttribute('href');
+    if (href && href !== '#' && (currentPath === href || currentPath.includes(href))) {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activateDot(idx);
+    }
+  });
+
+  function activateDot(index) {
     dots.forEach((d) => { 
       d.classList.remove('active'); 
       d.style.backgroundColor = '#222'; 
@@ -78,34 +82,36 @@ const isActive = (path: string) => {
       activeDot.style.backgroundColor = dotColors[index];
       activeDot.style.boxShadow = `0 0 12px ${dotColors[index]}, 0 0 24px ${dotColors[index]}, inset 0 0 2px #fff`;
     }
-  };
+  }
 
   function runDrawerLogic() {
-    activateDot(0);
+    // Pokud nejsme na Boardu, drawer musí být zalezlý
+    if (!isBoardPage) {
+      drawer?.classList.add('collapsed');
+      return;
+    }
 
-    if (window.innerWidth > 768) {
-      // DESKTOP: Na boardu trvale viditelný
-      if (isBoardActive()) {
-        drawer?.classList.remove('collapsed');
-      } else {
-        drawer?.classList.add('collapsed');
-      }
-    } else {
-      // MOBIL: Nejdřív ho ukážeme (vysuneme)...
+    const hasShownIntro = sessionStorage.getItem('board_intro_shown');
+
+    if (!hasShownIntro) {
+      // První návštěva: vysuneme ho
       drawer?.classList.remove('collapsed');
       
-      // ...a po 1.8 vteřině plynule schováme, aby uživatel věděl, že tam je!
+      // Nastavíme timeout pro zalezení
       setTimeout(() => {
         drawer?.classList.add('collapsed');
+        sessionStorage.setItem('board_intro_shown', 'true');
       }, 1800);
+    } else {
+      // Jakmile už intro proběhlo, na této ani žádné další stránce se sám NIKDY nevysune
+      drawer?.classList.add('collapsed');
     }
   }
 
-  // Odchytnutí Astro načítání i klasického refreshování
   window.addEventListener('DOMContentLoaded', runDrawerLogic);
   document.addEventListener('astro:page-load', runDrawerLogic);
+  window.addEventListener('pageshow', runDrawerLogic);
 
-  // Kliknutí na madlo (Přepíná stav odevšad na mobilu)
   toggle?.addEventListener('click', (e) => { 
     e.stopPropagation();
     drawer?.classList.toggle('collapsed');
@@ -115,9 +121,11 @@ const isActive = (path: string) => {
 
   buttons.forEach((btn, index) => {
     btn.addEventListener('click', (e) => {
+      const targetUrl = btn.getAttribute('href');
+
       if (btn.classList.contains('active')) {
         e.preventDefault();
-        if (window.innerWidth <= 768) drawer?.classList.add('collapsed');
+        drawer?.classList.add('collapsed');
         return;
       }
 
@@ -126,20 +134,19 @@ const isActive = (path: string) => {
       btn.classList.add('blink-effect');
       
       setTimeout(() => {
+        if (targetUrl && targetUrl !== '#') {
+          drawer?.classList.add('collapsed');
+          setTimeout(() => {
+            window.location.href = targetUrl;
+          }, 300);
+          return;
+        }
+
         btn.classList.remove('blink-effect');
         btn.classList.add('active'); 
         activateDot(index);
+        drawer?.classList.add('collapsed');
 
-        // Po kliknutí na mobilu schováme hned, na desktopu jen pokud opouštíme Board
-        if (window.innerWidth <= 768) {
-          drawer?.classList.add('collapsed');
-        } else {
-          if (btn.textContent.trim() !== 'Board') {
-            drawer?.classList.add('collapsed'); 
-          } else {
-            drawer?.classList.remove('collapsed'); 
-          }
-        }
       }, 1000);
     });
   });
@@ -155,7 +162,12 @@ const isActive = (path: string) => {
     align-items: center; 
     z-index: 9999; 
     transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-    transform: translateX(0); /* Výchozí stav je plně vyjetý */
+    transform: translateX(0);
+  }
+
+  /* Pokud nejsme na Boardu, CSS selektor zajistí, že panel fyzicky zůstane schovaný, i kdyby JS zazmatkoval */
+  body:not(:has([href="/dashboard"].active)):not(:has([href="/"].active)) .side-drawer:not(:hover) {
+    transform: translateX(calc(100% - 24px)) !important;
   }
 
   .side-drawer.collapsed { 

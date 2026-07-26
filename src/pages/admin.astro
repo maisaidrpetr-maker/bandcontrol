@@ -1,0 +1,264 @@
+---
+import { getCollection } from 'astro:content';
+import NavigationDrawer from '../components/NavigationDrawer.astro';
+import Header from '../components/Header.astro';
+
+// Načtení všech Markdown písniček z content/lyrics
+const allLyrics = await getCollection('lyrics');
+---
+
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <title>BandControl — Admin / Setlist</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Načtení knihovny SortableJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+    <style>
+      :root { --bg-dark: #050505; --border-color: #27272a; --text-main: #f4f4f5; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      
+      body {
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+        font-family: system-ui, sans-serif, 'Orbitron', sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      .dashboard-layout {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .admin-container {
+        width: 100%;
+        max-width: 1100px;
+        margin: 30px auto;
+        padding: 0 20px;
+      }
+
+      .metal-panel {
+        background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%), 
+                    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.01) 3px);
+        border: 2px solid #333;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+        position: relative;
+      }
+
+      .rivet {
+        width: 10px;
+        height: 10px;
+        background: radial-gradient(circle at 35% 35%, #ffffff 0%, #aaaaaa 20%, #222222 80%, #000000 100%);
+        border-radius: 50%;
+        border: 0.5px solid rgba(255,255,255,0.1);
+        box-shadow: 2px 3px 5px rgba(0,0,0,0.9);
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .axial-top { top: 15px; }
+      .axial-bottom { bottom: 15px; }
+
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #222;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+      }
+
+      .panel-header h1 {
+        font-size: 20px;
+        color: #eee;
+        letter-spacing: 2px;
+        margin: 0;
+      }
+
+      .save-btn {
+        background: linear-gradient(180deg, #ff8800 0%, #cc6a00 100%);
+        border: none;
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+        letter-spacing: 1px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        transition: background 0.2s;
+      }
+
+      .save-btn:hover {
+        background: linear-gradient(180deg, #ff99225 0%, #dd7700 100%);
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      @media (max-width: 768px) {
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .column {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid #222;
+        border-radius: 8px;
+        padding: 15px;
+        min-height: 300px;
+      }
+
+      .column h2 {
+        font-size: 14px;
+        letter-spacing: 1px;
+        color: #777;
+        margin-top: 0;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #222;
+        padding-bottom: 8px;
+      }
+
+      .song-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-height: 250px;
+      }
+
+      .song-item {
+        background: linear-gradient(180deg, #262626 0%, #141414 100%);
+        border: 1px solid #333;
+        color: #ddd;
+        padding: 12px 15px;
+        border-radius: 4px;
+        font-size: 14px;
+        letter-spacing: 1px;
+        cursor: grab;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        user-select: none;
+      }
+
+      .song-item:active {
+        cursor: grabbing;
+      }
+
+      .song-item span {
+        color: #ff8800;
+        font-weight: bold;
+      }
+
+      .sortable-ghost {
+        opacity: 0.3;
+        background: #ff8800 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <script is:inline>
+      if (!sessionStorage.getItem('jePrihlasen')) window.location.href = '/login';
+    </script>
+
+    <main id="dashboard-content" class="dashboard-layout">
+      <NavigationDrawer />
+      <Header />
+
+      <div class="admin-container">
+        <div class="metal-panel">
+          <div class="rivet axial-top"></div>
+          <div class="rivet axial-bottom"></div>
+          
+          <header class="panel-header">
+            <h1>ADMIN // SETLIST MANAGER</h1>
+            <button id="save-setlist" class="save-btn">ULOŽIT SETLIST</button>
+          </header>
+
+          <div class="workspace">
+            <!-- REPERTOÁR - Dynamicky generovaný z MD souborů v content/lyrics -->
+            <div class="column">
+              <h2>REPERTOÁR (MD)</h2>
+              <ul id="repertoire" class="song-list">
+                {allLyrics.map((song, index) => (
+                  <li class="song-item" data-id={song.id}>
+                    <span>{String(index + 1).padStart(2, '0')}</span> {song.data.title || song.id}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <!-- AKTUÁLNÍ SETLIST -->
+            <div class="column">
+              <h2>AKTUÁLNÍ SETLIST</h2>
+              <ul id="setlist" class="song-list">
+                <!-- Zde se tahá aktuální setlist (případně se dá napojit na načtená data) -->
+                <li class="song-item" data-id="sample-1"><span>01</span> Ukázková skladba</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <script is:inline>
+      document.addEventListener('DOMContentLoaded', () => {
+        const repertoireEl = document.getElementById('repertoire');
+        const setlistEl = document.getElementById('setlist');
+        const saveBtn = document.getElementById('save-setlist');
+
+        if (repertoireEl && setlistEl) {
+          // Repertoár: položky se pouze kopírují (clone)
+          Sortable.create(repertoireEl, {
+            group: { name: 'band-songs', pull: 'clone', put: false },
+            animation: 150,
+            sort: false
+          });
+
+          // Setlist: umožňuje řazení a přijímání prvků
+          Sortable.create(setlistEl, {
+            group: { name: 'band-songs', pull: true, put: true },
+            animation: 150
+          });
+        }
+
+        // Uložení setlistu přes tlačítko
+        if (saveBtn) {
+          saveBtn.addEventListener('click', async () => {
+            const items = setlistEl.querySelectorAll('.song-item');
+            const songIds = Array.from(items).map(item => item.getAttribute('data-id'));
+
+            try {
+              const response = await fetch('/api/setlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ setlist: songIds })
+              });
+
+              if (response.ok) {
+                alert('Setlist byl úspěšně uložen!');
+              } else {
+                alert('Chyba při ukládání setlistu.');
+              }
+            } catch (err) {
+              console.error('Chyba sítě:', err);
+              alert('Nepodařilo se připojit k serveru.');
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

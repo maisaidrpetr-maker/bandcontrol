@@ -2,9 +2,12 @@
 title: "Go My Way"
 artist: "Interpret"
 bpm: "120"
-key: "G"
+key: "Eb"
 audio: "/audio/go-my-way.mp3"
 ---
+
+{title: Go My Way}
+{key: Eb}
 
 {c:Intro: D# F B Cmi Gmi G# B G# B D#}
 

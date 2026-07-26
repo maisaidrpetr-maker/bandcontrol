@@ -11,13 +11,6 @@ const events = defineCollection({
   })
 });
 
-const songs = defineCollection({
-  loader: glob({ pattern: '**/[^_]*.md', base: "./src/content/songs" }),
-  schema: z.object({
-    title: z.string().optional(),
-  }).optional()
-});
-
 const activities = defineCollection({
   loader: glob({ pattern: '**/[^_]*.md', base: "./src/content/activities" }),
   schema: z.object({
@@ -25,9 +18,16 @@ const activities = defineCollection({
   }).optional()
 });
 
-// Nově přidané kolekce pro OverviewModule
+// Aktualizovaná kolekce lyrics s validací metadaten
 const lyrics = defineCollection({
   loader: glob({ pattern: '**/[^_]*.md', base: "./src/content/lyrics" }),
+  schema: z.object({
+    title: z.string(),
+    artist: z.string().optional(),
+    bpm: z.string().optional(),
+    key: z.string().optional(),
+    audio: z.string().optional(),
+  }),
 });
 
 const tabs = defineCollection({
@@ -36,7 +36,6 @@ const tabs = defineCollection({
 
 export const collections = { 
   events, 
-  songs, 
   activities, 
   lyrics, 
   tabs 

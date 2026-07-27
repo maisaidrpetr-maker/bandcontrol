@@ -1,9 +1,10 @@
 ---
 title: "Go My Way"
-artist: "Interpret"
+artist: "Frony Porch String Band"
 bpm: "120"
 key: "Eb"
 audio: "/audio/go-my-way.mp3"
+capo: "1"
 ---
 
 {title: Go My Way}

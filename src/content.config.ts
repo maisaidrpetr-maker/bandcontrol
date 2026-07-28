@@ -18,7 +18,7 @@ const activities = defineCollection({
   }).optional()
 });
 
-// Aktualizovaná kolekce lyrics s validací metadaten
+// Aktualizovaná kolekce lyrics s validací metadaten včetně capo
 const lyrics = defineCollection({
   loader: glob({ pattern: '**/[^_]*.md', base: "./src/content/lyrics" }),
   schema: z.object({
@@ -26,6 +26,7 @@ const lyrics = defineCollection({
     artist: z.string().optional(),
     bpm: z.string().optional(),
     key: z.string().optional(),
+    capo: z.union([z.string(), z.number()]).optional(), // Přidáno pro podporu capo
     audio: z.string().optional(),
   }),
 });

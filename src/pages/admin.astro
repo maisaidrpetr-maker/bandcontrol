@@ -286,7 +286,7 @@ const allLyrics = await getCollection('lyrics');
       <div class="admin-container">
         <!-- OS/2 Warp Záložky -->
         <div class="warp-tabs">
-          <button class="tab-btn active" data-tab="tab-creator">TVORBA SETLISTU</button>
+          <button class="tab-btn active" data-tab="tab-creator">REPERTOÁR</button>
           <button class="tab-btn" data-tab="tab-playlists">PLAYLISTY</button>
         </div>
 
@@ -297,12 +297,12 @@ const allLyrics = await getCollection('lyrics');
           <!-- ZÁLOŽKA 1: TVORBA -->
           <div id="tab-creator" class="tab-content active">
             <header class="panel-header">
-              <h1>VÝBĚR REPERTOÁRU</h1>
-              <button id="btn-save-new" class="btn-primary">VLOŽIT DO NOVÉHO PLAYLISTU</button>
+              <h1>VÝBĚR PÍSNÍ</h1>
+              <button id="btn-save-new" class="btn-primary">ULOŽIT JAKO NOVÝ PLAYLIST</button>
             </header>
 
             <div class="column">
-              <h2>KLIKNUTÍM VYBER SKLADBY PRO NOVÝ SETLIST</h2>
+              <h2>Zde lze naklikat požadované písně a pak je vložit do novéhho playlistu </h2>
               <ul id="repertoire" class="song-list">
                 {allLyrics.map((song) => (
                   <li class="song-item" data-id={song.id} data-title={song.data.title || song.id}>

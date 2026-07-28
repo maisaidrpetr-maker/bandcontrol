@@ -12,6 +12,8 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^6.3.7"
+    "@upstash/redis": "^1.38.0",
+    "astro": "^6.3.7",
+    "redis": "^6.1.0"
   }
 }

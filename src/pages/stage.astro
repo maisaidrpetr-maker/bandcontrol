@@ -162,5 +162,13 @@ await client.disconnect().catch(() => {});
         )}
       </div>
     </main>
+    <script is:inline>
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#logout-btn')) {
+        sessionStorage.clear();
+        window.location.href = '/login';
+      }
+    });
+  </script>
   </body>
 </html>

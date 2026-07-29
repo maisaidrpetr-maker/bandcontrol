@@ -452,10 +452,10 @@ const allLyrics = await getCollection('lyrics');
                     <!-- Tlačítka akcí -->
                     <div style="display: flex; align-items: center; gap: 8px;">
                       <button id="btn-activate-${pl.id}" class="btn-global" onclick="event.stopPropagation(); setActivePlaylist('${pl.id}')" style="background: ${isActive ? '#332200' : '#141414'}; border: 1px solid ${isActive ? '#ff8800' : '#333'}; color: ${isActive ? '#ff8800' : '#aaa'}; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; white-space: nowrap;">
-                        ${isActive ? 'AKTIVNÍ' : 'Nastavit jako aktivní'}
+                        ${isActive ? 'AKTIVNÍ' : 'Aktivovat'}
                       </button>
-                      <button class="btn-global" onclick="event.stopPropagation(); toggleEdit('${pl.id}')" style="background: #222; border: 1px solid #333; color: #ccc; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; white-space: nowrap;">Upravit seznam skladeb</button>
-                      <button class="btn-global" onclick="event.stopPropagation(); deletePlaylist('${pl.id}')" style="background: #2a1111; border: 1px solid #552222; color: #ff6666; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; justify-content: center;" title="Smazat playlist">Smazat playlist</button>
+                      <button class="btn-global" onclick="event.stopPropagation(); toggleEdit('${pl.id}')" style="background: #222; border: 1px solid #333; color: #ccc; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; white-space: nowrap;">Upravit</button>
+                      <button class="btn-global" onclick="event.stopPropagation(); deletePlaylist('${pl.id}')" style="background: #2a1111; border: 1px solid #552222; color: #ff6666; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; justify-content: center;" title="Smazat playlist">Smazat</button>
                     </div>
                   </div>
 

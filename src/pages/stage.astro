@@ -150,6 +150,11 @@ await client.disconnect().catch(() => {});
         display: none;
       }
 
+      /* Skrytí tiskového předělu v normálním zobrazení na stage */
+      .print-header-second {
+        display: none !important;
+      }
+
       /* Tiskové styly */
       @page {
         size: auto;
@@ -203,6 +208,7 @@ await client.disconnect().catch(() => {});
         }
 
         .print-header-second {
+          display: flex !important; /* Zobrazení pouze při tisku */
           page-break-before: always !important;
           break-before: page !important;
           margin-top: 25px !important; 

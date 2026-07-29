@@ -14,20 +14,18 @@ const allLyrics = await getCollection('lyrics');
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style is:inline>
       :root { --bg-dark: #050505; --border-color: #27272a; --text-main: #f4f4f5; }
-      /* Přidej hned pod selektor * */
-* { 
-  box-sizing: border-box; 
-  margin: 0; 
-  padding: 0; 
-  scrollbar-width: thin;
-  scrollbar-color: #333 #101010;
-}
+      * { 
+        box-sizing: border-box; 
+        margin: 0; 
+        padding: 0; 
+        scrollbar-width: thin;
+        scrollbar-color: #333 #101010;
+      }
 
-/* Globální WebKit scrollbary pro celou admin stránku */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #101010; border-radius: 3px; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #ff8800; }
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: #101010; border-radius: 3px; }
+      ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+      ::-webkit-scrollbar-thumb:hover { background: #ff8800; }
       
       body {
         background-color: var(--bg-dark);
@@ -60,7 +58,6 @@ const allLyrics = await getCollection('lyrics');
         position: relative;
       }
 
-      /* OS/2 Warp horizontální záložky */
       .warp-tabs {
         display: flex;
         gap: 4px;
@@ -162,14 +159,7 @@ const allLyrics = await getCollection('lyrics');
         max-height: 60vh;
         overflow-y: auto;
         padding-right: 4px;
-        scrollbar-width: thin;
-        scrollbar-color: #333 #141414;
       }
-
-      .song-list::-webkit-scrollbar { width: 6px; }
-      .song-list::-webkit-scrollbar-track { background: #101010; border-radius: 3px; }
-      .song-list::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-      .song-list::-webkit-scrollbar-thumb:hover { background: #ff8800; }
 
       .song-item {
         background: linear-gradient(180deg, #262626 0%, #141414 100%);
@@ -252,7 +242,6 @@ const allLyrics = await getCollection('lyrics');
       }
       .btn-secondary:hover { background: #444; }
 
-      /* Rotující spinner pro loading stav */
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       .spinner {
         display: inline-block;
@@ -268,6 +257,7 @@ const allLyrics = await getCollection('lyrics');
 
       @media (max-width: 1024px) {
         .song-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .tc-container { grid-template-columns: 1fr !important; }
       }
       @media (max-width: 640px) {
         .song-list { grid-template-columns: 1fr; }
@@ -302,7 +292,7 @@ const allLyrics = await getCollection('lyrics');
             </header>
 
             <div class="column">
-              <h2>Zde lze naklikat požadované písně a pak je vložit do novéhho playlistu </h2>
+              <h2>Zde lze naklikat požadované písně a pak je vložit do nového playlistu</h2>
               <ul id="repertoire" class="song-list">
                 {allLyrics.map((song) => (
                   <li class="song-item" data-id={song.id} data-title={song.data.title || song.id}>
@@ -339,10 +329,12 @@ const allLyrics = await getCollection('lyrics');
       </div>
     </div>
 
-    <!-- Slovník písniček pro převod ID na název v klientském JavaScriptu -->
-    <script is:inline define:vars={{ lyricsMap: Object.fromEntries(allLyrics.map(s => [s.id, s.data.title || s.id])) }}>
+    <!-- Slovník písniček a kompletní seznam pro Total Commander editor -->
+    <script is:inline define:vars={{ allSongsData: allLyrics.map(s => ({ id: s.id, title: s.data.title || s.id })) }}>
+      window.allSongsCollection = allSongsData;
       window.getSongTitle = function(songId) {
-        return lyricsMap[songId] || songId;
+        const found = allSongsCollection.find(s => s.id === songId);
+        return found ? found.title : songId;
       };
     </script>
 
@@ -350,7 +342,6 @@ const allLyrics = await getCollection('lyrics');
       document.addEventListener('DOMContentLoaded', () => {
         let activePlaylistId = null;
 
-        // Přepínání záložek (OS/2 Warp styl)
         const tabs = document.querySelectorAll('.tab-btn');
         const contents = document.querySelectorAll('.tab-content');
 
@@ -368,14 +359,12 @@ const allLyrics = await getCollection('lyrics');
           });
         });
 
-        // Výběr skladeb
         document.querySelectorAll('.song-item').forEach(item => {
           item.addEventListener('click', () => {
             item.classList.toggle('selected');
           });
         });
 
-        // Modální okno logika
         const modal = document.getElementById('playlist-modal');
         const btnSaveNew = document.getElementById('btn-save-new');
         const modalCancel = document.getElementById('modal-cancel');
@@ -397,7 +386,6 @@ const allLyrics = await getCollection('lyrics');
           modal.classList.remove('open');
         });
 
-        // Načtení a vykreslení playlistů s Drag & Drop řazením a inline editací názvu
         async function loadPlaylists() {
           const container = document.querySelector('.playlists-container');
           container.innerHTML = '<p style="color: #777;">Načítám playlisty z cloudu...</p>';
@@ -429,17 +417,14 @@ const allLyrics = await getCollection('lyrics');
               html += `
                 <div class="playlist-card" id="pl-card-${pl.id}" style="background: ${isActive ? '#141008' : '#111'}; border: 1px solid ${isActive ? '#ff8800' : '#333'}; padding: 15px; border-radius: 6px; transition: border-color 0.2s;">
                   
-                  <!-- Hlavní řádek karty playlistu -->
                   <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px;">
                       
-                      <!-- Režim zobrazení názvu (bez textu Aktivní) -->
                       <div id="title-view-${pl.id}" style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;" onclick="startInlineEdit('${pl.id}')" title="Klikni pro úpravu názvu">
                         <strong style="color: ${isActive ? '#ff8800' : '#aaa'}; font-size: 1rem; letter-spacing: 0.5px;">${pl.name}</strong>
                         <span style="font-size: 0.75rem; color: #555;" title="Upravit název">✏️</span>
                       </div>
 
-                      <!-- Režim inline editace názvu (původně schovaný) -->
                       <div id="title-edit-${pl.id}" style="display: none; align-items: center; gap: 6px; flex: 1;">
                         <input type="text" id="inline-name-input-${pl.id}" value="${pl.name}" style="padding: 4px 8px; background: #0a0a0a; border: 1px solid #ff8800; color: #fff; border-radius: 3px; font-size: 0.9rem; width: 100%; max-width: 250px;" onclick="event.stopPropagation()" />
                         <button type="button" class="btn-global" onclick="event.stopPropagation(); saveInlineTitle('${pl.id}')" style="background: #ff8800; border: none; color: #fff; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold;">OK</button>
@@ -449,7 +434,6 @@ const allLyrics = await getCollection('lyrics');
                       <span style="font-size: 0.75rem; color: #777; white-space: nowrap;">(${pl.songs.length} skladeb)</span>
                     </div>
 
-                    <!-- Tlačítka akcí -->
                     <div style="display: flex; align-items: center; gap: 8px;">
                       <button id="btn-activate-${pl.id}" class="btn-global" onclick="event.stopPropagation(); setActivePlaylist('${pl.id}')" style="background: ${isActive ? '#332200' : '#141414'}; border: 1px solid ${isActive ? '#ff8800' : '#333'}; color: ${isActive ? '#ff8800' : '#aaa'}; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; white-space: nowrap;">
                         ${isActive ? 'AKTIVNÍ' : 'Aktivovat'}
@@ -459,27 +443,28 @@ const allLyrics = await getCollection('lyrics');
                     </div>
                   </div>
 
-                  <!-- Skrytý editační panel pro skladby (Drag & Drop) -->
+                  <!-- Total Commander rozhraní pro úpravu (2 sloupce vedle sebe) -->
                   <div id="pl-edit-${pl.id}" style="display: none; margin-top: 15px; border-top: 1px solid #222; padding-top: 15px;">
-                    <div style="margin-bottom: 12px;">
-                      <label style="font-size: 0.75rem; color: #888; display: block; margin-bottom: 6px;">Pořadí skladeb lze přesunutím měnit...</label>
-                      <div id="pl-songs-${pl.id}" style="display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; padding: 4px;">
-                        ${pl.songs.map((songId, idx) => `
-                          <div class="edit-song-row" draggable="true" data-song="${songId}" 
-                               ondragstart="handleDragStart(event)" 
-                               ondragover="handleDragOver(event)" 
-                               ondrop="handleDrop(event, '${pl.id}')" 
-                               ondragend="handleDragEnd(event)"
-                               style="display: flex; align-items: center; justify-content: space-between; background: #181818; border: 1px solid #333; padding: 8px 10px; border-radius: 4px; cursor: grab;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                              <span style="color: #555; font-size: 0.8rem;">☰</span>
-                              <span class="song-text" style="font-size: 0.8rem; color: #ddd; font-family: monospace;">${idx + 1}. ${window.getSongTitle(songId)}</span>
-                            </div>
-                            <button type="button" class="btn-global" onclick="removeSongRow(this, '${pl.id}')" style="background: #331111; border: 1px solid #552222; color: #ff6666; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; justify-content: center;" title="Odebrat">✕</button>
-                          </div>
-                        `).join('')}
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px;" class="tc-container">
+                      
+                      <!-- LEVÝ SLOUPEC: Zbývající skladby k dispozici -->
+                      <div style="background: rgba(0,0,0,0.3); border: 1px solid #222; border-radius: 6px; padding: 10px; display: flex; flex-direction: column;">
+                        <label style="font-size: 0.75rem; color: #888; display: block; margin-bottom: 6px; font-weight: bold;">DOSTUPNÉ SKLADBY V REPERTOÁRU (KLIKNUTÍM PŘIDÁŠ)</label>
+                        <div id="tc-available-${pl.id}" ondragover="handleTcDragOver(event)" ondrop="handleTcDropToAvailable(event, '${pl.id}')" style="display: flex; flex-direction: column; gap: 5px; max-height: 250px; min-height: 180px; overflow-y: auto; padding: 4px; flex-grow: 1;">
+                          <!-- Vygeneruje se dynamicky -->
+                        </div>
                       </div>
+
+                      <!-- PRAVÝ SLOUPEC: Aktuální skladby v playlistu -->
+                      <div style="background: rgba(0,0,0,0.3); border: 1px solid #222; border-radius: 6px; padding: 10px; display: flex; flex-direction: column;">
+                        <label style="font-size: 0.75rem; color: #ff8800; display: block; margin-bottom: 6px; font-weight: bold;">VYBRANÉ V PLAYLISTU (ŘAZENÍ TÁHNUTÍM)</label>
+                        <div id="tc-selected-${pl.id}" ondragover="handleTcDragOver(event)" ondrop="handleTcDropToSelected(event, '${pl.id}')" style="display: flex; flex-direction: column; gap: 5px; max-height: 250px; min-height: 180px; overflow-y: auto; padding: 4px; flex-grow: 1;">
+                          <!-- Vygeneruje se dynamicky -->
+                        </div>
+                      </div>
+
                     </div>
+
                     <div style="display: flex; justify-content: flex-end; gap: 8px;">
                       <button class="btn-global" onclick="toggleEdit('${pl.id}')" style="background: #222; border: 1px solid #333; color: #aaa; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">ZAVŘÍT</button>
                       <button class="btn-global" onclick="savePlaylistChanges('${pl.id}')" style="background: linear-gradient(180deg, #ff8800 0%, #cc6a00 100%); border: none; color: #fff; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold;">Uložit změny</button>
@@ -496,7 +481,6 @@ const allLyrics = await getCollection('lyrics');
           }
         }
 
-        // --- INLINE EDITACE NÁZVU ---
         window.startInlineEdit = function(id) {
           document.getElementById(`title-view-${id}`).style.display = 'none';
           const editDiv = document.getElementById(`title-edit-${id}`);
@@ -543,65 +527,191 @@ const allLyrics = await getCollection('lyrics');
           }
         };
 
-        // Přepínání rozbalení editace skladeb
-        window.toggleEdit = function(id) {
+        window.toggleEdit = async function(id) {
           const editPanel = document.getElementById(`pl-edit-${id}`);
-          editPanel.style.display = editPanel.style.display === 'none' ? 'block' : 'none';
+          const isOpening = editPanel.style.display === 'none';
+          
+          if (isOpening) {
+            editPanel.style.display = 'block';
+            await renderTotalCommanderColumns(id);
+          } else {
+            editPanel.style.display = 'none';
+          }
         };
 
-        // --- DRAG AND DROP LOGIKA ---
-        let draggedItem = null;
+        async function renderTotalCommanderColumns(playlistId) {
+          try {
+            const res = await fetch('/api/playlists');
+            const playlists = res.ok ? await res.json() : [];
+            const pl = playlists.find(p => p.id === playlistId);
+            if (!pl) return;
 
-        window.handleDragStart = function(e) {
-          draggedItem = e.target.closest('.edit-song-row');
-          e.dataTransfer.effectAllowed = 'move';
-          setTimeout(() => draggedItem.style.opacity = '0.4', 0);
+            const currentSongs = pl.songs || [];
+            
+            const availableContainer = document.getElementById(`tc-available-${playlistId}`);
+            const availableSongs = window.allSongsCollection.filter(s => !currentSongs.includes(s.id));
+
+            availableContainer.innerHTML = availableSongs.map(song => `
+              <div class="tc-song-row" draggable="true" data-song="${song.id}" 
+                   ondragstart="handleTcDragStart(event)" 
+                   onclick="moveSongToSelected('${song.id}', '${playlistId}')"
+                   style="display: flex; align-items: center; justify-content: space-between; background: #181818; border: 1px solid #333; padding: 6px 10px; border-radius: 4px; cursor: pointer;">
+                <span style="font-size: 0.8rem; color: #ccc;">${song.title}</span>
+                <span style="color: #ff8800; font-size: 0.8rem; font-weight: bold;">+</span>
+              </div>
+            `).join('') || '<div style="color: #555; font-size: 0.75rem; padding: 10px; text-align: center;">Všechny skladby jsou v playlistu</div>';
+
+            const selectedContainer = document.getElementById(`tc-selected-${playlistId}`);
+            selectedContainer.innerHTML = currentSongs.map((songId, idx) => `
+              <div class="tc-song-row" draggable="true" data-song="${songId}" 
+                   ondragstart="handleTcDragStart(event)" 
+                   ondragover="handleTcItemDragOver(event)"
+                   ondrop="handleTcDropInsideSelected(event, '${playlistId}')"
+                   style="display: flex; align-items: center; justify-content: space-between; background: #1c1c1c; border: 1px solid #444; padding: 6px 10px; border-radius: 4px; cursor: grab;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="color: #666; font-size: 0.75rem;">☰</span>
+                  <span class="tc-selected-text" style="font-size: 0.8rem; color: #fff; font-family: monospace;">${idx + 1}. ${window.getSongTitle(songId)}</span>
+                </div>
+                <button type="button" class="btn-global" onclick="moveSongToAvailable('${songId}', '${playlistId}')" style="background: #331111; border: 1px solid #552222; color: #ff6666; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 0.75rem;" title="Odebrat">✕</button>
+              </div>
+            `).join('') || '';
+
+          } catch (err) {
+            console.error('Chyba při renderování TC sloupců:', err);
+          }
+        }
+
+        let tcDraggedSongId = null;
+
+        window.handleTcDragStart = function(e) {
+          const row = e.target.closest('.tc-song-row');
+          if (row) {
+            tcDraggedSongId = row.dataset.song;
+            e.dataTransfer.effectAllowed = 'move';
+          }
         };
 
-        window.handleDragOver = function(e) {
+        window.handleTcDragOver = function(e) {
           e.preventDefault();
           e.dataTransfer.dropEffect = 'move';
-          const targetRow = e.target.closest('.edit-song-row');
-          if (targetRow && targetRow !== draggedItem) {
+        };
+
+        window.handleTcItemDragOver = function(e) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          const targetRow = e.target.closest('.tc-song-row');
+          const draggedRow = document.querySelector(`.tc-song-row[data-song="${tcDraggedSongId}"]`);
+          if (targetRow && draggedRow && targetRow !== draggedRow) {
             const container = targetRow.parentElement;
             const rect = targetRow.getBoundingClientRect();
             const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
-            container.insertBefore(draggedItem, next ? targetRow.nextSibling : targetRow);
+            container.insertBefore(draggedRow, next ? targetRow.nextSibling : targetRow);
           }
         };
 
-        window.handleDrop = function(e, playlistId) {
+        window.handleTcDropToSelected = function(e, playlistId) {
           e.preventDefault();
-          refreshSongNumbers(playlistId);
-        };
-
-        window.handleDragEnd = function(e) {
-          if (draggedItem) {
-            draggedItem.style.opacity = '1';
-            draggedItem = null;
-          }
-        };
-
-        window.removeSongRow = function(btn, playlistId) {
-          const row = btn.closest('.edit-song-row');
-          row.remove();
-          refreshSongNumbers(playlistId);
-        };
-
-        function refreshSongNumbers(playlistId) {
-          const container = document.getElementById(`pl-songs-${playlistId}`);
-          const rows = Array.from(container.querySelectorAll('.edit-song-row'));
+          if (!tcDraggedSongId) return;
           
+          const selectedContainer = document.getElementById(`tc-selected-${playlistId}`);
+          const existingRow = selectedContainer.querySelector(`[data-song="${tcDraggedSongId}"]`);
+          
+          if (!existingRow) {
+            const newDiv = document.createElement('div');
+            newDiv.className = 'tc-song-row';
+            newDiv.draggable = true;
+            newDiv.dataset.song = tcDraggedSongId;
+            newDiv.ondragstart = window.handleTcDragStart;
+            newDiv.ondragover = window.handleTcItemDragOver;
+            newDiv.ondrop = (ev) => window.handleTcDropInsideSelected(ev, playlistId);
+            newDiv.style.cssText = 'display: flex; align-items: center; justify-content: space-between; background: #1c1c1c; border: 1px solid #444; padding: 6px 10px; border-radius: 4px; cursor: grab;';
+            newDiv.innerHTML = `
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="color: #666; font-size: 0.75rem;">☰</span>
+                <span class="tc-selected-text" style="font-size: 0.8rem; color: #fff; font-family: monospace;">${window.getSongTitle(tcDraggedSongId)}</span>
+              </div>
+              <button type="button" class="btn-global" onclick="moveSongToAvailable('${tcDraggedSongId}', '${playlistId}')" style="background: #331111; border: 1px solid #552222; color: #ff6666; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 0.75rem;" title="Odebrat">✕</button>
+            `;
+            selectedContainer.appendChild(newDiv);
+          }
+          
+          refreshTCCountersAndList(playlistId);
+        };
+
+        window.handleTcDropInsideSelected = function(e, playlistId) {
+          e.preventDefault();
+          refreshTCCountersAndList(playlistId);
+        };
+
+        window.handleTcDropToAvailable = function(e, playlistId) {
+          e.preventDefault();
+          if (!tcDraggedSongId) return;
+          moveSongToAvailable(tcDraggedSongId, playlistId);
+        };
+
+        window.moveSongToSelected = async function(songId, playlistId) {
+          tcDraggedSongId = songId;
+          const selectedContainer = document.getElementById(`tc-selected-${playlistId}`);
+          
+          const newDiv = document.createElement('div');
+          newDiv.className = 'tc-song-row';
+          newDiv.draggable = true;
+          newDiv.dataset.song = songId;
+          newDiv.ondragstart = window.handleTcDragStart;
+          newDiv.ondragover = window.handleTcItemDragOver;
+          newDiv.ondrop = (ev) => window.handleTcDropInsideSelected(ev, playlistId);
+          newDiv.style.cssText = 'display: flex; align-items: center; justify-content: space-between; background: #1c1c1c; border: 1px solid #444; padding: 6px 10px; border-radius: 4px; cursor: grab;';
+          newDiv.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="color: #666; font-size: 0.75rem;">☰</span>
+              <span class="tc-selected-text" style="font-size: 0.8rem; color: #fff; font-family: monospace;">${window.getSongTitle(songId)}</span>
+            </div>
+            <button type="button" class="btn-global" onclick="moveSongToAvailable('${songId}', '${playlistId}')" style="background: #331111; border: 1px solid #552222; color: #ff6666; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 0.75rem;" title="Odebrat">✕</button>
+          `;
+          selectedContainer.appendChild(newDiv);
+          refreshTCCountersAndList(playlistId);
+        };
+
+        window.moveSongToAvailable = async function(songId, playlistId) {
+          tcDraggedSongId = songId;
+          const selectedContainer = document.getElementById(`tc-selected-${playlistId}`);
+          const row = selectedContainer.querySelector(`[data-song="${songId}"]`);
+          if (row) row.remove();
+          
+          refreshTCCountersAndList(playlistId);
+        };
+
+        function refreshTCCountersAndList(playlistId) {
+          const selectedContainer = document.getElementById(`tc-selected-${playlistId}`);
+          const rows = Array.from(selectedContainer.querySelectorAll('.tc-song-row'));
+          const currentSelectedIds = rows.map(r => r.dataset.song);
+
           rows.forEach((row, idx) => {
-            const textSpan = row.querySelector('.song-text');
+            const textSpan = row.querySelector('.tc-selected-text');
             const songId = row.dataset.song;
-            const title = window.getSongTitle(songId);
-            textSpan.textContent = `${idx + 1}. ${title}`;
+            if (textSpan) {
+              textSpan.textContent = `${idx + 1}. ${window.getSongTitle(songId)}`;
+            }
           });
+
+          const availableContainer = document.getElementById(`tc-available-${playlistId}`);
+          const availableSongs = window.allSongsCollection.filter(s => !currentSelectedIds.includes(s.id));
+
+          availableContainer.innerHTML = availableSongs.map(song => `
+            <div class="tc-song-row" draggable="true" data-song="${song.id}" 
+                 ondragstart="handleTcDragStart(event)" 
+                 onclick="moveSongToSelected('${song.id}', '${playlistId}')"
+                 style="display: flex; align-items: center; justify-content: space-between; background: #181818; border: 1px solid #333; padding: 6px 10px; border-radius: 4px; cursor: pointer;">
+              <span style="font-size: 0.8rem; color: #ccc;">${song.title}</span>
+              <span style="color: #ff8800; font-size: 0.8rem; font-weight: bold;">+</span>
+            </div>
+          `).join('') || '<div style="color: #555; font-size: 0.75rem; padding: 10px; text-align: center;">Všechny skladby jsou v playlistu</div>';
+
+          tcDraggedSongId = null;
         }
 
         window.savePlaylistChanges = async function(id) {
-          const rows = document.querySelectorAll(`#pl-songs-${id} .edit-song-row`);
+          const rows = document.querySelectorAll(`#tc-selected-${id} .tc-song-row`);
           const updatedSongs = Array.from(rows).map(row => row.dataset.song);
 
           if (updatedSongs.length === 0) {
@@ -655,10 +765,8 @@ const allLyrics = await getCollection('lyrics');
           }
         };
 
-        // --- AKTIVACE PLAYLISTU S LOADING STAVEM ---
         window.setActivePlaylist = async function(id) {
           const btn = document.getElementById(`btn-activate-${id}`);
-          
           const originalHTML = btn.innerHTML;
           btn.disabled = true;
           btn.innerHTML = '<span class="spinner"></span> Aktivuji...';
@@ -682,7 +790,6 @@ const allLyrics = await getCollection('lyrics');
           }
         };
 
-        // Uložení nového playlistu
         modalConfirm.addEventListener('click', async () => {
           const name = inputName.value.trim();
           if (!name) {
@@ -725,12 +832,12 @@ const allLyrics = await getCollection('lyrics');
       });
     </script>
     <script is:inline>
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('#logout-btn')) {
-        sessionStorage.clear();
-        window.location.href = '/login';
-      }
-    });
-  </script>
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('#logout-btn')) {
+          sessionStorage.clear();
+          window.location.href = '/login';
+        }
+      });
+    </script>
   </body>
 </html>

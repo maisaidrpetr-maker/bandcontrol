@@ -32,7 +32,7 @@ const client = createClient({
 client.on('error', () => {});
 await client.connect().catch(() => {});
 
-let activePlaylist = null;
+let activePlaylist: any = null;
 try {
   const activeId = await client.get('bandcontrol:active_playlist') || await client.get('active_playlist');
   if (activeId) {
@@ -44,12 +44,16 @@ try {
   console.error('Chyba při načítání stage dat:', err);
 }
 await client.disconnect().catch(() => {});
+
+// Zjištění počtu skladeb pro automatické zahuštění (> 18 skladeb)
+const songCount = activePlaylist?.songs?.length || 0;
+const isLongSetlist = songCount > 18;
 ---
 
 <html lang="cs">
   <head>
     <meta charset="utf-8" />
-    <title>BandControl — Stage (Živý setlist)</title>
+    <title>Blue Heart — aktuální playlist</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
       :root { --bg-dark: #050505; --text-main: #f4f4f5; }
@@ -71,11 +75,35 @@ await client.disconnect().catch(() => {});
         padding: 0 15px;
         width: 100%;
       }
+      .stage-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
       h1 { 
         color: #ff8800; 
         font-size: 1.5rem; 
-        margin-bottom: 20px; 
-        text-align: center; 
+        margin: 0; 
+      }
+      .btn-print {
+        background: linear-gradient(180deg, #ff8800 0%, #cc6a00 100%);
+        border: none;
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        transition: background 0.2s;
+        white-space: nowrap;
+      }
+      .btn-print:hover {
+        background: linear-gradient(180deg, #ff9922 0%, #dd7700 100%);
       }
       
       .song-card {
@@ -101,7 +129,7 @@ await client.disconnect().catch(() => {});
       }
       .song-meta {
         display: flex;
-        gap: 8px;
+        gap: 15px;
         font-size: 0.9rem;
         align-items: center;
       }
@@ -121,6 +149,165 @@ await client.disconnect().catch(() => {});
         min-width: 36px;
       }
       .empty { color: #666; font-style: italic; margin-top: 40px; text-align: center; font-size: 1.1rem; }
+
+      .print-logo {
+        display: none;
+      }
+
+      /* Tiskové styly */
+      @page {
+        size: auto;
+        margin: 12mm 10mm;
+      }
+
+      @media print {
+        body * {
+          visibility: hidden;
+        }
+        .stage-container, .stage-container * {
+          visibility: visible;
+        }
+        .stage-container {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          margin: 0;
+          padding: 12mm 10mm 0 10mm !important;
+          color: #000 !important;
+          background: #fff !important;
+        }
+        
+       /* Hlavička s celistvým šedým pruhem od loga po pravý okraj */
+        .stage-header-row {
+          display: grid !important;
+          grid-template-columns: auto 1fr !important;
+          align-items: center !important;
+          gap: 0 !important;
+          margin-bottom: 15px !important;
+          width: 100% !important;
+          background: #e6e6e6 !important;
+          padding: 6px 0 6px 15px !important;
+          min-height: 50px !important;
+          position: relative !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        .btn-print {
+          display: none !important;
+        }
+        
+        .print-logo {
+          display: block !important;
+          height: 110px !important;
+          width: auto !important;
+          grid-column: 1 !important;
+          justify-self: start !important;
+          margin: -30px 15px -30px 0 !important;
+          z-index: 2 !important;
+        }
+
+        h1 {
+          color: #000 !important;
+          border: none !important;
+          margin: 0 !important;
+          font-size: 2.2rem !important;
+          text-align: center !important;
+          background: transparent !important;
+          padding: 0 20px 0 0 !important;
+          letter-spacing: 1px;
+          grid-column: 2 !important;
+          font-weight: bold !important;
+        }
+
+        /* Výchozí tiskový režim (do 18 skladeb) */
+        .song-list {
+          margin-top: 5px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between; 
+          min-height: 225mm;
+        }
+        .song-card {
+          background: #fff !important;
+          border: none !important;
+          border-bottom: 1px solid #bbb !important;
+          color: #000 !important;
+          box-shadow: none !important;
+          padding: 3px 4px !important;
+          margin-bottom: 0 !important;
+          font-size: 2.1rem !important;
+          border-radius: 0 !important;
+          page-break-inside: avoid;
+        }
+        .song-left {
+          gap: 15px !important;
+        }
+        .song-index {
+          color: #000 !important;
+          font-weight: bold;
+          min-width: 45px;
+        }
+        .song-meta {
+          display: flex;
+          gap: 20px !important;
+        }
+        .badge {
+          background: transparent !important;
+          border: none !important;
+          font-weight: bold !important;
+          font-size: 2.1rem !important;
+          padding: 0 !important;
+          width: 50px !important;
+          min-width: 50px !important;
+          text-align: center !important;
+          display: inline-block !important;
+        }
+        .badge.print-key {
+          color: #d00000 !important;
+        }
+        .badge.print-capo {
+          color: #000 !important;
+        }
+        .badge-placeholder {
+          display: inline-block !important;
+          visibility: hidden !important;
+          background: transparent !important;
+          border: none !important;
+          padding: 0 !important;
+          width: 50px !important;
+          min-width: 50px !important;
+        }
+
+        /* === Automatický kompaktní dvou-sloupcový režim při > 18 skladbách === */
+        .song-list.is-compact {
+          display: block !important;
+          column-count: 2 !important;
+          column-gap: 30px !important;
+        }
+        
+        .song-list.is-compact .song-card {
+          font-size: 1.2rem !important;
+          padding: 4px 6px !important;
+          break-inside: avoid !important; /* Zabrání rozlomení položky mezi sloupci */
+          page-break-inside: avoid !important;
+        }
+        
+        .song-list.is-compact .badge {
+          font-size: 1.2rem !important;
+          width: 35px !important;
+          min-width: 35px !important;
+        }
+        
+        .song-list.is-compact .badge-placeholder {
+          width: 35px !important;
+          min-width: 35px !important;
+        }
+        
+        .song-list.is-compact .song-index {
+          min-width: 30px !important;
+        }
+      }
     </style>
   </head>
   <body>
@@ -133,10 +320,16 @@ await client.disconnect().catch(() => {});
       <Header />
 
       <div class="stage-container">
-        <h1>{activePlaylist ? activePlaylist.name : 'ŽÁDNÝ AKTIVNÍ PLAYLIST'}</h1>
+        <div class="stage-header-row">
+          <img src="/images/BHlogo.png" alt="Logo kapely" class="print-logo" />
+          <h1>{activePlaylist ? activePlaylist.name : 'ŽÁDNÝ AKTIVNÍ PLAYLIST'}</h1>
+          {activePlaylist && (
+            <button id="print-btn" class="btn-print">🖨️ TISK / ULOŽIT</button>
+          )}
+        </div>
         
         {activePlaylist ? (
-          <div class="song-list">
+          <div class={`song-list ${isLongSetlist ? 'is-compact' : ''}`}>
             {activePlaylist.songs.map((songId: string, index: number) => {
               const song = lyricsMap[songId] || { title: songId, key: '', capo: '' };
               return (
@@ -146,11 +339,11 @@ await client.disconnect().catch(() => {});
                     <span>{song.title}</span>
                   </div>
                   <div class="song-meta">
-                    {song.key ? <div class="badge">{song.key}</div> : <div class="badge badge-placeholder">-</div>}
+                    {song.key ? <div class="badge print-key">{song.key}</div> : <div class="badge badge-placeholder">&nbsp;</div>}
                     {song.capo !== '' ? (
-                      <div class="badge" style="color: #aaa; font-weight: normal;">C{song.capo}</div>
+                      <div class="badge print-capo">C{song.capo}</div>
                     ) : (
-                      <div class="badge badge-placeholder">C-</div>
+                      <div class="badge badge-placeholder">&nbsp;</div>
                     )}
                   </div>
                 </div>
@@ -162,13 +355,17 @@ await client.disconnect().catch(() => {});
         )}
       </div>
     </main>
+
     <script is:inline>
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('#logout-btn')) {
-        sessionStorage.clear();
-        window.location.href = '/login';
-      }
-    });
-  </script>
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('#logout-btn')) {
+          sessionStorage.clear();
+          window.location.href = '/login';
+        }
+        if (e.target.closest('#print-btn')) {
+          window.print();
+        }
+      });
+    </script>
   </body>
 </html>

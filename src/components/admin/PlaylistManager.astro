@@ -1,0 +1,533 @@
+---
+// src/components/admin/PlaylistManager.astro
+---
+
+<div class="playlists-container">
+  <p style="color: #777; text-align: center; padding: 20px;">Načítám playlisty z cloudu...</p>
+</div>
+
+<script is:inline>
+  let activePlaylistId = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Tlačítko "Vytvořit nový playlist z vybraných" (spouští se z modálního okna)
+    const btnSaveNew = document.getElementById('btn-save-new');
+    const modal = document.getElementById('playlist-modal');
+    const modalCancel = document.getElementById('modal-cancel');
+    const modalConfirm = document.getElementById('modal-confirm');
+    const inputName = document.getElementById('playlist-name-input');
+
+    if (btnSaveNew) {
+      btnSaveNew.addEventListener('click', () => {
+        const selectedCount = document.querySelectorAll('.song-item.selected').length;
+        if (selectedCount === 0) {
+          alert('Nejprve vyber alespoň jednu skladbu v záložce Repertoár!');
+          return;
+        }
+        inputName.value = '';
+        modal.classList.add('open');
+        inputName.focus();
+      });
+    }
+
+    if (modalCancel) {
+      modalCancel.addEventListener('click', () => {
+        modal.classList.remove('open');
+      });
+    }
+
+    if (modalConfirm) {
+      modalConfirm.addEventListener('click', async () => {
+        const name = inputName.value.trim();
+        if (!name) {
+          alert('Zadej název playlistu.');
+          return;
+        }
+
+        const selectedItems = document.querySelectorAll('.song-item.selected');
+        const songIds = Array.from(selectedItems).map(item => item.dataset.id);
+
+        try {
+          const res = await fetch('/api/playlists');
+          const playlists = res.ok ? await res.json() : [];
+
+          const newPlaylist = {
+            id: 'pl_' + Date.now(),
+            name: name,
+            songs: songIds
+          };
+
+          playlists.push(newPlaylist);
+
+          const saveRes = await fetch('/api/playlists', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(playlists)
+          });
+
+          if (!saveRes.ok) throw new Error('Chyba při ukládání');
+
+          modal.classList.remove('open');
+          selectedItems.forEach(item => item.classList.remove('selected'));
+          
+          // Přepnout na záložku playlistů a načíst
+          document.querySelector('[data-tab="tab-playlists"]').click();
+
+        } catch (err) {
+          alert('Nepodařilo se uložit nový playlist.');
+          console.error(err);
+        }
+      });
+    }
+  });
+
+  window.loadPlaylists = async function() {
+    const container = document.querySelector('.playlists-container');
+    if (!container) return;
+    container.innerHTML = '<p style="color: #777; text-align: center; padding: 20px;">Načítám playlisty z cloudu...</p>';
+
+    try {
+      const [res, activeRes] = await Promise.all([
+        fetch('/api/playlists'),
+        fetch('/api/active-playlist').catch(() => ({ ok: false }))
+      ]);
+
+      if (!res.ok) throw new Error('Chyba při načítání');
+      
+      const playlists = await res.json();
+
+      if (activeRes.ok) {
+        const activeData = await activeRes.json();
+        activePlaylistId = activeData.activeId || null;
+      }
+
+      if (playlists.length === 0) {
+        container.innerHTML = '<p style="color: #777; text-align: center; padding: 20px;">Zatím nejsou uložené žádné playlisty.</p>';
+        return;
+      }
+
+      let html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+      playlists.forEach((pl) => {
+        const isActive = pl.id === activePlaylistId;
+
+        html += `
+          <div class="playlist-card" id="pl-card-${pl.id}" style="background: ${isActive ? '#141008' : '#111'}; border: 1px solid ${isActive ? '#ff8800' : '#333'}; padding: 15px; border-radius: 6px; transition: border-color 0.2s;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px;">
+                
+                <div id="title-view-${pl.id}" style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;" onclick="startInlineEdit('${pl.id}')" title="Klikni pro úpravu názvu">
+                  <strong style="color: ${isActive ? '#ff8800' : '#aaa'}; font-size: 1rem; letter-spacing: 0.5px;">${pl.name}</strong>
+                  <span style="font-size: 0.75rem; color: #555;" title="Upravit název">✏️</span>
+                </div>
+
+                <div id="title-edit-${pl.id}" style="display: none; align-items: center; gap: 6px; flex: 1;">
+                  <input type="text" id="inline-name-input-${pl.id}" value="${pl.name}" style="padding: 4px 8px; background: #0a0a0a; border: 1px solid #ff8800; color: #fff; border-radius: 3px; font-size: 0.9rem; width: 100%; max-width: 250px;" onclick="event.stopPropagation()" />
+                  <button type="button" onclick="event.stopPropagation(); saveInlineTitle('${pl.id}')" style="background: #ff8800; border: none; color: #fff; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold;">OK</button>
+                  <button type="button" onclick="event.stopPropagation(); cancelInlineEdit('${pl.id}')" style="background: #333; border: none; color: #aaa; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">✕</button>
+                </div>
+
+                <span style="font-size: 0.75rem; color: #777; white-space: nowrap;">(${pl.songs.length} skladeb)</span>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" onclick="event.stopPropagation(); togglePreview('${pl.id}')" id="btn-preview-${pl.id}" style="background: #182233; border: 1px solid #334466; color: #6699ff; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; white-space: nowrap;">Zobrazit</button>
+                
+                <button id="btn-activate-${pl.id}" onclick="event.stopPropagation(); setActivePlaylist('${pl.id}')" style="background: ${isActive ? '#332200' : '#141414'}; border: 1px solid ${isActive ? '#ff8800' : '#333'}; color: ${isActive ? '#ff8800' : '#aaa'}; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; white-space: nowrap;">
+                  ${isActive ? 'AKTIVNÍ' : 'Aktivovat'}
+                </button>
+                <button onclick="event.stopPropagation(); toggleEdit('${pl.id}')" style="background: #222; border: 1px solid #333; color: #ccc; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; white-space: nowrap;">Upravit</button>
+                <button onclick="event.stopPropagation(); deletePlaylist('${pl.id}')" style="background: #2a1111; border: 1px solid #552222; color: #ff6666; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;" title="Smazat playlist">Smazat</button>
+              </div>
+            </div>
+
+            <!-- Inline náhled playlistu -->
+            <div id="pl-preview-${pl.id}" style="display: none; margin-top: 15px; border-top: 1px solid #222; padding-top: 15px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="font-size: 0.75rem; color: #6699ff; font-weight: bold;">NÁHLED PLAYLISTU (TÓNINA & CAPO)</span>
+                <button type="button" onclick="printPreview('${pl.id}')" style="background: #182233; border: 1px solid #334466; color: #6699ff; padding: 4px 10px; border-radius: 3px; cursor: pointer; font-size: 0.75rem;">🖨️ Vytisknout tento</button>
+              </div>
+              <div id="pl-preview-content-${pl.id}" style="background: #0a0a0a; border: 1px solid #222; border-radius: 4px; padding: 10px; max-height: 250px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- Total Commander rozhraní -->
+            <div id="pl-edit-${pl.id}" style="display: none; margin-top: 15px; border-top: 1px solid #222; padding-top: 15px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px;" class="tc-container">
+                
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid #222; border-radius: 6px; padding: 10px; display: flex; flex-direction: column;">
+                  <label style="font-size: 0.75rem; color: #888; display: block; margin-bottom: 6px; font-weight: bold;">DOSTUPNÉ SKLADBY V REPERTOÁRU</label>
+                  <div id="tc-available-${pl.id}" ondragover="handleTcDragOver(event)" ondrop="handleTcDropToAvailable(event, '${pl.id}')" style="display: flex; flex-direction: column; gap: 5px; max-height: 250px; min-height: 180px; overflow-y: auto; padding: 4px; flex-grow: 1;"></div>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid #222; border-radius: 6px; padding: 10px; display: flex; flex-direction: column;">
+                  <label style="font-size: 0.75rem; color: #ff8800; display: block; margin-bottom: 6px; font-weight: bold;">VYBRANÉ V PLAYLISTU</label>
+                  <div id="tc-selected-${pl.id}" ondragover="handleTcDragOver(event)" ondrop="handleTcDropToSelected(event, '${pl.id}')" style="display: flex; flex-direction: column; gap: 5px; max-height: 250px; min-height: 180px; overflow-y: auto; padding: 4px; flex-grow: 1;"></div>
+                </div>
+
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button onclick="toggleEdit('${pl.id}')" style="background: #222; border: 1px solid #333; color: #aaa; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">ZAVŘÍT</button>
+                <button onclick="savePlaylistChanges('${pl.id}')" style="background: linear-gradient(180deg, #ff8800 0%, #cc6a00 100%); border: none; color: #fff; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold;">Uložit změny</button>
+              </div>
+            </div>
+
+          </div>
+        `;
+      });
+      html += '</div>';
+      container.innerHTML = html;
+
+    } catch (err) {
+      container.innerHTML = '<p style="color: #ff4444;">Nepodařilo se načíst playlisty.</p>';
+    }
+  };
+
+  window.togglePreview = async function(id) {
+    const previewPanel = document.getElementById(`pl-preview-${id}`);
+    const btn = document.getElementById(`btn-preview-${id}`);
+    const isOpening = previewPanel.style.display === 'none';
+
+    document.getElementById(`pl-edit-${id}`).style.display = 'none';
+
+    if (isOpening) {
+      previewPanel.style.display = 'block';
+      btn.textContent = 'Skrýt';
+      btn.style.background = '#223355';
+
+      const res = await fetch('/api/playlists');
+      const playlists = res.ok ? await res.json() : [];
+      const pl = playlists.find(p => p.id === id);
+      const container = document.getElementById(`pl-preview-content-${id}`);
+
+      if (!pl || !pl.songs || pl.songs.length === 0) {
+        container.innerHTML = '<div style="color: #666; font-size: 0.8rem; text-align: center;">Playlist je prázdný.</div>';
+        return;
+      }
+
+      container.innerHTML = pl.songs.map((songId, idx) => {
+        const title = window.getSongTitle(songId);
+        const songObj = window.allSongsCollection ? window.allSongsCollection.find(s => s.id === songId) : null;
+        
+        const songKey = songObj && songObj.key ? songObj.key : '-';
+        const songCapo = songObj && songObj.capo !== undefined && songObj.capo !== '' && songObj.capo !== '-' && songObj.capo !== 0 ? 'C' + songObj.capo : '-';
+
+        return `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-bottom: 1px solid #1a1a1a; font-size: 0.85rem;">
+            <span style="color: #ccc;"><strong style="color: #ff8800; margin-right: 8px;">${idx + 1}.</strong>${title}</span>
+            <div style="display: flex; gap: 6px;">
+              <span style="background: #222; border: 1px solid #444; color: #ff8800; padding: 2px 6px; border-radius: 3px; font-size: 0.75rem; font-weight: bold; min-width: 28px; text-align: center;">${songKey}</span>
+              <span style="background: #222; border: 1px solid #444; color: #aaa; padding: 2px 6px; border-radius: 3px; font-size: 0.75rem; min-width: 32px; text-align: center;">${songCapo}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+    } else {
+      previewPanel.style.display = 'none';
+      btn.textContent = 'Zobrazit';
+      btn.style.background = '#182233';
+    }
+  };
+
+  window.printPreview = function(id) {
+    const existingIframe = document.getElementById('print-iframe');
+    if (existingIframe) existingIframe.remove();
+
+    const iframe = document.createElement('iframe');
+    iframe.id = 'print-iframe';
+    iframe.style.display = 'none';
+    iframe.src = `/stage?playlist=${id}&print=true`;
+    document.body.appendChild(iframe);
+  };
+
+  window.startInlineEdit = function(id) {
+    document.getElementById(`title-view-${id}`).style.display = 'none';
+    const editDiv = document.getElementById(`title-edit-${id}`);
+    editDiv.style.display = 'flex';
+    const input = document.getElementById(`inline-name-input-${id}`);
+    input.focus();
+    input.select();
+  };
+
+  window.cancelInlineEdit = function(id) {
+    document.getElementById(`title-edit-${id}`).style.display = 'none';
+    document.getElementById(`title-view-${id}`).style.display = 'flex';
+  };
+
+  window.saveInlineTitle = async function(id) {
+    const newName = document.getElementById(`inline-name-input-${id}`).value.trim();
+    if (!newName) {
+      alert('Název playlistu nesmí být prázdný.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/playlists');
+      const playlists = res.ok ? await res.json() : [];
+
+      const updatedPlaylists = playlists.map(pl => pl.id === id ? { ...pl, name: newName } : pl);
+
+      const saveRes = await fetch('/api/playlists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedPlaylists)
+      });
+
+      if (!saveRes.ok) throw new Error('Chyba při ukládání názvu');
+      loadPlaylists();
+    } catch (err) {
+      alert('Nepodařilo se uložit nový název.');
+    }
+  };
+
+  window.setActivePlaylist = async function(id) {
+    try {
+      const res = await fetch('/api/active-playlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activeId: id })
+      });
+      if (!res.ok) throw new Error('Chyba při aktivaci');
+      loadPlaylists();
+    } catch (err) {
+      alert('Nepodařilo se aktivovat playlist.');
+    }
+  };
+
+  window.deletePlaylist = async function(id) {
+    if (!confirm('Opravdu smazat tento playlist?')) return;
+    try {
+      const res = await fetch('/api/playlists');
+      const playlists = res.ok ? await res.json() : [];
+      const filtered = playlists.filter(p => p.id !== id);
+
+      await fetch('/api/playlists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(filtered)
+      });
+      loadPlaylists();
+    } catch (err) {
+      alert('Chyba při mazání.');
+    }
+  };
+
+  window.toggleEdit = async function(id) {
+    document.getElementById(`pl-preview-${id}`).style.display = 'none';
+    const previewBtn = document.getElementById(`btn-preview-${id}`);
+    if (previewBtn) {
+      previewBtn.textContent = 'Zobrazit';
+      previewBtn.style.background = '#182233';
+    }
+
+    const editPanel = document.getElementById(`pl-edit-${id}`);
+    const isOpening = editPanel.style.display === 'none';
+    
+    if (isOpening) {
+      editPanel.style.display = 'block';
+      await renderTotalCommanderColumns(id);
+    } else {
+      editPanel.style.display = 'none';
+    }
+  };
+
+  async function renderTotalCommanderColumns(playlistId) {
+    try {
+      const res = await fetch('/api/playlists');
+      const playlists = res.ok ? await res.json() : [];
+      const pl = playlists.find(p => p.id === playlistId);
+      if (!pl) return;
+
+      const currentSongs = pl.songs || [];
+      
+      const availableContainer = document.getElementById(`tc-available-${playlistId}`);
+      const availableSongs = window.allSongsCollection.filter(s => !currentSongs.includes(s.id));
+
+      availableContainer.innerHTML = availableSongs.map(song => `
+        <div class="tc-song-row" draggable="true" data-song="${song.id}" 
+             ondragstart="handleTcDragStart(event)" 
+             onclick="moveSongToSelected('${song.id}', '${playlistId}')"
+             style="display: flex; align-items: center; justify-content: space-between; background: #181818; border: 1px solid #333; padding: 6px 10px; border-radius: 4px; cursor: pointer;">
+          <span style="font-size: 0.8rem; color: #ccc;">${song.title}</span>
+          <span style="color: #ff8800; font-size: 0.8rem; font-weight: bold;">+</span>
+        </div>
+      `).join('') || '<div style="color: #555; font-size: 0.75rem; padding: 10px; text-align: center;">Všechny skladby jsou v playlistu</div>';
+
+      const selectedContainer = document.getElementById(`tc-selected-${playlistId}`);
+      selectedContainer.innerHTML = currentSongs.map((songId, idx) => `
+        <div class="tc-song-row" draggable="true" data-song="${songId}" 
+             ondragstart="handleTcDragStart(event)" 
+             ondragover="handleTcItemDragOver(event)"
+             ondrop="handleTcDropInsideSelected(event, '${playlistId}')"
+             style="display: flex; align-items: center; justify-content: space-between; background: #1c1c1c; border: 1px solid #444; padding: 6px 10px; border-radius: 4px; cursor: grab;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="color: #666; font-size: 0.75rem;">☰</span>
+            <span class="tc-selected-text" style="font-size: 0.8rem; color: #fff; font-family: monospace;">${idx + 1}. ${window.getSongTitle(songId)}</span>
+          </div>
+          <button type="button" onclick="moveSongToAvailable('${songId}', '${playlistId}')" style="background: #331111; border: 1px solid #552222; color: #ff6666; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 0.75rem;" title="Odebrat">✕</button>
+        </div>
+      `).join('') || '';
+
+    } catch (err) {
+      console.error('Chyba při renderování TC sloupců:', err);
+    }
+  }
+
+  let tcDraggedSongId = null;
+
+  window.handleTcDragStart = function(e) {
+    const row = e.target.closest('.tc-song-row');
+    if (row) {
+      tcDraggedSongId = row.dataset.song;
+      e.dataTransfer.effectAllowed = 'move';
+    }
+  };
+
+  window.handleTcDragOver = function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  window.handleTcItemDragOver = function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const targetRow = e.target.closest('.tc-song-row');
+    const draggedRow = document.querySelector(`.tc-song-row[data-song="${tcDraggedSongId}"]`);
+    if (targetRow && draggedRow && targetRow !== draggedRow) {
+      const container = targetRow.parentElement;
+      const rect = targetRow.getBoundingClientRect();
+      const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+      container.insertBefore(draggedRow, next ? targetRow.nextSibling : targetRow);
+    }
+  };
+
+  window.handleTcDropToSelected = function(e, playlistId) {
+    e.preventDefault();
+    if (!tcDraggedSongId) return;
+    
+    const selectedContainer = document.getElementById(`tc-selected-${playlistId}`);
+    const existingRow = selectedContainer.querySelector(`[data-song="${tcDraggedSongId}"]`);
+    
+    if (!existingRow) {
+      const newDiv = document.createElement('div');
+      newDiv.className = 'tc-song-row';
+      newDiv.draggable = true;
+      newDiv.dataset.song = tcDraggedSongId;
+      newDiv.ondragstart = window.handleTcDragStart;
+      newDiv.ondragover = window.handleTcItemDragOver;
+      newDiv.ondrop = (ev) => window.handleTcDropInsideSelected(ev, playlistId);
+      newDiv.style.cssText = 'display: flex; align-items: center; justify-content: space-between; background: #1c1c1c; border: 1px solid #444; padding: 6px 10px; border-radius: 4px; cursor: grab;';
+      newDiv.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #666; font-size: 0.75rem;">☰</span>
+          <span class="tc-selected-text" style="font-size: 0.8rem; color: #fff; font-family: monospace;">${window.getSongTitle(tcDraggedSongId)}</span>
+        </div>
+        <button type="button" onclick="moveSongToAvailable('${tcDraggedSongId}', '${playlistId}')" style="background: #331111; border: 1px solid #552222; color: #ff6666; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 0.75rem;" title="Odebrat">✕</button>
+      `;
+      selectedContainer.appendChild(newDiv);
+    }
+    
+    refreshTCCountersAndList(playlistId);
+  };
+
+  window.handleTcDropInsideSelected = function(e, playlistId) {
+    e.preventDefault();
+    refreshTCCountersAndList(playlistId);
+  };
+
+  window.handleTcDropToAvailable = function(e, playlistId) {
+    e.preventDefault();
+    if (!tcDraggedSongId) return;
+    moveSongToAvailable(tcDraggedSongId, playlistId);
+  };
+
+  window.moveSongToSelected = async function(songId, playlistId) {
+    tcDraggedSongId = songId;
+    const selectedContainer = document.getElementById(`tc-selected-${playlistId}`);
+    
+    const newDiv = document.createElement('div');
+    newDiv.className = 'tc-song-row';
+    newDiv.draggable = true;
+    newDiv.dataset.song = songId;
+    newDiv.ondragstart = window.handleTcDragStart;
+    newDiv.ondragover = window.handleTcItemDragOver;
+    newDiv.ondrop = (ev) => window.handleTcDropInsideSelected(ev, playlistId);
+    newDiv.style.cssText = 'display: flex; align-items: center; justify-content: space-between; background: #1c1c1c; border: 1px solid #444; padding: 6px 10px; border-radius: 4px; cursor: grab;';
+    newDiv.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="color: #666; font-size: 0.75rem;">☰</span>
+        <span class="tc-selected-text" style="font-size: 0.8rem; color: #fff; font-family: monospace;">${window.getSongTitle(songId)}</span>
+      </div>
+      <button type="button" onclick="moveSongToAvailable('${songId}', '${playlistId}')" style="background: #331111; border: 1px solid #552222; color: #ff6666; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 0.75rem;" title="Odebrat">✕</button>
+    `;
+    selectedContainer.appendChild(newDiv);
+    refreshTCCountersAndList(playlistId);
+  };
+
+  window.moveSongToAvailable = async function(songId, playlistId) {
+    tcDraggedSongId = songId;
+    const selectedContainer = document.getElementById(`tc-selected-${playlistId}`);
+    const row = selectedContainer.querySelector(`[data-song="${songId}"]`);
+    if (row) row.remove();
+    
+    refreshTCCountersAndList(playlistId);
+  };
+
+  function refreshTCCountersAndList(playlistId) {
+    const selectedContainer = document.getElementById(`tc-selected-${playlistId}`);
+    const rows = Array.from(selectedContainer.querySelectorAll('.tc-song-row'));
+    const currentSelectedIds = rows.map(r => r.dataset.song);
+
+    rows.forEach((row, idx) => {
+      const textSpan = row.querySelector('.tc-selected-text');
+      const songId = row.dataset.song;
+      if (textSpan) {
+        textSpan.textContent = `${idx + 1}. ${window.getSongTitle(songId)}`;
+      }
+    });
+
+    const availableContainer = document.getElementById(`tc-available-${playlistId}`);
+    const availableSongs = window.allSongsCollection.filter(s => !currentSelectedIds.includes(s.id));
+
+    availableContainer.innerHTML = availableSongs.map(song => `
+      <div class="tc-song-row" draggable="true" data-song="${song.id}" 
+           ondragstart="handleTcDragStart(event)" 
+           onclick="moveSongToSelected('${song.id}', '${playlistId}')"
+           style="display: flex; align-items: center; justify-content: space-between; background: #181818; border: 1px solid #333; padding: 6px 10px; border-radius: 4px; cursor: pointer;">
+        <span style="font-size: 0.8rem; color: #ccc;">${song.title}</span>
+        <span style="color: #ff8800; font-size: 0.8rem; font-weight: bold;">+</span>
+      </div>
+    `).join('') || '<div style="color: #555; font-size: 0.75rem; padding: 10px; text-align: center;">Všechny skladby jsou v playlistu</div>';
+
+    tcDraggedSongId = null;
+  }
+
+  window.savePlaylistChanges = async function(id) {
+    const rows = document.querySelectorAll(`#tc-selected-${id} .tc-song-row`);
+    const updatedSongs = Array.from(rows).map(row => row.dataset.song);
+
+    if (updatedSongs.length === 0) {
+      alert('Playlist musí obsahovat alespoň jednu skladbu.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/playlists');
+      const playlists = res.ok ? await res.json() : [];
+
+      const updatedPlaylists = playlists.map(pl => pl.id === id ? { ...pl, songs: updatedSongs } : pl);
+
+      const saveRes = await fetch('/api/playlists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedPlaylists)
+      });
+
+      if (!saveRes.ok) throw new Error('Chyba při ukládání změn');
+      loadPlaylists();
+    } catch (err) {
+      alert('Nepodařilo se uložit změny v playlistu.');
+    }
+  };
+</script>

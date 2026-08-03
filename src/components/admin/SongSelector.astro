@@ -1,0 +1,18 @@
+---
+const { allLyrics } = Astro.props;
+---
+<header class="panel-header">
+  <h1>VÝBĚR PÍSNÍ</h1>
+  <button id="btn-save-new" class="btn-primary">ULOŽIT JAKO NOVÝ PLAYLIST</button>
+</header>
+
+<div class="column">
+  <h2>Zde lze naklikat požadované písně a pak je vložit do nového playlistu</h2>
+  <ul id="repertoire" class="song-list">
+    {allLyrics.map((song: any) => (
+      <li class="song-item" data-id={song.id} data-title={song.data.title || song.id}>
+        {song.data.title || song.id}
+      </li>
+    ))}
+  </ul>
+</div>

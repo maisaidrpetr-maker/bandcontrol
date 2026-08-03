@@ -1,4 +1,6 @@
 ---
+// src/pages/login.astro
+import '../styles/global.css';
 import { USERS } from '../data/users.js';
 ---
 <html lang="cs">
@@ -7,7 +9,15 @@ import { USERS } from '../data/users.js';
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>BandControl</title>
     <style>
-      body { margin: 0; background: #050505; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; }
+      /* Vrácení vycentrovaného layoutu pro login stránku */
+      body { 
+        font-family: sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
 
       .v-plate {
         width: 360px;
@@ -45,7 +55,6 @@ import { USERS } from '../data/users.js';
         border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.5);
         transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       }
-      /* Pro tvůj rozměr 40px - 14px knoflík = posun o 26px */
       .lang-control-box.active .slider-knob { transform: translateX(24px); }
 
       .label-wrapper { margin-bottom: 20px; padding-left: 5px; }
@@ -106,7 +115,6 @@ import { USERS } from '../data/users.js';
 
     <script define:vars={{ USERS }}>
       window.toggleLang = () => {
-        // Uložíme rozepsané heslo do dočasné paměti
         const inputVal = document.getElementById('hiddenInput').value;
         sessionStorage.setItem('temp_password', inputVal);
 
@@ -150,12 +158,9 @@ import { USERS } from '../data/users.js';
 
       function tryLogin() {
         const password = hiddenInput.value.trim().toLowerCase();
-        
-        // Získáme řetězec z tvého users.js (např. "Petr Maišaidr (Kytara)")
         const userValue = USERS[password]; 
 
         if (userValue) {
-          // Rozdělíme na jméno a nástroj
           const namePart = userValue.split('(')[0].trim();
           const rolePart = userValue.split('(')[1]?.replace(')', '').trim() || 'Člen';
 
@@ -177,7 +182,6 @@ import { USERS } from '../data/users.js';
       hiddenInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') tryLogin(); });
       setTimeout(() => hiddenInput.focus(), 100);
 
-      // Obnovení hesla po reloadu
       const savedPass = sessionStorage.getItem('temp_password');
       if (savedPass) {
         const input = document.getElementById('hiddenInput');
@@ -187,7 +191,7 @@ import { USERS } from '../data/users.js';
         input.value = savedPass;
         display.textContent = '●'.repeat(savedPass.length);
         placeholder.style.opacity = '0';
-        sessionStorage.removeItem('temp_password'); // Vyčistíme paměť
+        sessionStorage.removeItem('temp_password');
       }
     </script>
   </body>

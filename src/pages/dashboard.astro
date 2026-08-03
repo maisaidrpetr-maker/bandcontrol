@@ -1,26 +1,318 @@
 ---
+// src/pages/dashboard.astro
+import '../styles/global.css';
 import NavigationDrawer from '../components/NavigationDrawer.astro';
 import Header from '../components/Header.astro';
-import OverviewModule from '../components/OverviewModule.astro';
-import EventsModule from '../components/EventsModule.astro';
+
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+let allEvents = [];
+try {
+  const eventsPath = resolve('src/data/events.json');
+  if (existsSync(eventsPath)) {
+    const fileData = readFileSync(eventsPath, 'utf-8');
+    allEvents = JSON.parse(fileData);
+  }
+} catch (e) {
+  console.error('Chyba při načítání událostí:', e);
+}
+
+const now = new Date();
+const todayTimestamp = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+const processedEvents = allEvents.map((ev: any) => {
+  const dateObj = new Date(ev.date + (ev.time ? `T${ev.time}` : 'T00:00:00'));
+  return {
+    ...ev,
+    timestamp: isNaN(dateObj.getTime()) ? 0 : dateObj.getTime(),
+  };
+});
+
+// Budoucí akce: od nejvzdálenějších po nejbližší (sestupně)
+const futureEvents = processedEvents
+  .filter(ev => ev.timestamp >= todayTimestamp)
+  .sort((a, b) => b.timestamp - a.timestamp);
+
+// Minulé akce: od nejnovějších minulých po nejstarší (sestupně)
+const pastEvents = processedEvents
+  .filter(ev => ev.timestamp < todayTimestamp)
+  .sort((a, b) => b.timestamp - a.timestamp);
+
+const limitedPastEvents = pastEvents.slice(0, 10);
+
+// Celkové pořadí: Nahoře nejvzdálenější budoucnost -> nejbližší -> minulé
+const upcomingEvents = [
+  ...futureEvents,
+  ...limitedPastEvents
+];
+
+// Identifikace nejbližší nadcházející události pro oranžové zvýraznění
+const strictFuture = processedEvents
+  .filter(ev => ev.timestamp >= todayTimestamp)
+  .sort((a, b) => a.timestamp - b.timestamp);
+const nextFutureId = strictFuture.length > 0 ? strictFuture[0].timestamp : null;
+
+let playlists = [];
+try {
+  const playlistsPath = resolve('src/data/playlists.json');
+  if (existsSync(playlistsPath)) {
+    const fileData = readFileSync(playlistsPath, 'utf-8');
+    playlists = JSON.parse(fileData).slice(0, 4);
+  }
+} catch (e) {}
+
+function formatCzechDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  
+  const months = [
+    'ledna', 'února', 'března', 'dubna', 'května', 'června',
+    'července', 'srpna', 'září', 'října', 'listopadu', 'prosince'
+  ];
+  
+  return `${d.getDate()}. ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
 ---
 
 <html lang="cs">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BandControl</title>
+  <title>SYS_DASHBOARD // BandControl</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet">
+  
   <style>
-    :root { --bg-dark: #050505; --border-color: #27272a; --text-main: #f4f4f5; }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background-color: var(--bg-dark); color: var(--text-main); font-family: system-ui, sans-serif; min-height: 100vh; overflow-x: hidden; }
+    :root { 
+      --border-color: #27272a; 
+      --text-main: #9ca3af; 
+      --accent-orange: #d97706;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
     .dashboard-layout { width: 100%; display: flex; flex-direction: column; }
     
-    .modules-rack-row {
-      display: flex; flex-wrap: wrap; gap: 24px; padding: 24px;
-      justify-content: center; align-items: flex-start;
+    .dashboard-container {
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
     }
-    .compact-hardware-box { width: 280px; }
+
+    .dashboard-wrapper {
+      background: #0a0a0a;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .modules-rack-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .admin-panel-box.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .admin-panel-box {
+      background: #121212;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel-title {
+      font-size: 0.95rem;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      color: var(--text-main);
+      text-transform: uppercase;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .table-scroll-container {
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .table-scroll-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .table-scroll-container::-webkit-scrollbar-track {
+      background: #121212;
+    }
+    .table-scroll-container::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 3px;
+    }
+    .table-scroll-container::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-orange);
+    }
+
+    .events-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 6px;
+    }
+
+    .events-table tr {
+      background: #18181b;
+      border: 1px solid var(--border-color);
+      transition: all 0.2s;
+    }
+
+    /* 1. Minulé akce: celé mírně světlejší šedý font (na úroveň data) */
+    .events-table tr.row-past {
+      background: #141416;
+      opacity: 0.75;
+    }
+    .events-table tr.row-past td {
+      color: #71717a !important;
+    }
+    .events-table tr.row-past td.event-location {
+      color: #71717a !important;
+    }
+
+    /* 2. Budoucí akce: všude barva jako u místa akce (#a1a1aa) */
+    .events-table tr.row-future td {
+      color: #a1a1aa !important;
+    }
+    .events-table tr.row-future td.event-location {
+      color: #a1a1aa !important;
+    }
+
+    /* 3. Nejbližší nadcházející akce: oranžový font a zvýrazněný rámček */
+    .events-table tr.row-active-upcoming {
+      border-color: var(--accent-orange);
+      background: #1f140c !important;
+    }
+    .events-table tr.row-active-upcoming td {
+      color: #fbbf24 !important;
+      font-weight: bold;
+    }
+    .events-table tr.row-active-upcoming td.event-location {
+      color: #f59e0b !important;
+    }
+
+    .events-table td {
+      padding: 10px 16px;
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    .events-table td:first-child {
+      border-left: 1px solid var(--border-color);
+      border-top-left-radius: 6px;
+      border-bottom-left-radius: 6px;
+      width: 25%;
+    }
+
+    .event-location {
+      width: 35%;
+    }
+
+    .events-table td:nth-child(3) {
+      width: 25%;
+    }
+
+    .events-table td:last-child {
+      border-right: 1px solid var(--border-color);
+      border-top-right-radius: 6px;
+      border-bottom-right-radius: 6px;
+      text-align: right;
+      font-family: monospace;
+      width: 15%;
+    }
+
+    .item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .item-row {
+      background: #18181b;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .item-row.active {
+      border-color: var(--accent-orange);
+      background: #14110b;
+    }
+
+    .item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .item-main-text {
+      font-weight: bold;
+      font-size: 0.9rem;
+      color: var(--text-main);
+    }
+
+    .item-sub-text {
+      color: #6b7280;
+      font-size: 0.75rem;
+    }
+
+    .empty-notice {
+      color: #4b5563;
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+
+    .action-btn {
+      display: block;
+      width: 100%;
+      background: #18181b;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 12px 16px;
+      text-align: center;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .action-btn:hover {
+      background: #27272a;
+      border-color: #52525b;
+    }
+
+    .action-btn.admin-only {
+      background: var(--accent-orange);
+      color: #fff;
+      border-color: #b45309;
+      display: none;
+    }
+
+    .action-btn.admin-only:hover {
+      background: #b45309;
+    }
   </style>
 </head>
 <body>
@@ -32,13 +324,88 @@ import EventsModule from '../components/EventsModule.astro';
     <NavigationDrawer />
     <Header />
 
-    <div class="modules-rack-row">
-      <div class="compact-hardware-box"><EventsModule /></div>
-      <div class="compact-hardware-box"><OverviewModule /></div>
+    <div class="dashboard-container">
+      <div class="dashboard-wrapper">
+        <div class="modules-rack-row">
+          
+          <!-- BOX 1: Přehled akcí -->
+          <section class="admin-panel-box full-width">
+            <h2 class="panel-title">Přehled akcí</h2>
+            {upcomingEvents.length > 0 ? (
+              <div class="table-scroll-container">
+                <table class="events-table">
+                  <tbody>
+                    {upcomingEvents.map((ev: any) => {
+                      const isNextUpcoming = ev.timestamp === nextFutureId;
+                      const isPast = ev.timestamp < todayTimestamp;
+                      
+                      let rowClass = 'row-future';
+                      if (isNextUpcoming) {
+                        rowClass = 'row-active-upcoming';
+                      } else if (isPast) {
+                        rowClass = 'row-past';
+                      }
+
+                      return (
+                        <tr class={rowClass}>
+                          <td>{ev.title}</td>
+                          <td class="event-location">{ev.location}</td>
+                          <td>{formatCzechDate(ev.date)}</td>
+                          <td>{ev.time || '—'}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p class="empty-notice">Žádné naplánované akce.</p>
+            )}
+          </section>
+
+          <!-- BOX 2: Playlisty -->
+          <section class="admin-panel-box">
+            <h2 class="panel-title">Registrované playlisty</h2>
+            {playlists.length > 0 ? (
+              <div class="item-list">
+                {playlists.map((pl: any, index: number) => (
+                  <div class={`item-row ${index === 0 ? 'active' : ''}`}>
+                    <div class="item-info">
+                      <span class="item-main-text">{pl.name || pl.title || 'Bezejmenný playlist'}</span>
+                      <span class="item-sub-text">Položek: {pl.songs ? pl.songs.length : (pl.items?.length || 0)}</span>
+                    </div>
+                    {index === 0 && <span style="font-size: 0.7rem; color: var(--accent-orange); font-weight: bold; border: 1px solid var(--accent-orange); padding: 2px 6px; border-radius: 4px;">AKTIVNÍ</span>}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p class="empty-notice">Žádné playlisty k zobrazení.</p>
+            )}
+          </section>
+
+          <!-- BOX 3: Systémové operace -->
+          <section class="admin-panel-box">
+            <h2 class="panel-title">Systémové operace</h2>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 4px;">
+              <a href="/admin" id="admin-link-btn" class="action-btn admin-only">Otevřít Admin Panel</a>
+              <button class="action-btn" onclick="window.location.reload()">Obnovit data</button>
+            </div>
+          </section>
+
+        </div>
+      </div>
     </div>
   </main>
 
   <script is:inline>
+    const userRole = sessionStorage.getItem('role') || sessionStorage.getItem('uzivatelRole');
+    const isAdmin = sessionStorage.getItem('isAdmin') === 'true' || userRole === 'admin' || sessionStorage.getItem('jmeno') === 'Admin';
+
+    if (isAdmin || sessionStorage.getItem('jeAdmin') === 'true') {
+      const adminBtn = document.getElementById('admin-link-btn');
+      if (adminBtn) adminBtn.style.display = 'block';
+    }
+
     document.addEventListener('click', (e) => {
       if (e.target.closest('#logout-btn')) {
         sessionStorage.clear();

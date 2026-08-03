@@ -1,19 +1,96 @@
-/* src/styles/global.css */
+/* =================================================================ë
+   BANDCONTROL - Global Design System (Rack / Metal Aesthetic)
+   ================================================================ */
+
 :root {
-  --paper-bg: #cba46d;
-  --rack-bg: #1a1a1a;
+  --rack-bg: #050505;
+  --paper-bg: #0a0a0a;
+  --panel-metal: linear-gradient(135deg, #2c2c2c 0%, #484848 25%, #1a1a1a 50%, #424242 75%, #222222 100%);
+  --header-metal: linear-gradient(180deg, #555558 0%, #222224 45%, #111112 100%);
+  --btn-metal: linear-gradient(180deg, #3a3a3a 0%, #1c1c1c 60%, #111 100%);
+  --btn-metal-hover: linear-gradient(180deg, #1c1c1c 0%, #3a3a3a 50%, #1c1c1c 100%);
+  --accent-copper: #b87333;
+  --text-dim: #aaa;
+  --border-dark: #000;
 }
 
-* { 
-  box-sizing: border-box; 
-  margin: 0; 
-  padding: 0; 
-  scrollbar-width: none; 
+/* Základní reset */
+* {
+  box-sizing: border-box;
 }
-*::-webkit-scrollbar { display: none; }
 
-body { 
-  background-color: var(--paper-bg); 
-  font-family: 'Segoe UI', Roboto, sans-serif; 
+body {
+  margin: 0;
+  background-color: var(--rack-bg);
+  font-family: 'Rajdhani', sans-serif;
+  color: #fff;
   min-height: 100vh;
+}
+
+/* Univerzální nýty (např. do footeru nebo panelů) */
+.rivet {
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #aaaaaa 20%, #222222 80%, #000000 100%);
+  border-radius: 50%;
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 2px 3px 5px rgba(0, 0, 0, 0.9);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Sjednocená racková tlačítka */
+.rack-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid var(--border-dark);
+  background: var(--btn-metal);
+  box-shadow: 0 3px 0 #000, 0 5px 10px rgba(0, 0, 0, 0.5);
+  position: relative;
+  top: 0;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.rack-btn:hover {
+  background: var(--btn-metal-hover);
+}
+
+.rack-btn:active {
+  top: 2px;
+  box-shadow: 0 1px 0 #000, inset 0 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+/* Vnitřní displeje / okna */
+.rack-window {
+  background: #000;
+  border: 1px solid rgba(0, 0, 0, 0.9);
+  border-radius: 6px;
+  box-shadow: inset 6px 6px 15px rgba(0, 0, 0, 1), 0px 1px 0px rgba(255, 255, 255, 0.2);
+}
+
+/* LED diody */
+.led {
+  width: 6px;
+  height: 6px;
+  background: #300;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.led.active {
+  background: #5f5;
+  box-shadow: 0 0 8px #5f5;
+}
+
+.led.active-orange {
+  background: #ff4500;
+  box-shadow: 0 0 6px #ff4500;
 }

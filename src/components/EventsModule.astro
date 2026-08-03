@@ -1,31 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
-
-const allEvents = await getCollection('events');
-const now = new Date();
-now.setHours(0, 0, 0, 0);
-
-const getLocalMidnight = (dateVal: Date) => new Date(dateVal.getFullYear(), dateVal.getMonth(), dateVal.getDate()).getTime();
-const sortedAll = allEvents.sort((a, b) => getLocalMidnight(a.data.date) - getLocalMidnight(b.data.date));
-
-const nextEventIndex = sortedAll.findIndex(event => getLocalMidnight(event.data.date) >= now.getTime());
-
-let future = nextEventIndex !== -1 ? sortedAll.slice(nextEventIndex + 1) : [];
-let middle = nextEventIndex !== -1 ? sortedAll.slice(nextEventIndex, nextEventIndex + 1) : [];
-let past = nextEventIndex !== -1 ? sortedAll.slice(0, nextEventIndex) : sortedAll;
-
-const MAX_TOTAL = 15;
-let finalFuture = future.reverse(); 
-let finalPast = past.reverse();
-
-const totalList = [...finalFuture, ...middle, ...finalPast].slice(0, MAX_TOTAL);
-
-const topEvents = totalList.filter(e => future.includes(e));
-const middleEvents = totalList.filter(e => middle.includes(e));
-const bottomEvents = totalList.filter(e => past.includes(e));
-
-const formatDate = (dateVal: Date) => `${String(dateVal.getDate()).padStart(2, '0')}.${String(dateVal.getMonth() + 1).padStart(2, '0')}.`;
-const getEventColor = (event: any) => event.data.alert ? '#ff4500' : '#b87333';
+// src/components/EventsModule.astro
 ---
 
 <div class="sidebar-v-unit">
@@ -33,37 +7,24 @@ const getEventColor = (event: any) => event.data.alert ? '#ff4500' : '#b87333';
     <div class="engraved-label">Events</div>
     
     <div class="v-window top-window">
-      <div class="events-list">
-        {topEvents.map(event => (
-          <div class="event-item">
-            <span class="event-type" style={`color: ${getEventColor(event)}`}>{event.data.type}</span>
-            <span class="event-date" style={`color: ${getEventColor(event)}`}>{formatDate(event.data.date)}</span>
-          </div>
-        ))}
+      <div class="events-list" id="events-top-list">
+        <div class="event-item"><span class="event-type" style="color: #666;">Načítám...</span></div>
       </div>
     </div>
 
     <div class="bridge-gap"></div>
 
-    <div class="highlight-window">
-      {middleEvents.map(event => (
-        <div class="event-item highlight-item">
-          <span class="event-type">{event.data.type}</span>
-          <span class="event-date">{formatDate(event.data.date)}</span>
-        </div>
-      ))}
+    <div class="highlight-window" id="events-highlight-window">
+      <div class="event-item highlight-item">
+        <span class="event-type">Dnes / Nejbližší</span>
+        <span class="event-date">--.--.</span>
+      </div>
     </div>
 
     <div class="bridge-gap"></div>
 
     <div class="v-window bottom-window">
-      <div class="events-list is-history">
-        {bottomEvents.map(event => (
-          <div class="event-item is-past">
-            <span class="event-type">{event.data.type}</span>
-            <span class="event-date">{formatDate(event.data.date)}</span>
-          </div>
-        ))}
+      <div class="events-list is-history" id="events-bottom-list">
       </div>
     </div>
 
@@ -71,6 +32,102 @@ const getEventColor = (event: any) => event.data.alert ? '#ff4500' : '#b87333';
     <div class="rivet t-r"></div>
   </div>
 </div>
+
+<script is:inline>
+  async function loadDashboardEvents() {
+    try {
+      const res = await fetch('/api/events');
+      if (!res.ok) throw new Error('Chyba při načítání událostí');
+      
+      const rawEvents = await res.json();
+      if (!Array.isArray(rawEvents) || rawEvents.length === 0) return;
+
+      // Transformace a seřazení dat (očekáváme pole objektů s title/type a date)
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const nowTime = now.getTime();
+
+      const getLocalMidnight = (dateStr) => {
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? 0 : new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      };
+
+      const formatDate = (dateStr) => {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return 'Neurčeno';
+        return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.`;
+      };
+
+      // Mapování dat z DB formátu do šablony
+      const formattedEvents = rawEvents.map(ev => ({
+        type: ev.title || ev.type || 'Akce',
+        dateVal: ev.date ? new Date(ev.date) : new Date(),
+        timestamp: getLocalMidnight(ev.date),
+        alert: ev.alert || false
+      })).sort((a, b) => a.timestamp - b.timestamp);
+
+      const nextEventIndex = formattedEvents.findIndex(e => e.timestamp >= nowTime);
+
+      let future = nextEventIndex !== -1 ? formattedEvents.slice(nextEventIndex + 1) : [];
+      let middle = nextEventIndex !== -1 ? formattedEvents.slice(nextEventIndex, nextEventIndex + 1) : [];
+      let past = nextEventIndex !== -1 ? formattedEvents.slice(0, nextEventIndex) : formattedEvents;
+
+      const MAX_TOTAL = 15;
+      let finalFuture = [...future].reverse();
+      let finalPast = [...past].reverse();
+
+      const totalList = [...finalFuture, ...middle, ...finalPast].slice(0, MAX_TOTAL);
+
+      const topEvents = totalList.filter(e => future.includes(e));
+      const middleEvents = totalList.filter(e => middle.includes(e));
+      const bottomEvents = totalList.filter(e => past.includes(e));
+
+      // Vykreslení TOP (budoucí)
+      const topContainer = document.getElementById('events-top-list');
+      if (topContainer) {
+        topContainer.innerHTML = topEvents.length > 0 
+          ? topEvents.map(e => `
+              <div class="event-item">
+                <span class="event-type" style="color: ${e.alert ? '#ff4500' : '#b87333'}">${e.type}</span>
+                <span class="event-date" style="color: ${e.alert ? '#ff4500' : '#b87333'}">${formatDate(e.dateVal)}</span>
+              </div>
+            `).join('')
+          : '<div class="event-item"><span class="event-type" style="color: #444;">Žádné další</span></div>';
+      }
+
+      // Vykreslení MIDDLE (dnešní / nejbližší aktivní)
+      const highlightContainer = document.getElementById('events-highlight-window');
+      if (highlightContainer) {
+        highlightContainer.innerHTML = middleEvents.length > 0
+          ? middleEvents.map(e => `
+              <div class="event-item highlight-item">
+                <span class="event-type">${e.type}</span>
+                <span class="event-date">${formatDate(e.dateVal)}</span>
+              </div>
+            `).join('')
+          : '<div class="event-item highlight-item"><span class="event-type">Žádná akce</span><span class="event-date">--.--.</span></div>';
+      }
+
+      // Vykreslení BOTTOM (minulé)
+      const bottomContainer = document.getElementById('events-bottom-list');
+      if (bottomContainer) {
+        bottomContainer.innerHTML = bottomEvents.length > 0
+          ? bottomEvents.map(e => `
+              <div class="event-item is-past">
+                <span class="event-type">${e.type}</span>
+                <span class="event-date">${formatDate(e.dateVal)}</span>
+              </div>
+            `).join('')
+          : '';
+      }
+
+    } catch (err) {
+      console.error('Nepodařilo se načíst události pro dashboard:', err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadDashboardEvents);
+</script>
 
 <style>
   .sidebar-v-unit { display: flex; justify-content: center; width: 100%; }
@@ -92,7 +149,7 @@ const getEventColor = (event: any) => event.data.alert ? '#ff4500' : '#b87333';
   }
 
   .v-window { width: 100%; background: #000; border-radius: 9px; border: 1px solid rgba(0, 0, 0, 0.9); box-shadow: inset 6px 6px 15px rgba(0, 0, 0, 1), 0px 2px 0px rgba(255, 255, 255, 0.2); flex-grow: 0; }
-  .top-window, .bottom-window { padding: 6px 0; }
+  .top-window, .bottom-window { padding: 6px 0; max-height: 180px; overflow-y: auto; }
   
   .highlight-window { height: 34px; width: 100%; background: #000; border-radius: 9px; border: 1px solid rgba(0, 0, 0, 0.9); box-shadow: inset 6px 6px 15px rgba(0, 0, 0, 1), 0px 2px 0px rgba(255, 255, 255, 0.2); display: flex; align-items: center; flex-grow: 0; }
   .bridge-gap { height: 14px; flex-shrink: 0; }

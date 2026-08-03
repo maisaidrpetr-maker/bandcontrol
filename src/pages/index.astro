@@ -1,5 +1,6 @@
 ---
 // src/pages/index.astro
+import '../styles/global.css';
 ---
 <html lang="cs">
   <head>
@@ -7,10 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
       body {
-        margin: 0;
-        background-color: #050505;
-        height: 100vh;
-        /* Flexbox pro vystředění na všech zařízeních */
+        /* Flexbox pro vystředění na všech zařízeních (zbytek táhne global.css) */
         display: flex;
         justify-content: center;
         align-items: center;

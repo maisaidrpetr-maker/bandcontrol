@@ -1,3 +1,7 @@
+---
+// src/components/header.astro
+import '../styles/global.css';
+---
 <header class="rack-header">
   <div class="band-name">BLUE HEART</div>
   
@@ -31,12 +35,19 @@
 
   // Fullscreen logika
   const btn = document.getElementById('fullscreen-btn');
-  const led = document.querySelector('.led');
+  const led = document.querySelector('.rack-btn-fs .led');
   btn?.addEventListener('click', () => {
     !document.fullscreenElement ? document.documentElement.requestFullscreen() : document.exitFullscreen();
   });
   document.addEventListener('fullscreenchange', () => {
     document.fullscreenElement ? led?.classList.add('active') : led?.classList.remove('active');
+  });
+
+  // Odhlášení
+  document.getElementById('logout-btn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    sessionStorage.clear();
+    window.location.href = '/login';
   });
 
   // Hodiny a datum
@@ -116,13 +127,13 @@
 
   /* Specifické fonty a barvy */
   .band-name, .clock-box { font-family: 'Orbitron', sans-serif; }
-  .user-display { font-family: 'Rajdhani', sans-serif; font-weight: 600; }
+  .user-display { font-family: 'Rajdhani', sans-serif; font-weight: 600; color: #fff; }
   .user-role { margin-left: 6px; color: #aaa; }
   .clock-box { color: #058c8a; font-weight: bold; }
   
   /* LED kontrolka */
-  .led { width: 8px; height: 8px; background: #300; border-radius: 50%; }
-  .led.active { background: #5f5; box-shadow: 0 0 10px #5f5; }
+  .rack-btn-fs .led { width: 8px; height: 8px; background: #300; border-radius: 50%; }
+  .rack-btn-fs .led.active { background: #5f5; box-shadow: 0 0 10px #5f5; }
 
   /* Rozmístění hodin */
   .right-section {

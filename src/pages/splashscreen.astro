@@ -1,5 +1,6 @@
 ---
 // src/pages/splashscreen.astro
+import '../styles/global.css';
 ---
 <html lang="cs">
   <head>
@@ -7,9 +8,6 @@
     <title>Start | BandControl</title>
     <style>
       body {
-        margin: 0;
-        background-color: #050505;
-        height: 100vh;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -25,7 +23,6 @@
     <img src="/bms.png" alt="Logo" class="logo" />
 
     <script>
-      // Přesměruje tě na /login, protože tak jsme si pojmenovali soubor Login.astro
       setTimeout(() => {
         window.location.href = '/login';
       }, 2500);

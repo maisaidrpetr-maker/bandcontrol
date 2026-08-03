@@ -162,7 +162,7 @@ function formatCzechDate(dateStr) {
     .events-table {
       width: 100%;
       border-collapse: separate;
-      border-spacing: 0 6px;
+      border-spacing: 0 4px;
     }
 
     .events-table tr {
@@ -205,7 +205,7 @@ function formatCzechDate(dateStr) {
     }
 
     .events-table td {
-      padding: 10px 16px;
+      padding: 6px 14px;
       font-size: 0.85rem;
       border-top: 1px solid var(--border-color);
       border-bottom: 1px solid var(--border-color);
@@ -214,8 +214,8 @@ function formatCzechDate(dateStr) {
 
     .events-table td:first-child {
       border-left: 1px solid var(--border-color);
-      border-top-left-radius: 6px;
-      border-bottom-left-radius: 6px;
+      border-top-left-radius: 4px;
+      border-bottom-left-radius: 4px;
       width: 25%;
     }
 
@@ -229,8 +229,8 @@ function formatCzechDate(dateStr) {
 
     .events-table td:last-child {
       border-right: 1px solid var(--border-color);
-      border-top-right-radius: 6px;
-      border-bottom-right-radius: 6px;
+      border-top-right-radius: 4px;
+      border-bottom-right-radius: 4px;
       text-align: right;
       font-family: monospace;
       width: 15%;
@@ -363,7 +363,7 @@ function formatCzechDate(dateStr) {
 
           <!-- BOX 2: Playlisty -->
           <section class="admin-panel-box">
-            <h2 class="panel-title">Registrované playlisty</h2>
+            <h2 class="panel-title">Uložené playlisty</h2>
             {playlists.length > 0 ? (
               <div class="item-list">
                 {playlists.map((pl: any, index: number) => (

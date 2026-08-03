@@ -3,8 +3,10 @@
 import '../styles/global.css';
 import NavigationDrawer from '../components/NavigationDrawer.astro';
 import Header from '../components/Header.astro';
+import fs from 'node:fs';
+import path from 'node:path';
 
-// Načtení akcí z nového Redis API endpointu
+// Načtení akcí z Redis API endpointu
 let allEvents = [];
 try {
   const response = new URL('/api/events', Astro.request.url);
@@ -27,38 +29,68 @@ const processedEvents = allEvents.map((ev: any) => {
   };
 });
 
-// Budoucí akce: od nejvzdálenějších po nejbližší (sestupně)
 const futureEvents = processedEvents
   .filter(ev => ev.timestamp >= todayTimestamp)
   .sort((a, b) => b.timestamp - a.timestamp);
 
-// Minulé akce: od nejnovějších minulých po nejstarší (sestupně)
 const pastEvents = processedEvents
   .filter(ev => ev.timestamp < todayTimestamp)
   .sort((a, b) => b.timestamp - a.timestamp);
 
 const limitedPastEvents = pastEvents.slice(0, 10);
 
-// Celkové pořadí: Nahoře nejvzdálenější budoucnost -> nejbližší -> minulé
 const upcomingEvents = [
   ...futureEvents,
   ...limitedPastEvents
 ];
 
-// Identifikace nejbližší nadcházející události pro oranžové zvýraznění
 const strictFuture = processedEvents
   .filter(ev => ev.timestamp >= todayTimestamp)
   .sort((a, b) => a.timestamp - b.timestamp);
 const nextFutureId = strictFuture.length > 0 ? strictFuture[0].timestamp : null;
 
-// Playlisty (pokud je načítáš podobně z API nebo souboru, necháš podle své aktuální implementace)
+// Playlisty
 let playlists = [];
 try {
   const res = await fetch(new URL('/api/playlists', Astro.request.url).toString());
   if (res.ok) {
-    playlists = (await res.json()).slice(0, 4);
+    playlists = await res.json();
   }
 } catch (e) {}
+
+// Písně (Lyrics) - načtení ze složky src/content/lyrics
+let songsCount = 0;
+try {
+  const songsDir = path.resolve('./src/content/lyrics');
+  if (fs.existsSync(songsDir)) {
+    const files = fs.readdirSync(songsDir);
+    songsCount = files.filter(file => file.endsWith('.md')).length;
+  }
+} catch (e) {}
+
+// Audio soubory - načtení ze složky public/audio (.mp3)
+let audioFilesCount = 0;
+try {
+  const audioDir = path.resolve('./public/audio');
+  if (fs.existsSync(audioDir)) {
+    const files = fs.readdirSync(audioDir);
+    audioFilesCount = files.filter(file => file.toLowerCase().endsWith('.mp3')).length;
+  }
+} catch (e) {
+  console.error('Chyba při načítání audio souborů:', e);
+}
+
+// Zápisy / Aktivity (.md soubory) - načteno ze složky src/content/activities
+let markdownNotesCount = 0;
+try {
+  const notesDir = path.join(process.cwd(), 'src/content/activities');
+  if (fs.existsSync(notesDir)) {
+    const files = fs.readdirSync(notesDir);
+    markdownNotesCount = files.filter(file => file.toLowerCase().endsWith('.md')).length;
+  }
+} catch (e) {
+  console.error('Chyba při načítání zápisů:', e);
+}
 
 function formatCzechDate(dateStr) {
   if (!dateStr) return '';
@@ -171,7 +203,6 @@ function formatCzechDate(dateStr) {
       transition: all 0.2s;
     }
 
-    /* 1. Minulé akce: celé mírně světlejší šedý font (na úroveň data) */
     .events-table tr.row-past {
       background: #141416;
       opacity: 0.75;
@@ -183,7 +214,6 @@ function formatCzechDate(dateStr) {
       color: #71717a !important;
     }
 
-    /* 2. Budoucí akce: všude barva jako u místa akce (#a1a1aa) */
     .events-table tr.row-future td {
       color: #a1a1aa !important;
     }
@@ -191,7 +221,6 @@ function formatCzechDate(dateStr) {
       color: #a1a1aa !important;
     }
 
-    /* 3. Nejbližší nadcházející akce: oranžový font a zvýrazněný rámček */
     .events-table tr.row-active-upcoming {
       border-color: var(--accent-orange);
       background: #1f140c !important;
@@ -239,39 +268,33 @@ function formatCzechDate(dateStr) {
     .item-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 6px;
     }
 
     .item-row {
       background: #18181b;
       border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 12px 16px;
+      border-radius: 4px;
+      padding: 8px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-    }
-
-    .item-row.active {
-      border-color: var(--accent-orange);
-      background: #14110b;
-    }
-
-    .item-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+      gap: 15px;
     }
 
     .item-main-text {
       font-weight: bold;
       font-size: 0.9rem;
       color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .item-sub-text {
-      color: #6b7280;
-      font-size: 0.75rem;
+      color: #a1a1aa;
+      font-size: 0.8rem;
+      white-space: nowrap;
     }
 
     .empty-notice {
@@ -280,18 +303,42 @@ function formatCzechDate(dateStr) {
       font-style: italic;
     }
 
+    .stats-table {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .stat-row {
+      background: #18181b;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      color: var(--text-main);
+    }
+
+    .stat-row span:last-child {
+      font-weight: bold;
+      color: #fbbf24;
+      font-family: monospace;
+    }
+
     .action-btn {
       display: block;
       width: 100%;
       background: #18181b;
       border: 1px solid var(--border-color);
       color: var(--text-main);
-      padding: 12px 16px;
+      padding: 10px 16px;
       text-align: center;
       text-decoration: none;
       font-size: 0.85rem;
       font-weight: bold;
-      border-radius: 6px;
+      border-radius: 4px;
       cursor: pointer;
       transition: background 0.2s;
     }
@@ -365,26 +412,52 @@ function formatCzechDate(dateStr) {
           <section class="admin-panel-box">
             <h2 class="panel-title">Uložené playlisty</h2>
             {playlists.length > 0 ? (
-              <div class="item-list">
-                {playlists.map((pl: any, index: number) => (
-                  <div class={`item-row ${index === 0 ? 'active' : ''}`}>
-                    <div class="item-info">
-                      <span class="item-main-text">{pl.name || pl.title || 'Bezejmenný playlist'}</span>
-                      <span class="item-sub-text">Položek: {pl.songs ? pl.songs.length : (pl.items?.length || 0)}</span>
+              <div class="table-scroll-container" style="max-height: 220px;">
+                <div class="item-list">
+                  {playlists.map((pl: any) => (
+                    <div class="item-row">
+                      <span class="item-main-text" style="flex: 1;">{pl.name || pl.title || 'Bezejmenný playlist'}</span>
+                      <span class="item-sub-text">Počet písní: {pl.songs ? pl.songs.length : (pl.items?.length || 0)}</span>
                     </div>
-                    {index === 0 && <span style="font-size: 0.7rem; color: var(--accent-orange); font-weight: bold; border: 1px solid var(--accent-orange); padding: 2px 6px; border-radius: 4px;">AKTIVNÍ</span>}
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             ) : (
               <p class="empty-notice">Žádné playlisty k zobrazení.</p>
             )}
           </section>
 
-          <!-- BOX 3: Systémové operace -->
+          <!-- BOX 3: Statistické informace -->
+          <section class="admin-panel-box">
+            <h2 class="panel-title">Statistiky systému</h2>
+            <div class="stats-table">
+              <div class="stat-row">
+                <span>Písně</span>
+                <span>{songsCount}</span>
+              </div>
+              <div class="stat-row">
+                <span>Playlisty</span>
+                <span>{playlists.length}</span>
+              </div>
+              <div class="stat-row">
+                <span>Audio soubory</span>
+                <span>{audioFilesCount}</span>
+              </div>
+              <div class="stat-row">
+                <span>Budoucí události</span>
+                <span>{futureEvents.length}</span>
+              </div>
+              <div class="stat-row">
+                <span>Zápisy</span>
+                <span>{markdownNotesCount}</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- BOX 4: Systémové operace -->
           <section class="admin-panel-box">
             <h2 class="panel-title">Systémové operace</h2>
-            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 4px;">
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 4px;">
               <a href="/admin" id="admin-link-btn" class="action-btn admin-only">Otevřít Admin Panel</a>
               <button class="action-btn" onclick="window.location.reload()">Obnovit data</button>
             </div>

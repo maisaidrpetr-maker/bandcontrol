@@ -2,29 +2,53 @@
 // src/pages/index.astro
 import '../styles/global.css';
 ---
-<html lang="cs">
+<html lang="cs" style="height: 100%;">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+      }
       body {
-        /* Flexbox pro vystředění na všech zařízeních (zbytek táhne global.css) */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .content-wrapper {
         display: flex;
         justify-content: center;
         align-items: center;
+        flex: 1;
+        width: 100%;
       }
       .logo {
-        /* Responzivní šířka: obrázek nikdy nepřesáhne 80 % šířky displeje */
         width: 80%;
-        /* Maximální šířka, aby logo nebylo na desktopu zbytečně obří */
         max-width: 400px;
-        height: auto; /* Zachová poměr stran */
+        height: auto;
         display: block;
+      }
+      footer {
+        width: 100%;
+        padding: 20px 0;
+        border-top: 1px solid #27272a;
+        text-align: center;
+        color: #71717a;
+        font-size: 0.8rem;
+        background: #09090b;
       }
     </style>
   </head>
   <body>
-    <img src="/images/bms.png" alt="BandControl Logo" class="logo" />
+    <div class="content-wrapper">
+      <img src="/images/bms.png" alt="BandControl Logo" class="logo" />
+    </div>
+
+    <footer>
+      <p style="margin: 0;">BandControl &copy; 2026 | Správa repertoáru a playlistů</p>
+    </footer>
 
     <script>
       setTimeout(() => {

@@ -62,26 +62,33 @@
 
     try {
       const res = await fetch('/api/events');
-      cachedEvents = res.ok ? await res.json() : [];
+      let rawEvents = res.ok ? await res.json() : [];
 
-      if (cachedEvents.length === 0) {
+      if (rawEvents.length === 0) {
         container.innerHTML = '<p style="color: #777; text-align: center; padding: 20px;">Zatím nejsou naplánované žádné události.</p>';
         return;
       }
 
-      container.innerHTML = '<div style="display: flex; flex-direction: column; gap: 12px;">' + cachedEvents.map(ev => `
-        <div style="background: #111; border: 1px solid #333; padding: 15px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-          <div>
-            <strong style="color: #ff8800; font-size: 1rem; display: block; margin-bottom: 4px;">${ev.title}</strong>
-            <div style="font-size: 0.8rem; color: #aaa; display: flex; gap: 15px; flex-wrap: wrap;">
+      // Seřazení od nejaktuálnějších (nejbližších/nejnovějších) dolů
+      cachedEvents = rawEvents.sort((a, b) => {
+        const timeA = new Date(a.date + (a.time ? `T${a.time}` : 'T00:00:00')).getTime() || 0;
+        const timeB = new Date(b.date + (b.time ? `T${b.time}` : 'T00:00:00')).getTime() || 0;
+        return timeB - timeA; // Sestupně: nejnovější/nejbudoucí nahoře, staré dole
+      });
+
+      container.innerHTML = '<div style="display: flex; flex-direction: column; gap: 6px;">' + cachedEvents.map(ev => `
+        <div style="background: #18181b; border: 1px solid #27272a; padding: 8px 12px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+          <div style="display: flex; align-items: center; gap: 20px; overflow: hidden; flex: 1;">
+            <strong style="color: #9ca3af; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 150px;">${ev.title}</strong>
+            <div style="font-size: 0.8rem; color: #a1a1aa; display: flex; gap: 15px; white-space: nowrap;">
               <span>📅 ${ev.date || 'Neurčeno'} ${ev.time ? 'v ' + ev.time : ''}</span>
               <span>📍 ${ev.location || 'Neznámo'}</span>
-              ${ev.playlistId ? '<span style="color: #6699ff;">🎵 Playlist přiřazen</span>' : ''}
+              ${ev.playlistId ? '<span style="color: #6699ff;">🎵 Playlist</span>' : ''}
             </div>
           </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <button type="button" onclick="editEvent('${ev.id}')" style="background: #1a2233; border: 1px solid #334466; color: #6699ff; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">Upravit</button>
-            <button type="button" onclick="deleteEvent('${ev.id}')" style="background: #2a1111; border: 1px solid #552222; color: #ff6666; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">Smazat</button>
+          <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+            <button type="button" onclick="editEvent('${ev.id}')" style="background: #1a2233; border: 1px solid #334466; color: #6699ff; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">Upravit</button>
+            <button type="button" onclick="deleteEvent('${ev.id}')" style="background: #2a1111; border: 1px solid #552222; color: #ff6666; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">Smazat</button>
           </div>
         </div>
       `).join('') + '</div>';
@@ -145,10 +152,8 @@
       let events = [...cachedEvents];
 
       if (editingEventId) {
-        // Úprava existující
         events = events.map(e => e.id === editingEventId ? { ...e, title, date, time, location, playlistId } : e);
       } else {
-        // Vytvoření nové
         events.push({
           id: 'ev_' + Date.now(),
           title,

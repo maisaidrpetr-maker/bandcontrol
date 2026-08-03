@@ -106,44 +106,44 @@
         return;
       }
 
-      let html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+      let html = '<div style="display: flex; flex-direction: column; gap: 6px;">';
       playlists.forEach((pl) => {
         const isActive = pl.id === activePlaylistId;
 
         html += `
-          <div class="playlist-card" id="pl-card-${pl.id}" style="background: ${isActive ? '#141008' : '#111'}; border: 1px solid ${isActive ? '#ff8800' : '#333'}; padding: 15px; border-radius: 6px; transition: border-color 0.2s;">
+          <div class="playlist-card" id="pl-card-${pl.id}" style="background: ${isActive ? '#141008' : '#18181b'}; border: 1px solid ${isActive ? '#ff8800' : '#27272a'}; padding: 8px 12px; border-radius: 4px; transition: border-color 0.2s;">
             
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-              <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+              <div style="display: flex; align-items: center; gap: 20px; overflow: hidden; flex: 1;">
                 
-                <div id="title-view-${pl.id}" style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;" onclick="startInlineEdit('${pl.id}')" title="Klikni pro úpravu názvu">
-                  <strong style="color: ${isActive ? '#ff8800' : '#aaa'}; font-size: 1rem; letter-spacing: 0.5px;">${pl.name}</strong>
-                  <span style="font-size: 0.75rem; color: #555;" title="Upravit název">✏️</span>
+                <div id="title-view-${pl.id}" style="display: flex; align-items: center; gap: 8px; cursor: pointer; min-width: 150px; overflow: hidden;" onclick="startInlineEdit('${pl.id}')" title="Klikni pro úpravu názvu">
+                  <strong style="color: ${isActive ? '#ff8800' : '#9ca3af'}; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${pl.name}</strong>
+                  <span style="font-size: 0.7rem; color: #555; flex-shrink: 0;" title="Upravit název">✏️</span>
                 </div>
 
-                <div id="title-edit-${pl.id}" style="display: none; align-items: center; gap: 6px; flex: 1;">
-                  <input type="text" id="inline-name-input-${pl.id}" value="${pl.name}" style="padding: 4px 8px; background: #0a0a0a; border: 1px solid #ff8800; color: #fff; border-radius: 3px; font-size: 0.9rem; width: 100%; max-width: 250px;" onclick="event.stopPropagation()" />
-                  <button type="button" onclick="event.stopPropagation(); saveInlineTitle('${pl.id}')" style="background: #ff8800; border: none; color: #fff; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold;">OK</button>
-                  <button type="button" onclick="event.stopPropagation(); cancelInlineEdit('${pl.id}')" style="background: #333; border: none; color: #aaa; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">✕</button>
+                <div id="title-edit-${pl.id}" style="display: none; align-items: center; gap: 6px; flex: 1; max-width: 250px;">
+                  <input type="text" id="inline-name-input-${pl.id}" value="${pl.name}" style="padding: 4px 8px; background: #0a0a0a; border: 1px solid #ff8800; color: #fff; border-radius: 3px; font-size: 0.85rem; width: 100%;" onclick="event.stopPropagation()" />
+                  <button type="button" onclick="event.stopPropagation(); saveInlineTitle('${pl.id}')" style="background: #ff8800; border: none; color: #fff; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold;">OK</button>
+                  <button type="button" onclick="event.stopPropagation(); cancelInlineEdit('${pl.id}')" style="background: #333; border: none; color: #aaa; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">✕</button>
                 </div>
 
-                <span style="font-size: 0.75rem; color: #777; white-space: nowrap;">(${pl.songs.length} skladeb)</span>
+                <span style="font-size: 0.8rem; color: #a1a1aa; white-space: nowrap;">(${pl.songs.length} skladeb)</span>
               </div>
 
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <button type="button" onclick="event.stopPropagation(); togglePreview('${pl.id}')" id="btn-preview-${pl.id}" style="background: #182233; border: 1px solid #334466; color: #6699ff; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; white-space: nowrap;">Zobrazit</button>
+              <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                <button type="button" onclick="event.stopPropagation(); togglePreview('${pl.id}')" id="btn-preview-${pl.id}" style="background: #182233; border: 1px solid #334466; color: #6699ff; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; white-space: nowrap;">Zobrazit</button>
                 
-                <button id="btn-activate-${pl.id}" onclick="event.stopPropagation(); setActivePlaylist('${pl.id}')" style="background: ${isActive ? '#332200' : '#141414'}; border: 1px solid ${isActive ? '#ff8800' : '#333'}; color: ${isActive ? '#ff8800' : '#aaa'}; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; white-space: nowrap;">
+                <button id="btn-activate-${pl.id}" onclick="event.stopPropagation(); setActivePlaylist('${pl.id}')" style="background: ${isActive ? '#332200' : '#141414'}; border: 1px solid ${isActive ? '#ff8800' : '#333'}; color: ${isActive ? '#ff8800' : '#aaa'}; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: bold; white-space: nowrap;">
                   ${isActive ? 'AKTIVNÍ' : 'Aktivovat'}
                 </button>
-                <button onclick="event.stopPropagation(); toggleEdit('${pl.id}')" style="background: #222; border: 1px solid #333; color: #ccc; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; white-space: nowrap;">Upravit</button>
-                <button onclick="event.stopPropagation(); deletePlaylist('${pl.id}')" style="background: #2a1111; border: 1px solid #552222; color: #ff6666; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;" title="Smazat playlist">Smazat</button>
+                <button onclick="event.stopPropagation(); toggleEdit('${pl.id}')" style="background: #222; border: 1px solid #333; color: #ccc; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; white-space: nowrap;">Upravit</button>
+                <button onclick="event.stopPropagation(); deletePlaylist('${pl.id}')" style="background: #2a1111; border: 1px solid #552222; color: #ff6666; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;" title="Smazat playlist">Smazat</button>
               </div>
             </div>
 
             <!-- Inline náhled playlistu -->
-            <div id="pl-preview-${pl.id}" style="display: none; margin-top: 15px; border-top: 1px solid #222; padding-top: 15px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div id="pl-preview-${pl.id}" style="display: none; margin-top: 12px; border-top: 1px solid #27272a; padding-top: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <span style="font-size: 0.75rem; color: #6699ff; font-weight: bold;">NÁHLED PLAYLISTU (TÓNINA & CAPO)</span>
                 <button type="button" onclick="printPreview('${pl.id}')" style="background: #182233; border: 1px solid #334466; color: #6699ff; padding: 4px 10px; border-radius: 3px; cursor: pointer; font-size: 0.75rem;">🖨️ Vytisknout tento</button>
               </div>
@@ -151,7 +151,7 @@
             </div>
 
             <!-- Total Commander rozhraní -->
-            <div id="pl-edit-${pl.id}" style="display: none; margin-top: 15px; border-top: 1px solid #222; padding-top: 15px;">
+            <div id="pl-edit-${pl.id}" style="display: none; margin-top: 12px; border-top: 1px solid #27272a; padding-top: 12px;">
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px;" class="tc-container">
                 
                 <div style="background: rgba(0,0,0,0.3); border: 1px solid #222; border-radius: 6px; padding: 10px; display: flex; flex-direction: column;">

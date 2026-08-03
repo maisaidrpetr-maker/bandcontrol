@@ -11,10 +11,10 @@
   <p style="color: #777; text-align: center; padding: 20px;">Načítám události...</p>
 </div>
 
-<!-- Modální okno pro novou událost -->
+<!-- Modální okno pro novou / upravenou událost -->
 <div id="event-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
   <div style="background: #141414; border: 1px solid #333; padding: 25px; border-radius: 8px; width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 15px;">
-    <h3 style="color: #ff8800; margin: 0; font-size: 1rem;">Nová událost / koncert</h3>
+    <h3 id="event-modal-title" style="color: #ff8800; margin: 0; font-size: 1rem;">Nová událost / koncert</h3>
     
     <div>
       <label style="font-size: 0.75rem; color: #888; display: block; margin-bottom: 4px;">Název akce</label>
@@ -46,12 +46,15 @@
 
     <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
       <button type="button" onclick="closeEventModal()" style="background: #222; border: 1px solid #333; color: #aaa; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Zrušit</button>
-      <button type="button" onclick="saveNewEvent()" style="background: linear-gradient(180deg, #ff8800 0%, #cc6a00 100%); border: none; color: #fff; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">Uložit událost</button>
+      <button type="button" onclick="saveEvent()" style="background: linear-gradient(180deg, #ff8800 0%, #cc6a00 100%); border: none; color: #fff; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">Uložit událost</button>
     </div>
   </div>
 </div>
 
 <script is:inline>
+  let editingEventId = null;
+  let cachedEvents = [];
+
   window.loadEvents = async function() {
     const container = document.querySelector('.events-container');
     if (!container) return;
@@ -59,14 +62,14 @@
 
     try {
       const res = await fetch('/api/events');
-      const events = res.ok ? await res.json() : [];
+      cachedEvents = res.ok ? await res.json() : [];
 
-      if (events.length === 0) {
+      if (cachedEvents.length === 0) {
         container.innerHTML = '<p style="color: #777; text-align: center; padding: 20px;">Zatím nejsou naplánované žádné události.</p>';
         return;
       }
 
-      container.innerHTML = '<div style="display: flex; flex-direction: column; gap: 12px;">' + events.map(ev => `
+      container.innerHTML = '<div style="display: flex; flex-direction: column; gap: 12px;">' + cachedEvents.map(ev => `
         <div style="background: #111; border: 1px solid #333; padding: 15px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
           <div>
             <strong style="color: #ff8800; font-size: 1rem; display: block; margin-bottom: 4px;">${ev.title}</strong>
@@ -76,7 +79,8 @@
               ${ev.playlistId ? '<span style="color: #6699ff;">🎵 Playlist přiřazen</span>' : ''}
             </div>
           </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" onclick="editEvent('${ev.id}')" style="background: #1a2233; border: 1px solid #334466; color: #6699ff; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">Upravit</button>
             <button type="button" onclick="deleteEvent('${ev.id}')" style="background: #2a1111; border: 1px solid #552222; color: #ff6666; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">Smazat</button>
           </div>
         </div>
@@ -87,7 +91,11 @@
     }
   };
 
-  window.openEventModal = async function() {
+  window.openEventModal = async function(eventData = null) {
+    editingEventId = eventData ? eventData.id : null;
+    
+    document.getElementById('event-modal-title').innerText = editingEventId ? 'Upravit událost' : 'Nová událost / koncert';
+
     try {
       const res = await fetch('/api/playlists');
       const playlists = res.ok ? await res.json() : [];
@@ -100,18 +108,28 @@
       console.error('Chyba při načítání playlistů do selectu', err);
     }
 
-    document.getElementById('event-title-input').value = '';
-    document.getElementById('event-date-input').value = '';
-    document.getElementById('event-time-input').value = '';
-    document.getElementById('event-location-input').value = '';
+    document.getElementById('event-title-input').value = eventData ? (eventData.title || '') : '';
+    document.getElementById('event-date-input').value = eventData ? (eventData.date || '') : '';
+    document.getElementById('event-time-input').value = eventData ? (eventData.time || '') : '';
+    document.getElementById('event-location-input').value = eventData ? (eventData.location || '') : '';
+    document.getElementById('event-playlist-select').value = eventData ? (eventData.playlistId || '') : '';
+
     document.getElementById('event-modal').style.display = 'flex';
+  };
+
+  window.editEvent = function(id) {
+    const eventToEdit = cachedEvents.find(e => e.id === id);
+    if (eventToEdit) {
+      openEventModal(eventToEdit);
+    }
   };
 
   window.closeEventModal = function() {
     document.getElementById('event-modal').style.display = 'none';
+    editingEventId = null;
   };
 
-  window.saveNewEvent = async function() {
+  window.saveEvent = async function() {
     const title = document.getElementById('event-title-input').value.trim();
     const date = document.getElementById('event-date-input').value;
     const time = document.getElementById('event-time-input').value;
@@ -124,17 +142,22 @@
     }
 
     try {
-      const res = await fetch('/api/events');
-      const events = res.ok ? await res.json() : [];
+      let events = [...cachedEvents];
 
-      events.push({
-        id: 'ev_' + Date.now(),
-        title,
-        date,
-        time,
-        location,
-        playlistId
-      });
+      if (editingEventId) {
+        // Úprava existující
+        events = events.map(e => e.id === editingEventId ? { ...e, title, date, time, location, playlistId } : e);
+      } else {
+        // Vytvoření nové
+        events.push({
+          id: 'ev_' + Date.now(),
+          title,
+          date,
+          time,
+          location,
+          playlistId
+        });
+      }
 
       const saveRes = await fetch('/api/events', {
         method: 'POST',
@@ -154,9 +177,7 @@
   window.deleteEvent = async function(id) {
     if (!confirm('Opravdu smazat tuto událost?')) return;
     try {
-      const res = await fetch('/api/events');
-      const events = res.ok ? await res.json() : [];
-      const filtered = events.filter(e => e.id !== id);
+      const filtered = cachedEvents.filter(e => e.id !== id);
 
       await fetch('/api/events', {
         method: 'POST',

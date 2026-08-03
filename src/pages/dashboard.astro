@@ -4,15 +4,13 @@ import '../styles/global.css';
 import NavigationDrawer from '../components/NavigationDrawer.astro';
 import Header from '../components/Header.astro';
 
-import { readFileSync, existsSync } from 'node:fs';
-import { resolve } from 'node:path';
-
+// Načtení akcí z nového Redis API endpointu
 let allEvents = [];
 try {
-  const eventsPath = resolve('src/data/events.json');
-  if (existsSync(eventsPath)) {
-    const fileData = readFileSync(eventsPath, 'utf-8');
-    allEvents = JSON.parse(fileData);
+  const response = new URL('/api/events', Astro.request.url);
+  const res = await fetch(response.toString());
+  if (res.ok) {
+    allEvents = await res.json();
   }
 } catch (e) {
   console.error('Chyba při načítání událostí:', e);
@@ -53,12 +51,12 @@ const strictFuture = processedEvents
   .sort((a, b) => a.timestamp - b.timestamp);
 const nextFutureId = strictFuture.length > 0 ? strictFuture[0].timestamp : null;
 
+// Playlisty (pokud je načítáš podobně z API nebo souboru, necháš podle své aktuální implementace)
 let playlists = [];
 try {
-  const playlistsPath = resolve('src/data/playlists.json');
-  if (existsSync(playlistsPath)) {
-    const fileData = readFileSync(playlistsPath, 'utf-8');
-    playlists = JSON.parse(fileData).slice(0, 4);
+  const res = await fetch(new URL('/api/playlists', Astro.request.url).toString());
+  if (res.ok) {
+    playlists = (await res.json()).slice(0, 4);
   }
 } catch (e) {}
 

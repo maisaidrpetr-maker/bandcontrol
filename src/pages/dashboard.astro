@@ -37,11 +37,10 @@ const pastEvents = processedEvents
   .filter(ev => ev.timestamp < todayTimestamp)
   .sort((a, b) => b.timestamp - a.timestamp);
 
-const limitedPastEvents = pastEvents.slice(0, 10);
-
+// Omezení odstraněno – načtou se všechny minulé akce
 const upcomingEvents = [
   ...futureEvents,
-  ...limitedPastEvents
+  ...pastEvents
 ];
 
 const strictFuture = processedEvents

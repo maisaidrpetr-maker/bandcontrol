@@ -37,8 +37,6 @@ const isBoard = currentPath === "/" || currentPath.includes('board') || currentP
   </div>
 
   <div class="drawer-content metal-chassis">
-    <span class="rivet axial-top"></span>
-    <span class="rivet axial-bottom"></span>
     <div class="nav-group">
       <a href="/dashboard" class="btn-nav b-pink">Board</a>
       <a href="/stage" class="btn-nav b-orange">Stage</a>
@@ -220,16 +218,13 @@ const isBoard = currentPath === "/" || currentPath.includes('board') || currentP
 
   .metal-chassis { 
     background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%), repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.01) 3px); 
-    width: 210px; padding: 45px 30px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 210px; padding: 15px 30px; display: flex; flex-direction: column; align-items: center; justify-content: center;
     box-sizing: border-box; border: 2px solid #333; border-right: none; border-radius: 20px 0 0 20px; 
     box-shadow: -30px 0 60px rgba(0,0,0,1); position: relative; 
   }
 
   .nav-group { display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; }
-  .rivet { 
-    width: 10px; height: 10px; background: radial-gradient(circle at 35% 35%, #ffffff 0%, #aaaaaa 20%, #222222 80%, #000000 100%); 
-    border-radius: 50%; border: 0.5px solid rgba(255,255,255,0.1); box-shadow: 2px 3px 5px rgba(0,0,0,0.9); position: absolute; left: 50%; transform: translateX(-50%); 
-  }
+  
   .axial-top { top: 15px; } .axial-bottom { bottom: 15px; }
   
   .btn-nav {

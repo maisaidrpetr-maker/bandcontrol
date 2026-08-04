@@ -37,7 +37,6 @@ const pastEvents = processedEvents
   .filter(ev => ev.timestamp < todayTimestamp)
   .sort((a, b) => b.timestamp - a.timestamp);
 
-// Omezení odstraněno – načtou se všechny minulé akce
 const upcomingEvents = [
   ...futureEvents,
   ...pastEvents
@@ -170,24 +169,11 @@ function formatCzechDate(dateStr) {
       font-family: 'Orbitron', sans-serif;
     }
 
-    .table-scroll-container {
-      max-height: 420px;
-      overflow-y: auto;
-      padding-right: 4px;
-    }
-
-    .table-scroll-container::-webkit-scrollbar {
-      width: 6px;
-    }
-    .table-scroll-container::-webkit-scrollbar-track {
-      background: #121212;
-    }
-    .table-scroll-container::-webkit-scrollbar-thumb {
-      background: #27272a;
-      border-radius: 3px;
-    }
-    .table-scroll-container::-webkit-scrollbar-thumb:hover {
-      background: var(--accent-orange);
+    .events-table-wrapper {
+      min-height: 380px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .events-table {
@@ -262,6 +248,62 @@ function formatCzechDate(dateStr) {
       text-align: right;
       font-family: monospace;
       width: 15%;
+    }
+
+    .pagination-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.85rem;
+      color: var(--text-main);
+    }
+
+    .pagination-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Plastický vzhled tlačítek */
+    .page-btn {
+      background: linear-gradient(to bottom, #27272a, #18181b);
+      border: 1px solid #3f3f46;
+      border-bottom-color: #18181b;
+      color: #f4f4f5;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+      box-shadow: 0 3px 5px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transition: all 0.1s ease;
+    }
+
+    .page-btn:hover:not(:disabled) {
+      background: linear-gradient(to bottom, #3f3f46, #27272a);
+      border-color: #52525b;
+      color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .page-btn:active:not(:disabled) {
+      background: linear-gradient(to bottom, #18181b, #27272a);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+      transform: translateY(1px);
+    }
+
+    .page-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      box-shadow: none;
+      background: #18181b;
+      border-color: #27272a;
     }
 
     .item-list {
@@ -372,14 +414,14 @@ function formatCzechDate(dateStr) {
       <div class="dashboard-wrapper">
         <div class="modules-rack-row">
           
-          <!-- BOX 1: Přehled akcí -->
+          <!-- BOX 1: Přehled akcí se stránkováním -->
           <section class="admin-panel-box full-width">
             <h2 class="panel-title">Přehled akcí</h2>
             {upcomingEvents.length > 0 ? (
-              <div class="table-scroll-container">
-                <table class="events-table">
+              <div class="events-table-wrapper">
+                <table class="events-table" id="events-table">
                   <tbody>
-                    {upcomingEvents.map((ev: any) => {
+                    {upcomingEvents.map((ev: any, index: number) => {
                       const isNextUpcoming = ev.timestamp === nextFutureId;
                       const isPast = ev.timestamp < todayTimestamp;
                       
@@ -390,8 +432,11 @@ function formatCzechDate(dateStr) {
                         rowClass = 'row-past';
                       }
 
+                      const pageSize = 10;
+                      const isHidden = index >= pageSize ? 'display: none;' : '';
+
                       return (
-                        <tr class={rowClass}>
+                        <tr class={rowClass} data-index={index} style={isHidden}>
                           <td>{ev.title}</td>
                           <td class="event-location">{ev.location}</td>
                           <td>{formatCzechDate(ev.date)}</td>
@@ -401,6 +446,14 @@ function formatCzechDate(dateStr) {
                     })}
                   </tbody>
                 </table>
+
+                <div class="pagination-bar">
+                  <span id="page-info">Stránka 1 z {Math.ceil(upcomingEvents.length / 10)}</span>
+                  <div class="pagination-btns">
+  <button class="page-btn" id="prev-page" disabled title="Předchozí stránka">◀</button>
+  <button class="page-btn" id="next-page" {upcomingEvents.length <= 10 ? 'disabled' : ''} title="Další stránka">▶</button>
+</div>
+                </div>
               </div>
             ) : (
               <p class="empty-notice">Žádné naplánované akce.</p>
@@ -411,7 +464,7 @@ function formatCzechDate(dateStr) {
           <section class="admin-panel-box">
             <h2 class="panel-title">Uložené playlisty</h2>
             {playlists.length > 0 ? (
-              <div class="table-scroll-container" style="max-height: 220px;">
+              <div style="max-height: 220px; overflow-y: auto;">
                 <div class="item-list">
                   {playlists.map((pl: any) => (
                     <div class="item-row">
@@ -468,6 +521,47 @@ function formatCzechDate(dateStr) {
   </main>
 
   <script is:inline>
+    let currentPage = 0;
+    const pageSize = 10;
+    const rows = document.querySelectorAll('#events-table tbody tr');
+    const totalPages = Math.ceil(rows.length / pageSize);
+
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+    const pageInfo = document.getElementById('page-info');
+
+    function updateTable() {
+      rows.forEach((row, index) => {
+        if (index >= currentPage * pageSize && index < (currentPage + 1) * pageSize) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      if (pageInfo) {
+        pageInfo.textContent = `Stránka ${currentPage + 1} z ${totalPages || 1}`;
+      }
+      if (prevBtn) prevBtn.disabled = currentPage === 0;
+      if (nextBtn) nextBtn.disabled = currentPage >= totalPages - 1;
+    }
+
+    if (prevBtn && nextBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (currentPage > 0) {
+          currentPage--;
+          updateTable();
+        }
+      });
+
+      nextBtn.addEventListener('click', () => {
+        if (currentPage < totalPages - 1) {
+          currentPage++;
+          updateTable();
+        }
+      });
+    }
+
     const userRole = sessionStorage.getItem('role') || sessionStorage.getItem('uzivatelRole');
     const isAdmin = sessionStorage.getItem('isAdmin') === 'true' || userRole === 'admin' || sessionStorage.getItem('jmeno') === 'Admin';
 

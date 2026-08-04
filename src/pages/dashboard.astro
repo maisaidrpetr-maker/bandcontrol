@@ -448,12 +448,12 @@ function formatCzechDate(dateStr) {
                 </table>
 
                 <div class="pagination-bar">
-                  <span id="page-info">Stránka 1 z {Math.ceil(upcomingEvents.length / 10)}</span>
-                  <div class="pagination-btns">
-  <button class="page-btn" id="prev-page" disabled title="Předchozí stránka">◀</button>
-  <button class="page-btn" id="next-page" {upcomingEvents.length <= 10 ? 'disabled' : ''} title="Další stránka">▶</button>
+  <div class="pagination-btns">
+    <button class="page-btn" id="prev-page" disabled title="Předchozí stránka">◀</button>
+    <button class="page-btn" id="next-page" disabled={upcomingEvents.length <= 10} title="Další stránka">▶</button>
+  </div>
+  <span id="page-info">Stránka 1 z {Math.ceil(upcomingEvents.length / 10)}</span>
 </div>
-                </div>
               </div>
             ) : (
               <p class="empty-notice">Žádné naplánované akce.</p>

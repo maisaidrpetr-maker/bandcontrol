@@ -4,6 +4,7 @@ import { getCollection } from 'astro:content';
 import '../styles/global.css';
 import NavigationDrawer from '../components/NavigationDrawer.astro';
 import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
 import AdminStyles from '../components/admin/AdminStyles.astro';
 import SongSelector from '../components/admin/SongSelector.astro';
 import PlaylistManager from '../components/admin/PlaylistManager.astro';
@@ -19,6 +20,33 @@ const allLyrics = await getCollection('lyrics');
     <title>BandControl — Admin / Setlist</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <AdminStyles />
+    <style>
+      /* Zajištění správného chování layoutu přes celou výšku jako na dashboardu */
+      .dashboard-layout {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .dashboard-container {
+        padding: 24px;
+        max-width: 1400px;
+        margin: 0 auto;
+        width: 100%;
+        flex: 1;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+      }
+      .admin-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .metal-panel {
+        flex: 1;
+      }
+    </style>
   </head>
   <body>
     <script is:inline>
@@ -29,33 +57,37 @@ const allLyrics = await getCollection('lyrics');
       <NavigationDrawer />
       <Header />
 
-      <div class="admin-container">
-        <!-- OS/2 Warp Záložky -->
-        <div class="warp-tabs">
-          <button class="tab-btn active" data-tab="tab-creator">REPERTOÁR</button>
-          <button class="tab-btn" data-tab="tab-playlists">PLAYLISTY</button>
-          <button class="tab-btn" data-tab="tab-events">UDÁLOSTI</button>
-        </div>
-
-        <div class="metal-panel">
-          
-          <!-- ZÁLOŽKA 1: TVORBA -->
-          <div id="tab-creator" class="tab-content active">
-            <SongSelector allLyrics={allLyrics} />
+      <div class="dashboard-container">
+        <div class="admin-container">
+          <!-- OS/2 Warp Záložky -->
+          <div class="warp-tabs">
+            <button class="tab-btn active" data-tab="tab-creator">REPERTOÁR</button>
+            <button class="tab-btn" data-tab="tab-playlists">PLAYLISTY</button>
+            <button class="tab-btn" data-tab="tab-events">UDÁLOSTI</button>
           </div>
 
-          <!-- ZÁLOŽKA 2: PLAYLISTY -->
-          <div id="tab-playlists" class="tab-content">
-            <PlaylistManager />
-          </div>
+          <div class="metal-panel">
+            
+            <!-- ZÁLOŽKA 1: TVORBA -->
+            <div id="tab-creator" class="tab-content active">
+              <SongSelector allLyrics={allLyrics} />
+            </div>
 
-          <!-- ZÁLOŽKA 3: UDÁLOSTI -->
-          <div id="tab-events" class="tab-content">
-            <EventManager />
-          </div>
+            <!-- ZÁLOŽKA 2: PLAYLISTY -->
+            <div id="tab-playlists" class="tab-content">
+              <PlaylistManager />
+            </div>
 
+            <!-- ZÁLOŽKA 3: UDÁLOSTI -->
+            <div id="tab-events" class="tab-content">
+              <EventManager />
+            </div>
+
+          </div>
         </div>
       </div>
+
+      <Footer />
     </main>
 
     <PlaylistModal />
@@ -96,6 +128,14 @@ const allLyrics = await getCollection('lyrics');
             item.classList.toggle('selected');
           });
         });
+      });
+
+      // Podpora odhlášení
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('#logout-btn')) {
+          sessionStorage.clear();
+          window.location.href = '/login';
+        }
       });
     </script>
   </body>

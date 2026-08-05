@@ -7,6 +7,7 @@ import { createClient } from 'redis';
 import '../styles/global.css';
 import NavigationDrawer from '../components/NavigationDrawer.astro';
 import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro'; // Předpokládám, že Footer komponentu takto importuješ, případně ji uprav dle projektu
 
 const allLyrics = await getCollection('lyrics');
 const lyricsMap = Object.fromEntries(
@@ -68,6 +69,10 @@ await client.disconnect().catch(() => {});
         width: 100%;
         display: flex;
         flex-direction: column;
+        min-height: 100vh;
+      }
+      .stage-content-wrapper {
+        flex: 1; /* Zajistí, že obsah roztáhne stránku, aby footer zůstal dole */
       }
       .stage-container {
         max-width: 800px;
@@ -87,7 +92,8 @@ await client.disconnect().catch(() => {});
         color: #ff8800; 
         font-size: 1.5rem; 
         margin: 0; 
-        font-family: 'Orbitron', sans-serif;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        letter-spacing: 0.5px;
       }
       .btn-print {
         background: linear-gradient(180deg, #ff8800 0%, #cc6a00 100%);
@@ -191,7 +197,7 @@ await client.disconnect().catch(() => {});
           top: 0;
           width: 100%;
           margin: 0;
-          padding: 12mm 10mm 0 10mm !important;
+          padding: 25px 10mm 0 10mm !important;
           color: #000 !important;
           background: #fff !important;
         }
@@ -259,8 +265,9 @@ await client.disconnect().catch(() => {});
           text-align: left !important;
           background: transparent !important;
           padding: 0 !important;
-          letter-spacing: 1px;
+          letter-spacing: 0.5px;
           font-weight: bold !important;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
           flex-grow: 1 !important;
         }
 
@@ -346,50 +353,54 @@ await client.disconnect().catch(() => {});
       <NavigationDrawer />
       <Header />
 
-      <div class="stage-container">
-        <div class="stage-header-row">
-          <img src="/images/BHlogo.png" alt="Logo kapely" class="print-logo" />
-          <h1>{activePlaylist ? activePlaylist.name : 'ŽÁDNÝ PLAYLIST NENALEZEN'}</h1>
-          {activePlaylist && (
-            <button id="print-btn" class="btn-print">🖨️ TISK / ULOŽIT</button>
+      <div class="stage-content-wrapper">
+        <div class="stage-container">
+          <div class="stage-header-row">
+            <img src="/images/BHlogo.png" alt="Logo kapely" class="print-logo" />
+            <h1>{activePlaylist ? activePlaylist.name : 'ŽÁDNÝ PLAYLIST NENALEZEN'}</h1>
+            {activePlaylist && (
+              <button id="print-btn" class="btn-print">🖨️ TISK / ULOŽIT</button>
+            )}
+          </div>
+          
+          {activePlaylist ? (
+            <div class="song-list">
+              {activePlaylist.songs.map((songId: string, index: number) => {
+                const song = lyricsMap[songId] || { title: songId, key: '', capo: '' };
+                const isTwentyFirst = index === 20;
+                return (
+                  <>
+                    {isTwentyFirst && (
+                      <div class="stage-header-row print-header-second">
+                        <img src="/images/BHlogo.png" alt="Logo kapely" class="print-logo" />
+                        <h1>{activePlaylist.name}</h1>
+                      </div>
+                    )}
+                    <div class="song-card">
+                      <div class="song-left">
+                        <span class="song-index">{index + 1}.</span>
+                        <span>{song.title}</span>
+                      </div>
+                      <div class="song-meta">
+                        <div class="badge-slot">
+                          {song.key ? <div class="badge print-key">{song.key}</div> : <div class="badge badge-placeholder">&nbsp;</div>}
+                        </div>
+                        <div class="badge-slot">
+                          {song.capo !== '' ? <div class="badge print-capo">C{song.capo}</div> : <div class="badge badge-placeholder">&nbsp;</div>}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                );
+              })}
+            </div>
+          ) : (
+            <div class="empty">Požadovaný playlist nebyl nalezen nebo není nastavený.</div>
           )}
         </div>
-        
-        {activePlaylist ? (
-          <div class="song-list">
-            {activePlaylist.songs.map((songId: string, index: number) => {
-              const song = lyricsMap[songId] || { title: songId, key: '', capo: '' };
-              const isTwentyFirst = index === 20;
-              return (
-                <>
-                  {isTwentyFirst && (
-                    <div class="stage-header-row print-header-second">
-                      <img src="/images/BHlogo.png" alt="Logo kapely" class="print-logo" />
-                      <h1>{activePlaylist.name}</h1>
-                    </div>
-                  )}
-                  <div class="song-card">
-                    <div class="song-left">
-                      <span class="song-index">{index + 1}.</span>
-                      <span>{song.title}</span>
-                    </div>
-                    <div class="song-meta">
-                      <div class="badge-slot">
-                        {song.key ? <div class="badge print-key">{song.key}</div> : <div class="badge badge-placeholder">&nbsp;</div>}
-                      </div>
-                      <div class="badge-slot">
-                        {song.capo !== '' ? <div class="badge print-capo">C{song.capo}</div> : <div class="badge badge-placeholder">&nbsp;</div>}
-                      </div>
-                    </div>
-                  </div>
-                </>
-              );
-            })}
-          </div>
-        ) : (
-          <div class="empty">Požadovaný playlist nebyl nalezen nebo není nastavený.</div>
-        )}
       </div>
+
+      <Footer />
     </main>
 
     <script is:inline>

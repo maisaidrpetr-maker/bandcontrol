@@ -23,7 +23,7 @@ const lyricsMap = Object.fromEntries(
         title: data.title || s.id,
         key: data.key || '',
         capo: capoVal,
-        bpm: data.bpm || '' // Načtení BPM z frontmatteru
+        bpm: data.bpm || ''
       }
     ];
   })
@@ -76,13 +76,13 @@ await client.disconnect().catch(() => {});
         flex: 1;
       }
       .stage-container {
-        max-width: 850px; /* Mírně rozšířeno pro 3 badge (Key, Capo, BPM) */
+        max-width: 850px;
         margin: 15px auto;
         padding: 0 15px;
         width: 100%;
       }
       .stage-header-row {
-        display: flex;
+        display: none; /* Skryto podle požadavku, lze kdykoliv vrátit */
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
@@ -135,7 +135,6 @@ await client.disconnect().catch(() => {});
         color: #ff8800;
         min-width: 24px;
       }
-      /* Úprava mřížky pro 3 sloupce: tónina, capo, tempo */
       .song-meta {
         display: grid;
         grid-template-columns: 45px 55px 55px;
@@ -160,7 +159,7 @@ await client.disconnect().catch(() => {});
         font-size: 0.95rem;
       }
       .badge.print-bpm {
-        color: #38bdf8; /* Světle modrá pro odlišení tempa */
+        color: #38bdf8;
         cursor: pointer;
         transition: all 0.1s;
       }
@@ -169,7 +168,6 @@ await client.disconnect().catch(() => {});
         color: #000;
       }
 
-      /* Animace blikání metronomu */
       @keyframes bpmPulse {
         0% { background: #222; border-color: #444; color: #38bdf8; }
         50% { background: #38bdf8; border-color: #fff; color: #000; box-shadow: 0 0 15px #38bdf8; }
@@ -200,7 +198,6 @@ await client.disconnect().catch(() => {});
         border: none !important;
       }
 
-      /* Tiskové styly */
       @page {
         size: auto;
         margin: 12mm 10mm;
@@ -230,7 +227,7 @@ await client.disconnect().catch(() => {});
           align-items: center !important;
           width: 100% !important;
           background: #e6e6e6 !important;
-          padding: 8px 15px 8px 135px !important;
+          padding: 12px 15px 12px 135px !important;
           min-height: 50px !important;
           position: relative !important;
           -webkit-print-color-adjust: exact !important;
@@ -298,7 +295,7 @@ await client.disconnect().catch(() => {});
         }
 
         .song-list {
-          margin-top: 5px;
+          margin-top: 15px !important; /* Odsazení prvního řádku od loga v tisku */
           display: block !important;
         }
         .song-card {
@@ -355,7 +352,7 @@ await client.disconnect().catch(() => {});
           color: #000 !important;
         }
         .badge.print-bpm {
-          color: #0284c7 !important; /* Tmavší modrá pro tisk */
+          color: #0284c7 !important;
           animation: none !important;
           cursor: default !important;
         }
@@ -430,7 +427,8 @@ await client.disconnect().catch(() => {});
             </div>
           ) : (
             <div class="empty">Požadovaný playlist nebyl nalezen nebo není nastavený.</div>
-          )}        </div>
+          )}
+        </div>
       </div>
 
       <Footer />
@@ -451,7 +449,6 @@ await client.disconnect().catch(() => {});
         btn.style.setProperty('--pulse-duration', `${beatDurationSec}s`);
         btn.classList.add('blinking');
 
-        // Bliká přesně 8 dob
         const totalDurationMs = beatDurationSec * 8 * 1000;
 
         const timeoutId = setTimeout(() => {

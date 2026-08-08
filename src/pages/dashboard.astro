@@ -5,8 +5,57 @@ import NavigationDrawer from '../components/NavigationDrawer.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { getCollection } from 'astro:content';
+import { createClient } from 'redis';
 import fs from 'node:fs';
 import path from 'node:path';
+
+// 1. Načtení písní a vytvoření mapy
+const allLyrics = await getCollection('lyrics');
+const lyricsMap = Object.fromEntries(
+  allLyrics.map(s => {
+    const data = s.data as any;
+    let capoVal = data.capo;
+    if (capoVal === undefined || capoVal === null || capoVal === '' || capoVal === '-' || capoVal === 0) {
+      capoVal = '';
+    }
+    return [
+      s.id, 
+      {
+        title: data.title || s.id,
+        key: data.key || '',
+        capo: capoVal,
+        bpm: data.bpm || ''
+      }
+    ];
+  })
+);
+
+// 2. Připojení k Redis pro získání aktivního playlistu
+const client = createClient({
+  url: import.meta.env.REDIS_URL
+});
+
+client.on('error', () => {});
+await client.connect().catch(() => {});
+
+let activePlaylist: any = null;
+let allPlaylistsForList = [];
+try {
+  const rawPlaylists = await client.get('bandcontrol:playlists');
+  const playlists = rawPlaylists ? JSON.parse(rawPlaylists) : [];
+  allPlaylistsForList = playlists;
+
+  const activeId = await client.get('bandcontrol:active_playlist') || await client.get('active_playlist');
+  if (activeId) {
+    activePlaylist = playlists.find((p: any) => p.id === activeId);
+  }
+  if (!activePlaylist && playlists.length > 0) {
+    activePlaylist = playlists[0];
+  }
+} catch (err) {
+  console.error('Chyba při načítání playlistů v dashboardu:', err);
+}
+await client.disconnect().catch(() => {});
 
 // Načtení akcí z Redis API endpointu
 let allEvents = [];
@@ -49,20 +98,7 @@ const strictFuture = processedEvents
   .sort((a, b) => a.timestamp - b.timestamp);
 const nextFutureId = strictFuture.length > 0 ? strictFuture[0].timestamp : null;
 
-// Playlisty
-let playlists = [];
-try {
-  const res = await fetch(new URL('/api/playlists', Astro.request.url).toString());
-  if (res.ok) {
-    playlists = await res.json();
-  }
-} catch (e) {}
-
-// Písně (Lyrics)
-const allLyrics = await getCollection('lyrics');
 const songsCount = allLyrics.length;
-
-// Audio soubory - načtení ze složky public/audio (.mp3)
 let audioFilesCount = 0;
 try {
   const audioDir = path.resolve('./public/audio');
@@ -70,11 +106,8 @@ try {
     const files = fs.readdirSync(audioDir);
     audioFilesCount = files.filter(file => file.toLowerCase().endsWith('.mp3')).length;
   }
-} catch (e) {
-  console.error('Chyba při načítání audio souborů:', e);
-}
+} catch (e) {}
 
-// Zápisy / Aktivity - seřazené od nejnovějších
 const allActivities = await getCollection('activities');
 const sortedActivities = [...allActivities].sort((a: any, b: any) => {
   const timeA = a.data.date ? new Date(a.data.date).getTime() : 0;
@@ -94,6 +127,9 @@ function formatCzechDate(dateStr) {
   
   return `${d.getDate()}. ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
+
+let githubLatestCommit = 'Aktualizace systému';
+let githubTotalCommits = '—';
 ---
 
 <html lang="cs">
@@ -339,7 +375,6 @@ function formatCzechDate(dateStr) {
       border-color: #27272a;
     }
 
-    /* Kontejner pro rozbalovací zápisy - bez omezujícího posuvníku */
     .activities-list-container {
       min-height: 380px;
       display: flex;
@@ -427,6 +462,7 @@ function formatCzechDate(dateStr) {
       cursor: pointer;
       box-shadow: 0 3px 0 #000, 0 5px 10px rgba(0,0,0,0.5);
       transition: all 0.2s ease;
+      box-sizing: border-box;
     }
 
     .action-btn:hover {
@@ -441,8 +477,182 @@ function formatCzechDate(dateStr) {
       display: none;
     }
 
-    .action-btn.admin-only:hover {
+    .action-btn.orange-btn {
+      background: var(--accent-orange);
+      color: #fff;
+      border-color: #b45309;
+    }
+
+    .action-btn.orange-btn:hover {
       background: #b45309;
+    }
+
+    /* ==========================================
+       TISKOVÁ ŠABLONA (Identická jako /stage)
+       ========================================== */
+    #print-playlist-container {
+      display: none;
+    }
+
+    @page {
+      size: auto;
+      margin: 12mm 10mm;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #print-playlist-container, #print-playlist-container * {
+        visibility: visible;
+      }
+      #print-playlist-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 25px 10mm 0 10mm !important;
+        color: #000 !important;
+        background: #fff !important;
+        display: block !important;
+      }
+      
+      .print-header-row {
+    display: grid !important;
+    grid-template-columns: auto 1fr auto !important;
+    align-items: center !important;
+    width: 100% !important;
+    background: #e6e6e6 !important;
+    padding: 12px 15px 12px 135px !important; /* Mírně zvětšený padding nahoře a dole */
+    min-height: 50px !important;
+    position: relative !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+      .print-container-inner:has(.print-header-second) > .print-header-row:first-of-type::after {
+        content: "1/2" !important;
+        font-weight: bold !important;
+        font-size: 1.4rem !important;
+        color: #333 !important;
+        padding-right: 5px !important;
+        justify-self: end !important;
+      }
+
+      .print-header-second {
+        display: flex !important;
+        visibility: visible !important;
+        height: auto !important;
+        overflow: visible !important;
+        page-break-before: always !important;
+        break-before: page !important;
+        margin-top: 25px !important; 
+      }
+
+      .print-container-inner:has(.print-header-second) .print-header-second::after {
+        content: "2/2" !important;
+        font-weight: bold !important;
+        font-size: 1.4rem !important;
+        color: #333 !important;
+        padding-right: 5px !important;
+        justify-self: end !important;
+      }
+
+      .print-logo {
+        display: block !important;
+        position: absolute !important;
+        left: 15px !important;
+        top: -20px !important;
+        height: 100px !important;
+        width: auto !important;
+        z-index: 10 !important;
+      }
+
+      .print-header-row h1 {
+        color: #000 !important;
+        border: none !important;
+        margin: 0 !important;
+        font-size: 2.2rem !important;
+        text-align: left !important;
+        background: transparent !important;
+        padding: 0 !important;
+        letter-spacing: 0.5px;
+        font-weight: bold !important;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+        flex-grow: 1 !important;
+      }
+
+      .print-song-list {
+    margin-top: 15px !important; /* Odsazení celé první písně od šedého hlavičkového pruhu */
+    display: block !important;
+  }
+      .print-song-card {
+        background: #fff !important;
+        border: none !important;
+        box-shadow: none !important;
+        background-image: linear-gradient(to bottom, #777, #777) !important;
+        background-size: 100% 1px !important;
+        background-position: bottom !important;
+        background-repeat: no-repeat !important;
+        color: #000 !important;
+        padding: 4px 6px 6px 6px !important;
+        margin-bottom: 0 !important;
+        font-size: 1.8rem !important;
+        line-height: 1.2 !important;
+        border-radius: 0 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .print-song-left {
+        display: flex !important;
+        align-items: center !important;
+        gap: 15px !important;
+        font-weight: 600 !important;
+      }
+      .print-song-index {
+        color: #000 !important;
+        font-weight: bold;
+        min-width: 45px;
+      }
+      .print-song-meta {
+        display: flex !important;
+        gap: 15px !important;
+      }
+      .print-badge-slot {
+        display: inline-block !important;
+        width: auto !important;
+      }
+      .print-badge {
+        background: transparent !important;
+        border: none !important;
+        font-weight: bold !important;
+        font-size: 1.8rem !important;
+        padding: 0 !important;
+        width: 55px !important;
+        min-width: 55px !important;
+        text-align: center !important;
+        display: inline-block !important;
+      }
+      .print-badge.print-key { color: #d00000 !important; }
+      .print-badge.print-capo { color: #000 !important; }
+      .print-badge.print-bpm { color: #0284c7 !important; }
+      .print-badge-placeholder {
+        display: inline-block !important;
+        visibility: hidden !important;
+        width: 55px !important;
+        min-width: 55px !important;
+      }
     }
   </style>
 </head>
@@ -536,10 +746,10 @@ function formatCzechDate(dateStr) {
           <!-- BOX 2: Playlisty -->
           <section class="admin-panel-box conditional-box">
             <h2 class="panel-title">Uložené playlisty</h2>
-            {playlists.length > 0 ? (
+            {allPlaylistsForList.length > 0 ? (
               <div style="max-height: 220px; overflow-y: auto; margin-bottom: 10px;">
                 <div class="item-list">
-                  {playlists.map((pl: any) => (
+                  {allPlaylistsForList.map((pl: any) => (
                     <div class="item-row">
                       <span class="item-main-text" style="flex: 1;">{pl.name || pl.title || 'Bezejmenný playlist'}</span>
                       <span class="item-sub-text">Počet písní: {pl.songs ? pl.songs.length : (pl.items?.length || 0)}</span>
@@ -552,39 +762,32 @@ function formatCzechDate(dateStr) {
             )}
           </section>
 
-          <!-- BOX 3: Statistické informace -->
+          <!-- BOX 3: Statistiky systému -->
           <section class="admin-panel-box conditional-box">
             <h2 class="panel-title">Statistiky systému</h2>
             <div class="stats-table" style="margin-bottom: 10px;">
-              <div class="stat-row">
-                <span>Písně</span>
-                <span>{songsCount}</span>
-              </div>
-              <div class="stat-row">
-                <span>Playlisty</span>
-                <span>{playlists.length}</span>
-              </div>
-              <div class="stat-row">
-                <span>Audio soubory</span>
-                <span>{audioFilesCount}</span>
-              </div>
-              <div class="stat-row">
-                <span>Budoucí události</span>
-                <span>{futureEvents.length}</span>
-              </div>
-              <div class="stat-row">
-                <span>Zápisy</span>
-                <span>{sortedActivities.length}</span>
-              </div>
+              <div class="stat-row"><span>Písně</span><span>{songsCount}</span></div>
+              <div class="stat-row"><span>Playlisty</span><span>{allPlaylistsForList.length}</span></div>
+              <div class="stat-row"><span>Audio soubory</span><span>{audioFilesCount}</span></div>
+              <div class="stat-row"><span>Budoucí události</span><span>{futureEvents.length}</span></div>
+              <div class="stat-row"><span>Zápisy</span><span>{sortedActivities.length}</span></div>
             </div>
           </section>
 
           <!-- BOX 4: Systémové operace -->
           <section class="admin-panel-box conditional-box">
             <h2 class="panel-title">Systémové operace</h2>
+            <div class="stats-table" style="margin-bottom: 6px;">
+              <div class="stat-row">
+                <span>Aktuální commit</span>
+                <span style="font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; max-width: 180px;" title={githubLatestCommit}>{githubLatestCommit}</span>
+              </div>
+              <div class="stat-row"><span>Celkový počet commitů</span><span>{githubTotalCommits}</span></div>
+            </div>
             <div style="display: flex; flex-direction: column; gap: 10px; margin: 4px 0 10px 0;">
               <a href="/admin" id="admin-link-btn" class="action-btn admin-only">Otevřít Admin Panel</a>
-              <button class="action-btn" onclick="window.location.reload()">Obnovit data</button>
+              <button class="action-btn orange-btn" onclick="window.print()">Tisk aktuálního playlistu</button>
+              <button class="action-btn orange-btn" onclick="window.location.reload()">Znovu načíst stránku</button>
             </div>
           </section>
 
@@ -592,26 +795,83 @@ function formatCzechDate(dateStr) {
       </div>
     </div>
 
+    <!-- SKRYTÝ TISKOVÝ KONTEJNER (Stejná struktura jako /stage) -->
+    <div id="print-playlist-container">
+      <div class="print-container-inner">
+        <div class="print-header-row">
+          <img src="/images/BHlogo.png" alt="Logo kapely" class="print-logo" />
+          <h1>{activePlaylist ? activePlaylist.name : 'ŽÁDNÝ PLAYLIST'}</h1>
+        </div>
+
+        {activePlaylist && activePlaylist.songs ? (
+          <div class="print-song-list">
+            {activePlaylist.songs.map((songId: string, index: number) => {
+              const song = lyricsMap[songId] || { title: songId, key: '', capo: '', bpm: '' };
+              const isTwentyFirst = index === 20;
+              const formattedCapo = song.capo !== '' && song.capo !== '-' && song.capo !== 0 ? `C${song.capo}` : '';
+              
+              return (
+                <>
+                  {isTwentyFirst && (
+                    <div class="print-header-row print-header-second">
+                      <img src="/images/BHlogo.png" alt="Logo kapely" class="print-logo" />
+                      <h1>{activePlaylist.name}</h1>
+                    </div>
+                  )}
+                  <div class="print-song-card">
+                    <div class="print-song-left">
+                      <span class="print-song-index">{index + 1}.</span>
+                      <span>{song.title}</span>
+                    </div>
+                    <div class="print-song-meta">
+                      <!-- Tónina -->
+                      <div class="print-badge-slot">
+                        {song.key ? <span class="print-badge print-key">{song.key}</span> : <span class="print-badge print-badge-placeholder">&nbsp;</span>}
+                      </div>
+                      <!-- Capo -->
+                      <div class="print-badge-slot">
+                        {formattedCapo !== '' ? <span class="print-badge print-capo">{formattedCapo}</span> : <span class="print-badge print-badge-placeholder">&nbsp;</span>}
+                      </div>
+                      <!-- BPM -->
+                      <div class="print-badge-slot">
+                        {song.bpm !== '' ? <span class="print-badge print-bpm">{song.bpm}</span> : <span class="print-badge print-badge-placeholder">&nbsp;</span>}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              );
+            })}
+          </div>
+        ) : (
+          <p>Žádný playlist k tisku.</p>
+        )}
+      </div>
+    </div>
+
     <Footer />
   </main>
 
-  <script is:inline>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Přepínání záložek
+  <script>
+    function initDashboard() {
       const tabs = document.querySelectorAll('.tab-btn');
       const contents = document.querySelectorAll('.tab-content');
       const conditionalBoxes = document.querySelectorAll('.conditional-box');
 
       tabs.forEach(tab => {
+        tab.replaceWith(tab.cloneNode(true));
+      });
+
+      const freshTabs = document.querySelectorAll('.tab-btn');
+      freshTabs.forEach(tab => {
         tab.addEventListener('click', () => {
-          tabs.forEach(t => t.classList.remove('active'));
+          freshTabs.forEach(t => t.classList.remove('active'));
           contents.forEach(c => c.classList.remove('active'));
           
           tab.classList.add('active');
           const targetId = tab.dataset.tab;
-          document.getElementById(targetId).classList.add('active');
+          const targetContent = document.getElementById(targetId);
+          if (targetContent) targetContent.classList.add('active');
 
-          // Skrytí/zobrazení spodních boxů podle aktivní záložky
           if (targetId === 'tab-activities') {
             conditionalBoxes.forEach(box => box.style.display = 'none');
           } else {
@@ -620,21 +880,24 @@ function formatCzechDate(dateStr) {
         });
       });
 
-      // Rozbalování karet zápisů
       document.querySelectorAll('.activity-card').forEach(card => {
         card.addEventListener('click', () => {
           const fullContent = card.querySelector('.activity-full-content');
-          
-          if (fullContent.style.display === 'none') {
-            fullContent.style.display = 'block';
-            card.style.borderColor = '#ff8800';
-          } else {
-            fullContent.style.display = 'none';
-            card.style.borderColor = '#333';
+          if (fullContent) {
+            if (fullContent.style.display === 'none') {
+              fullContent.style.display = 'block';
+              card.style.borderColor = '#ff8800';
+            } else {
+              fullContent.style.display = 'none';
+              card.style.borderColor = '#333';
+            }
           }
         });
       });
-    });
+    }
+
+    document.addEventListener('DOMContentLoaded', initDashboard);
+    document.addEventListener('astro:page-load', initDashboard);
 
     let currentPage = 0;
     const pageSize = 10;
@@ -653,33 +916,18 @@ function formatCzechDate(dateStr) {
           row.style.display = 'none';
         }
       });
-
-      if (pageInfo) {
-        pageInfo.textContent = `Stránka ${currentPage + 1} z ${totalPages || 1}`;
-      }
+      if (pageInfo) pageInfo.textContent = `Stránka ${currentPage + 1} z ${totalPages || 1}`;
       if (prevBtn) prevBtn.disabled = currentPage === 0;
       if (nextBtn) nextBtn.disabled = currentPage >= totalPages - 1;
     }
 
     if (prevBtn && nextBtn) {
-      prevBtn.addEventListener('click', () => {
-        if (currentPage > 0) {
-          currentPage--;
-          updateTable();
-        }
-      });
-
-      nextBtn.addEventListener('click', () => {
-        if (currentPage < totalPages - 1) {
-          currentPage++;
-          updateTable();
-        }
-      });
+      prevBtn.addEventListener('click', () => { if (currentPage > 0) { currentPage--; updateTable(); } });
+      nextBtn.addEventListener('click', () => { if (currentPage < totalPages - 1) { currentPage++; updateTable(); } });
     }
 
     const userRole = sessionStorage.getItem('role') || sessionStorage.getItem('uzivatelRole');
     const isAdmin = sessionStorage.getItem('isAdmin') === 'true' || userRole === 'admin' || sessionStorage.getItem('jmeno') === 'Admin';
-
     if (isAdmin || sessionStorage.getItem('jeAdmin') === 'true') {
       const adminBtn = document.getElementById('admin-link-btn');
       if (adminBtn) adminBtn.style.display = 'block';

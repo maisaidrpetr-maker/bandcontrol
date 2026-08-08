@@ -1,7 +1,7 @@
 ---
 title: "Eight More Miles"
 artist: "Sam Busch"
-bpm: "-"
+bpm: ""
 key: "G"
 audio: "/audio/xxx.mp3"
 capo: ""

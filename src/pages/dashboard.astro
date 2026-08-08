@@ -297,11 +297,6 @@ if (githubTotalFiles === '—') {
       transition: all 0.2s ease;
     }
 
-    .tab-btn:hover {
-      color: #fff;
-      background: #202024;
-    }
-
     .tab-btn.active {
       background: #121212;
       color: #fbbf24;
@@ -742,14 +737,14 @@ if (githubTotalFiles === '—') {
           
           <!-- HORNÍ VELKÉ OKNO S PŘEPÍNACÍMI ZÁLOŽKAMI -->
 <section class="admin-panel-box full-width" style="padding-top: 0;">
-  <div class="warp-tabs" style="margin-top: 0;">
-    <button class="tab-btn active" data-tab="tab-events" style="font-size: 1.15rem; padding: 12px 24px;">Board</button>
-    <button class="tab-btn" data-tab="tab-activities" style="font-size: 1.15rem; padding: 12px 24px;">Zápisy</button>
+  <div class="warp-tabs" style="margin-top: 0; margin-bottom: 2px;">
+    <button class="tab-btn active" data-tab="tab-events">BOARD</button>
+    <button class="tab-btn" data-tab="tab-activities">ZÁPISY</button>
   </div>
 
   <!-- ZÁLOŽKA 1: AKCE (BOARD) -->
-  <div id="tab-events" class="tab-content active" style="padding-top: 14px;">
-    <h2 class="panel-title" style="margin-bottom: 14px;">Přehled akcí</h2>
+  <div id="tab-events" class="tab-content active" style="padding-top: 2px;">
+    <h2 class="panel-title" style="margin-bottom: 10px;">Přehled akcí</h2>
     {upcomingEvents.length > 0 ? (
       <div class="events-table-wrapper">
         <table class="events-table" id="events-table">
@@ -794,7 +789,7 @@ if (githubTotalFiles === '—') {
   </div>
 
   <!-- ZÁLOŽKA 2: ZÁPISY -->
-  <div id="tab-activities" class="tab-content" style="padding-top: 14px;">
+  <div id="tab-activities" class="tab-content" style="padding-top: 2px;">
     <div class="activities-list-container">
       {sortedActivities && sortedActivities.length > 0 ? (
         sortedActivities.map((activity: any, index: number) => (
@@ -814,6 +809,25 @@ if (githubTotalFiles === '—') {
     </div>
   </div>
 </section>
+
+<!-- Skript pro přepínání (pokud už ho na stránce nemáš) -->
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('.warp-tabs .tab-btn');
+    const contents = document.querySelectorAll('.admin-panel-box .tab-content');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        
+        tab.classList.add('active');
+        const target = document.getElementById(tab.dataset.tab);
+        if (target) target.classList.add('active');
+      });
+    });
+  });
+</script>
 
           <!-- BOX 2: Playlisty -->
           <section class="admin-panel-box conditional-box">

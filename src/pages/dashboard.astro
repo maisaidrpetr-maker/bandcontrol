@@ -161,6 +161,20 @@ if (commits.length === 0) {
 let githubLatestCommit = commits.length > 0 ? `${commits[0].hash}: ${commits[0].message}` : 'Aktualizace systému';
 let githubTotalCommits = commits.length > 0 ? commits.length.toString() : '—';
 
+// Formátování data posledního commitu na tvar xx. xx. xxxx (např. 08. 08. 2026)
+let formattedCommitDate = '';
+if (commits.length > 0 && commits[0].date) {
+  const dObj = new Date(commits[0].date);
+  if (!isNaN(dObj.getTime())) {
+    const day = String(dObj.getDate()).padStart(2, '0');
+    const month = String(dObj.getMonth() + 1).padStart(2, '0');
+    const year = dObj.getFullYear();
+    formattedCommitDate = `${day}. ${month}. ${year}`;
+  } else {
+    formattedCommitDate = commits[0].date;
+  }
+}
+
 // Získání celkového počtu souborů projektu (lokálně / fallback GitHub API)
 let githubTotalFiles = '—';
 try {
@@ -727,78 +741,79 @@ if (githubTotalFiles === '—') {
         <div class="modules-rack-row">
           
           <!-- HORNÍ VELKÉ OKNO S PŘEPÍNACÍMI ZÁLOŽKAMI -->
-          <section class="admin-panel-box full-width" style="padding-top: 0;">
-            <div class="warp-tabs">
-              <button class="tab-btn active" data-tab="tab-events">PŘEHLED AKCÍ</button>
-              <button class="tab-btn" data-tab="tab-activities">ZÁPISY</button>
+<section class="admin-panel-box full-width" style="padding-top: 0;">
+  <div class="warp-tabs" style="margin-top: 0;">
+    <button class="tab-btn active" data-tab="tab-events" style="font-size: 1.15rem; padding: 12px 24px;">Board</button>
+    <button class="tab-btn" data-tab="tab-activities" style="font-size: 1.15rem; padding: 12px 24px;">Zápisy</button>
+  </div>
+
+  <!-- ZÁLOŽKA 1: AKCE (BOARD) -->
+  <div id="tab-events" class="tab-content active" style="padding-top: 14px;">
+    <h2 class="panel-title" style="margin-bottom: 14px;">Přehled akcí</h2>
+    {upcomingEvents.length > 0 ? (
+      <div class="events-table-wrapper">
+        <table class="events-table" id="events-table">
+          <tbody>
+            {upcomingEvents.map((ev: any, index: number) => {
+              const isNextUpcoming = ev.timestamp === nextFutureId;
+              const isPast = ev.timestamp < todayTimestamp;
+              
+              let rowClass = 'row-future';
+              if (isNextUpcoming) {
+                rowClass = 'row-active-upcoming';
+              } else if (isPast) {
+                rowClass = 'row-past';
+              }
+
+              const pageSize = 10;
+              const isHidden = index >= pageSize ? 'display: none;' : '';
+
+              return (
+                <tr class={rowClass} data-index={index} style={isHidden}>
+                  <td>{ev.title}</td>
+                  <td class="event-location">{ev.location}</td>
+                  <td>{formatCzechDate(ev.date)}</td>
+                  <td>{ev.time || '—'}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        <div class="pagination-bar">
+          <div class="pagination-btns">
+            <button class="page-btn" id="prev-page" disabled title="Předchozí stránka">◀</button>
+            <button class="page-btn" id="next-page" disabled={upcomingEvents.length <= 10} title="Další stránka">▶</button>
+          </div>
+          <span id="page-info">Stránka 1 z {Math.ceil(upcomingEvents.length / 10)}</span>
+        </div>
+      </div>
+    ) : (
+      <p class="empty-notice">Žádné naplánované akce.</p>
+    )}
+  </div>
+
+  <!-- ZÁLOŽKA 2: ZÁPISY -->
+  <div id="tab-activities" class="tab-content" style="padding-top: 14px;">
+    <div class="activities-list-container">
+      {sortedActivities && sortedActivities.length > 0 ? (
+        sortedActivities.map((activity: any, index: number) => (
+          <div class="activity-card" data-index={index} style="background: #1c1c1c; border: 1px solid #333; padding: 12px 16px; border-radius: 6px; cursor: pointer; transition: border-color 0.2s;">
+            <div style="font-weight: bold; color: #ff8800; font-size: 1.1rem;">
+              <span>{activity.data.title || activity.id}</span>
             </div>
 
-            <!-- ZÁLOŽKA 1: AKCE -->
-            <div id="tab-events" class="tab-content active">
-              {upcomingEvents.length > 0 ? (
-                <div class="events-table-wrapper">
-                  <table class="events-table" id="events-table">
-                    <tbody>
-                      {upcomingEvents.map((ev: any, index: number) => {
-                        const isNextUpcoming = ev.timestamp === nextFutureId;
-                        const isPast = ev.timestamp < todayTimestamp;
-                        
-                        let rowClass = 'row-future';
-                        if (isNextUpcoming) {
-                          rowClass = 'row-active-upcoming';
-                        } else if (isPast) {
-                          rowClass = 'row-past';
-                        }
-
-                        const pageSize = 10;
-                        const isHidden = index >= pageSize ? 'display: none;' : '';
-
-                        return (
-                          <tr class={rowClass} data-index={index} style={isHidden}>
-                            <td>{ev.title}</td>
-                            <td class="event-location">{ev.location}</td>
-                            <td>{formatCzechDate(ev.date)}</td>
-                            <td>{ev.time || '—'}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-
-                  <div class="pagination-bar">
-                    <div class="pagination-btns">
-                      <button class="page-btn" id="prev-page" disabled title="Předchozí stránka">◀</button>
-                      <button class="page-btn" id="next-page" disabled={upcomingEvents.length <= 10} title="Další stránka">▶</button>
-                    </div>
-                    <span id="page-info">Stránka 1 z {Math.ceil(upcomingEvents.length / 10)}</span>
-                  </div>
-                </div>
-              ) : (
-                <p class="empty-notice">Žádné naplánované akce.</p>
-              )}
+            <div class="activity-full-content" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid #333; color: #ddd; font-size: 0.95rem; white-space: pre-wrap; line-height: 1.5;">
+              {activity.body || 'Žádný text'}
             </div>
-
-            <!-- ZÁLOŽKA 2: ZÁPISY -->
-            <div id="tab-activities" class="tab-content">
-              <div class="activities-list-container">
-                {sortedActivities && sortedActivities.length > 0 ? (
-                  sortedActivities.map((activity: any, index: number) => (
-                    <div class="activity-card" data-index={index} style="background: #1c1c1c; border: 1px solid #333; padding: 12px 16px; border-radius: 6px; cursor: pointer; transition: border-color 0.2s;">
-                      <div style="font-weight: bold; color: #ff8800; font-size: 1.1rem;">
-                        <span>{activity.data.title || activity.id}</span>
-                      </div>
-
-                      <div class="activity-full-content" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid #333; color: #ddd; font-size: 0.95rem; white-space: pre-wrap; line-height: 1.5;">
-                        {activity.body || 'Žádný text'}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div class="empty-notice">Žádné zápisy nebyly nalezeny.</div>
-                )}
-              </div>
-            </div>
-          </section>
+          </div>
+        ))
+      ) : (
+        <div class="empty-notice">Žádné zápisy nebyly nalezeny.</div>
+      )}
+    </div>
+  </div>
+</section>
 
           <!-- BOX 2: Playlisty -->
           <section class="admin-panel-box conditional-box">
@@ -832,22 +847,24 @@ if (githubTotalFiles === '—') {
           </section>
 
           <!-- BOX 4: Systémové operace -->
-          <section class="admin-panel-box conditional-box">
-            <h2 class="panel-title">Systémové operace</h2>
-            <div style="display: flex; flex-direction: column; gap: 10px; margin: 4px 0 10px 0;">
-              <a href="/admin" id="admin-link-btn" class="action-btn admin-only">Otevřít Admin Panel</a>
-              <button class="action-btn orange-btn" onclick="window.print()">Tisk aktuálního playlistu</button>
-              <button class="action-btn orange-btn" onclick="window.location.reload()">Znovu načíst stránku</button>
-            </div>
-            <div class="stats-table" style="margin-bottom: 6px;">
-              <div class="stat-row">
-                <span>Aktuální commit</span>
-                <span style="font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; max-width: 180px;" title={githubLatestCommit}>{githubLatestCommit}</span>
-              </div>
-              <div class="stat-row"><span>Celkový počet commitů</span><span>{githubTotalCommits}</span></div>
-              <div class="stat-row"><span>Celkový počet souborů</span><span>{githubTotalFiles}</span></div>
-            </div>
-          </section>
+<section class="admin-panel-box conditional-box">
+  <h2 class="panel-title">Systémové operace</h2>
+  <div style="display: flex; flex-direction: column; gap: 10px; margin: 4px 0 14px 0;">
+    <a href="/admin" id="admin-link-btn" class="action-btn admin-only">Otevřít Admin Panel</a>
+    <button class="action-btn orange-btn" onclick="window.print()">Tisk aktuálního playlistu</button>
+    <button class="action-btn orange-btn" onclick="window.location.reload()">Znovu načíst stránku</button>
+  </div>
+  
+  <div class="stats-table">
+    <div style="text-align: center; font-weight: bold; font-size: 0.85rem; margin-bottom: 4px; color: var(--text-main);">Poslední aktualizace</div>
+    <div class="stat-row">
+      <span style="font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px;" title={githubLatestCommit}>{githubLatestCommit}</span>
+      {commits.length > 0 && <span style="color: #f0a500; font-weight: bold; flex-shrink: 0;">{formattedCommitDate}</span>}
+    </div>
+    <div class="stat-row"><span>Celkový počet změn</span><span>{githubTotalCommits}</span></div>
+    <div class="stat-row"><span>Celkový počet souborů</span><span>{githubTotalFiles}</span></div>
+  </div>
+</section>
 
         </div>
       </div>

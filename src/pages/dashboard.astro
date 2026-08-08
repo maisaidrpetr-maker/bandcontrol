@@ -8,6 +8,7 @@ import { getCollection } from 'astro:content';
 import { createClient } from 'redis';
 import fs from 'node:fs';
 import path from 'node:path';
+import { execSync } from 'child_process';
 
 // 1. Načtení písní a vytvoření mapy
 const allLyrics = await getCollection('lyrics');
@@ -128,15 +129,44 @@ function formatCzechDate(dateStr) {
   return `${d.getDate()}. ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-let githubLatestCommit = 'Aktualizace systému';
-let githubTotalCommits = '—';
+// Získání commitů pro systémové operace (lokální git + GitHub fallback)
+let commits: any[] = [];
+try {
+  const gitLog = execSync('git log --pretty=format:"%h|%an|%ad|%s" --date=short', { encoding: 'utf-8' });
+  commits = gitLog.split('\n').filter(Boolean).map(line => {
+    const [hash, author, date, message] = line.split('|');
+    return { hash, author, date, message };
+  });
+} catch (e) {
+  // Lokální git selhal
+}
+
+if (commits.length === 0) {
+  try {
+    const response = await fetch('https://api.github.com/repos/maisaidrpetr-maker/bandcontrol/commits');
+    if (response.ok) {
+      const apiCommits = await response.json();
+      commits = apiCommits.map((c: any) => ({
+        hash: c.sha.substring(0, 7),
+        author: c.commit.author.name,
+        date: c.commit.author.date.split('T')[0],
+        message: c.commit.message
+      }));
+    }
+  } catch (apiError) {
+    console.error('Nepodařilo se načíst commity z GitHub API:', apiError);
+  }
+}
+
+let githubLatestCommit = commits.length > 0 ? `${commits[0].hash}: ${commits[0].message}` : 'Aktualizace systému';
+let githubTotalCommits = commits.length > 0 ? commits.length.toString() : '—';
 ---
 
 <html lang="cs">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blue Heart — aktuální playlistt</title>
+  <title>Blue Heart — aktuální playlist</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet">
@@ -519,21 +549,21 @@ let githubTotalCommits = '—';
       }
       
       .print-header-row {
-    display: grid !important;
-    grid-template-columns: auto 1fr auto !important;
-    align-items: center !important;
-    width: 100% !important;
-    background: #e6e6e6 !important;
-    padding: 12px 15px 12px 135px !important; /* Mírně zvětšený padding nahoře a dole */
-    min-height: 50px !important;
-    position: relative !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    page-break-after: avoid !important;
-    break-after: avoid !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
+        display: grid !important;
+        grid-template-columns: auto 1fr auto !important;
+        align-items: center !important;
+        width: 100% !important;
+        background: #e6e6e6 !important;
+        padding: 12px 15px 12px 135px !important;
+        min-height: 50px !important;
+        position: relative !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
 
       .print-container-inner:has(.print-header-second) > .print-header-row:first-of-type::after {
         content: "1/2" !important;
@@ -588,9 +618,9 @@ let githubTotalCommits = '—';
       }
 
       .print-song-list {
-    margin-top: 15px !important; /* Odsazení celé první písně od šedého hlavičkového pruhu */
-    display: block !important;
-  }
+        margin-top: 15px !important;
+        display: block !important;
+      }
       .print-song-card {
         background: #fff !important;
         border: none !important;

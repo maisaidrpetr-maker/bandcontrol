@@ -1,18 +1,42 @@
 ---
 import { execSync } from 'child_process';
 
-let commits: Array<{ hash: string; author: string; date: string; message: string }> = [];
+interface Commit {
+  hash: string;
+  author: string;
+  date: string;
+  message: string;
+}
 
+let commits: Commit[] = [];
+
+// 1. Pokus o získání dat z lokálního gitu (běží při buildu u tebe)
 try {
-  // Vytažení kompletní historie bez omezení počtu
   const gitLog = execSync('git log --pretty=format:"%h|%an|%ad|%s" --date=short', { encoding: 'utf-8' });
-  
   commits = gitLog.split('\n').filter(Boolean).map(line => {
     const [hash, author, date, message] = line.split('|');
     return { hash, author, date, message };
   });
 } catch (e) {
-  commits = [];
+  // Lokální git selhal (např. na Vercelu)
+}
+
+// 2. Pokud lokální git nic nevrátil (Vercel), stáhneme to z GitHub API
+if (commits.length === 0) {
+  try {
+    const response = await fetch('https://api.github.com/repos/maisaidrpetr-maker/bandcontrol/commits');
+    if (response.ok) {
+      const apiCommits = await response.json();
+      commits = apiCommits.map((c: any) => ({
+        hash: c.sha.substring(0, 7),
+        author: c.commit.author.name,
+        date: c.commit.author.date.split('T')[0],
+        message: c.commit.message
+      }));
+    }
+  } catch (apiError) {
+    console.error('Nepodařilo se načíst commity z GitHub API:', apiError);
+  }
 }
 ---
 
@@ -21,7 +45,7 @@ try {
 </header>
 
 <div class="column">
-  <h2>Kompletní historie změn a verzí z gitu</h2>
+  <h2>Kompletní historie změn a verzí</h2>
   <div class="changelog-list" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
     {commits.length > 0 ? (
       commits.map((commit) => (

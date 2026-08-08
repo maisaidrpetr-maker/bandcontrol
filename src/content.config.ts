@@ -15,7 +15,8 @@ const activities = defineCollection({
   loader: glob({ pattern: '**/[^_]*.md', base: "./src/content/activities" }),
   schema: z.object({
     title: z.string().optional(),
-  }).optional()
+    date: z.union([z.string(), z.date()]).optional(),
+  })
 });
 
 // Aktualizovaná kolekce lyrics s validací metadaten včetně capo

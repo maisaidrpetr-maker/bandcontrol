@@ -3,11 +3,15 @@ const { allLyrics } = Astro.props;
 ---
 <header class="panel-header">
   <h1>VÝBĚR PÍSNÍ</h1>
-  <button id="btn-save-new" class="btn-primary">ULOŽIT JAKO NOVÝ PLAYLIST</button>
+  <div style="display: flex; gap: 10px;">
+    <button type="button" id="btn-select-all" class="btn-primary">VYBRAT VŠE</button>
+    <button type="button" id="btn-deselect-all" class="btn-primary">ZRUŠIT VÝBĚR</button>
+    <button id="btn-save-new" class="btn-primary">ULOŽIT JAKO NOVÝ PLAYLIST</button>
+  </div>
 </header>
 
 <div class="column">
-  <h2>Zde lze naklikat požadované písně a pak je vložit do nového playlistu</h2>
+  <h2>Zde lze naklikat požadované skladby a pak je vložit do nového playlistu</h2>
   <ul id="repertoire" class="song-list">
     {allLyrics.map((song: any) => (
       <li class="song-item" data-id={song.id} data-title={song.data.title || song.id}>
@@ -16,3 +20,26 @@ const { allLyrics } = Astro.props;
     ))}
   </ul>
 </div>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const btnSelectAll = document.getElementById('btn-select-all');
+    const btnDeselectAll = document.getElementById('btn-deselect-all');
+
+    if (btnSelectAll) {
+      btnSelectAll.addEventListener('click', () => {
+        document.querySelectorAll('#repertoire .song-item').forEach(item => {
+          item.classList.add('selected');
+        });
+      });
+    }
+
+    if (btnDeselectAll) {
+      btnDeselectAll.addEventListener('click', () => {
+        document.querySelectorAll('#repertoire .song-item').forEach(item => {
+          item.classList.remove('selected');
+        });
+      });
+    }
+  });
+</script>

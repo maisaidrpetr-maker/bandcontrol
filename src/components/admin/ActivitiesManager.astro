@@ -1,0 +1,51 @@
+---
+const { allActivities } = Astro.props;
+
+const sortedActivities = [...allActivities].sort((a: any, b: any) => {
+  const timeA = a.data.date ? new Date(a.data.date).getTime() : 0;
+  const timeB = b.data.date ? new Date(b.data.date).getTime() : 0;
+  return timeB - timeA;
+});
+---
+<header class="panel-header">
+  <h1>ZÁPISY A AKTIVITY</h1>
+</header>
+
+<div class="column">
+  <h2>Přehled zápisů ze zkoušek a dalších akcí</h2>
+  <div class="activities-list" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+    {sortedActivities && sortedActivities.length > 0 ? (
+      sortedActivities.map((activity: any, index: number) => (
+        <div class="activity-card" data-index={index} style="background: #1c1c1c; border: 1px solid #333; padding: 12px 16px; border-radius: 6px; cursor: pointer; transition: border-color 0.2s;">
+          <div style="font-weight: bold; color: #ff8800; font-size: 1.1rem;">
+            {activity.data.title || activity.id}
+          </div>
+
+          <div class="activity-full-content" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid #333; color: #ddd; font-size: 0.95rem; white-space: pre-wrap; line-height: 1.5;">
+            {activity.body || 'Žádný text'}
+          </div>
+        </div>
+      ))
+    ) : (
+      <div class="empty" style="color: #666; font-style: italic; text-align: center; margin-top: 40px;">Žádné zápisy nebyly nalezeny.</div>
+    )}
+  </div>
+</div>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.activity-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const fullContent = card.querySelector('.activity-full-content');
+        
+        if (fullContent.style.display === 'none') {
+          fullContent.style.display = 'block';
+          card.style.borderColor = '#ff8800';
+        } else {
+          fullContent.style.display = 'none';
+          card.style.borderColor = '#333';
+        }
+      });
+    });
+  });
+</script>

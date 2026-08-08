@@ -10,8 +10,10 @@ import SongSelector from '../components/admin/SongSelector.astro';
 import PlaylistManager from '../components/admin/PlaylistManager.astro';
 import PlaylistModal from '../components/admin/PlaylistModal.astro';
 import EventManager from '../components/admin/EventManager.astro';
+import ActivitiesManager from '../components/admin/ActivitiesManager.astro';
 
 const allLyrics = await getCollection('lyrics');
+const allActivities = await getCollection('activities');
 ---
 
 <html lang="cs">
@@ -21,7 +23,6 @@ const allLyrics = await getCollection('lyrics');
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <AdminStyles />
     <style>
-      /* Zajištění správného chování layoutu přes celou výšku jako na dashboardu */
       .dashboard-layout {
         width: 100%;
         display: flex;
@@ -64,6 +65,7 @@ const allLyrics = await getCollection('lyrics');
             <button class="tab-btn active" data-tab="tab-creator">REPERTOÁR</button>
             <button class="tab-btn" data-tab="tab-playlists">PLAYLISTY</button>
             <button class="tab-btn" data-tab="tab-events">UDÁLOSTI</button>
+            <button class="tab-btn" data-tab="tab-activities">ZÁPISY</button>
           </div>
 
           <div class="metal-panel">
@@ -81,6 +83,11 @@ const allLyrics = await getCollection('lyrics');
             <!-- ZÁLOŽKA 3: UDÁLOSTI -->
             <div id="tab-events" class="tab-content">
               <EventManager />
+            </div>
+
+            <!-- ZÁLOŽKA 4: ZÁPISY -->
+            <div id="tab-activities" class="tab-content">
+              <ActivitiesManager allActivities={allActivities} />
             </div>
 
           </div>

@@ -2,7 +2,7 @@
 export const USERS = {
   "petrm": "Petr Maišaidr (Kytara)",
   "jank": "Honza Kolář (Mandolína)",
-  "janak": "Jana Novotná (Housle)",
+  "janak": "Jana Kolářová (Housle)",
   "zuzkab": "Zuzana Bartoňová (Zpěv)",
   "zbynekb": "Zbyněk Bartoň (Banjo)",
   "martink": "Martin Král (Kontrabas)"

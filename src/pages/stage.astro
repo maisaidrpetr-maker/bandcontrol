@@ -7,7 +7,7 @@ import { createClient } from 'redis';
 import '../styles/global.css';
 import NavigationDrawer from '../components/NavigationDrawer.astro';
 import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro'; // Předpokládám, že Footer komponentu takto importuješ, případně ji uprav dle projektu
+import Footer from '../components/Footer.astro';
 
 const allLyrics = await getCollection('lyrics');
 const lyricsMap = Object.fromEntries(
@@ -22,7 +22,8 @@ const lyricsMap = Object.fromEntries(
       {
         title: data.title || s.id,
         key: data.key || '',
-        capo: capoVal
+        capo: capoVal,
+        bpm: data.bpm || '' // Načtení BPM z frontmatteru
       }
     ];
   })
@@ -72,10 +73,10 @@ await client.disconnect().catch(() => {});
         min-height: 100vh;
       }
       .stage-content-wrapper {
-        flex: 1; /* Zajistí, že obsah roztáhne stránku, aby footer zůstal dole */
+        flex: 1;
       }
       .stage-container {
-        max-width: 800px;
+        max-width: 850px; /* Mírně rozšířeno pro 3 badge (Key, Capo, BPM) */
         margin: 15px auto;
         padding: 0 15px;
         width: 100%;
@@ -134,9 +135,10 @@ await client.disconnect().catch(() => {});
         color: #ff8800;
         min-width: 24px;
       }
+      /* Úprava mřížky pro 3 sloupce: tónina, capo, tempo */
       .song-meta {
         display: grid;
-        grid-template-columns: 45px 55px;
+        grid-template-columns: 45px 55px 55px;
         gap: 8px;
         align-items: center;
         justify-items: center;
@@ -155,7 +157,28 @@ await client.disconnect().catch(() => {});
         font-weight: bold;
         width: 100%;
         text-align: center;
+        font-size: 0.95rem;
       }
+      .badge.print-bpm {
+        color: #38bdf8; /* Světle modrá pro odlišení tempa */
+        cursor: pointer;
+        transition: all 0.1s;
+      }
+      .badge.print-bpm:hover {
+        background: #0284c7;
+        color: #000;
+      }
+
+      /* Animace blikání metronomu */
+      @keyframes bpmPulse {
+        0% { background: #222; border-color: #444; color: #38bdf8; }
+        50% { background: #38bdf8; border-color: #fff; color: #000; box-shadow: 0 0 15px #38bdf8; }
+        100% { background: #222; border-color: #444; color: #38bdf8; }
+      }
+      .badge.print-bpm.blinking {
+        animation: bpmPulse var(--pulse-duration) infinite cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
       .badge-placeholder {
         visibility: hidden;
         padding: 4px 0;
@@ -167,7 +190,6 @@ await client.disconnect().catch(() => {});
         display: none;
       }
 
-      /* Skrytí tiskového předělu v normálním zobrazení na stage */
       .print-header-second {
         display: none !important;
         visibility: hidden !important;
@@ -309,7 +331,7 @@ await client.disconnect().catch(() => {});
         }
         .song-meta {
           display: flex !important;
-          gap: 20px !important;
+          gap: 15px !important;
         }
         .badge-slot {
           display: inline-block !important;
@@ -321,8 +343,8 @@ await client.disconnect().catch(() => {});
           font-weight: bold !important;
           font-size: 1.8rem !important;
           padding: 0 !important;
-          width: 50px !important;
-          min-width: 50px !important;
+          width: 55px !important;
+          min-width: 55px !important;
           text-align: center !important;
           display: inline-block !important;
         }
@@ -332,14 +354,19 @@ await client.disconnect().catch(() => {});
         .badge.print-capo {
           color: #000 !important;
         }
+        .badge.print-bpm {
+          color: #0284c7 !important; /* Tmavší modrá pro tisk */
+          animation: none !important;
+          cursor: default !important;
+        }
         .badge-placeholder {
           display: inline-block !important;
           visibility: hidden !important;
           background: transparent !important;
           border: none !important;
           padding: 0 !important;
-          width: 50px !important;
-          min-width: 50px !important;
+          width: 55px !important;
+          min-width: 55px !important;
         }
       }
     </style>
@@ -366,8 +393,9 @@ await client.disconnect().catch(() => {});
           {activePlaylist ? (
             <div class="song-list">
               {activePlaylist.songs.map((songId: string, index: number) => {
-                const song = lyricsMap[songId] || { title: songId, key: '', capo: '' };
+                const song = lyricsMap[songId] || { title: songId, key: '', capo: '', bpm: '' };
                 const isTwentyFirst = index === 20;
+                const formattedCapo = song.capo !== '' && song.capo !== '-' && song.capo !== 0 ? `C${song.capo}` : '';
                 return (
                   <>
                     {isTwentyFirst && (
@@ -382,11 +410,17 @@ await client.disconnect().catch(() => {});
                         <span>{song.title}</span>
                       </div>
                       <div class="song-meta">
+                        <!-- Tónina -->
                         <div class="badge-slot">
                           {song.key ? <div class="badge print-key">{song.key}</div> : <div class="badge badge-placeholder">&nbsp;</div>}
                         </div>
+                        <!-- Capo -->
                         <div class="badge-slot">
-                          {song.capo !== '' ? <div class="badge print-capo">C{song.capo}</div> : <div class="badge badge-placeholder">&nbsp;</div>}
+                          {formattedCapo !== '' ? <div class="badge print-capo">{formattedCapo}</div> : <div class="badge badge-placeholder">&nbsp;</div>}
+                        </div>
+                        <!-- BPM / Tempo -->
+                        <div class="badge-slot">
+                          {song.bpm !== '' ? <div class="badge print-bpm" title="Kliknutím spustíš vizuální metronom (8 dob)" onclick={`triggerBpmPulse(this, ${song.bpm})`}>{song.bpm}</div> : <div class="badge badge-placeholder">&nbsp;</div>}
                         </div>
                       </div>
                     </div>
@@ -396,14 +430,38 @@ await client.disconnect().catch(() => {});
             </div>
           ) : (
             <div class="empty">Požadovaný playlist nebyl nalezen nebo není nastavený.</div>
-          )}
-        </div>
+          )}        </div>
       </div>
 
       <Footer />
     </main>
 
     <script is:inline>
+      const activeBpmTimeouts = new Map();
+
+      function triggerBpmPulse(btn, bpm) {
+        if (!bpm || isNaN(bpm)) return;
+
+        if (activeBpmTimeouts.has(btn)) {
+          clearTimeout(activeBpmTimeouts.get(btn));
+          activeBpmTimeouts.delete(btn);
+        }
+
+        const beatDurationSec = 60 / bpm;
+        btn.style.setProperty('--pulse-duration', `${beatDurationSec}s`);
+        btn.classList.add('blinking');
+
+        // Bliká přesně 8 dob
+        const totalDurationMs = beatDurationSec * 8 * 1000;
+
+        const timeoutId = setTimeout(() => {
+          btn.classList.remove('blinking');
+          activeBpmTimeouts.delete(btn);
+        }, totalDurationMs);
+
+        activeBpmTimeouts.set(btn, timeoutId);
+      }
+
       document.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('print') === 'true') {

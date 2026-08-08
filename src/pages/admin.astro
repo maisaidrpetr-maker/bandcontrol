@@ -92,8 +92,8 @@ const allLyrics = await getCollection('lyrics');
 
     <PlaylistModal />
 
-    <!-- Globální předání dat pro skladby -->
-    <script is:inline define:vars={{ allSongsData: allLyrics.map(s => ({ id: s.id, title: s.data.title || s.id, key: s.data.key || '', capo: s.data.capo !== undefined ? s.data.capo : '' })) }}>
+    <!-- Globální předání dat pro skladby včetně BPM -->
+    <script is:inline define:vars={{ allSongsData: allLyrics.map(s => ({ id: s.id, title: s.data.title || s.id, key: s.data.key || '', capo: s.data.capo !== undefined ? s.data.capo : '', bpm: s.data.bpm || '' })) }}>
       window.allSongsCollection = allSongsData;
       window.getSongTitle = function(songId) {
         const found = allSongsCollection.find(s => s.id === songId);

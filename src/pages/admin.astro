@@ -11,6 +11,7 @@ import PlaylistManager from '../components/admin/PlaylistManager.astro';
 import PlaylistModal from '../components/admin/PlaylistModal.astro';
 import EventManager from '../components/admin/EventManager.astro';
 import ActivitiesManager from '../components/admin/ActivitiesManager.astro';
+import ChangelogManager from '../components/admin/ChangelogManager.astro';
 
 const allLyrics = await getCollection('lyrics');
 const allActivities = await getCollection('activities');
@@ -66,6 +67,7 @@ const allActivities = await getCollection('activities');
             <button class="tab-btn" data-tab="tab-playlists">PLAYLISTY</button>
             <button class="tab-btn" data-tab="tab-events">UDÁLOSTI</button>
             <button class="tab-btn" data-tab="tab-activities">ZÁPISY</button>
+            <button class="tab-btn" data-tab="tab-changelog">CHANGELOG</button>
           </div>
 
           <div class="metal-panel">
@@ -88,6 +90,11 @@ const allActivities = await getCollection('activities');
             <!-- ZÁLOŽKA 4: ZÁPISY -->
             <div id="tab-activities" class="tab-content">
               <ActivitiesManager allActivities={allActivities} />
+            </div>
+
+            <!-- ZÁLOŽKA 5: CHANGELOG -->
+            <div id="tab-changelog" class="tab-content">
+              <ChangelogManager />
             </div>
 
           </div>

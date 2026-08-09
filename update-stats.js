@@ -4,30 +4,29 @@ import path from 'path';
 import { createClient } from 'redis';
 
 async function updateStats() {
-  let totalChanges = 1;
+  let totalChanges = 85; // Výchozí hodnota pro jistotu
 
-  const client = createClient({
-    url: process.env.REDIS_URL
-  });
+  // Zkusíme se připojit k Redis, jenom pokud je REDIS_URL k dispozici
+  if (process.env.REDIS_URL) {
+    const client = createClient({
+      url: process.env.REDIS_URL
+    });
 
-  try {
-    await client.connect();
-    
-    // Zjistíme aktuální hodnotu v databázi
-    let currentVal = await client.get('build_counter');
-    
-    if (!currentVal || parseInt(currentVal) < 85) {
-      // Pokud klíč neexistuje nebo je menší než 85, nastavíme ho na 85
-      await client.set('build_counter', 85);
-      totalChanges = 85;
-    } else {
-      // Jinak normálně inkrementujeme o 1
-      totalChanges = await client.incr('build_counter');
+    try {
+      await client.connect();
+      let currentVal = await client.get('build_counter');
+      
+      if (!currentVal || parseInt(currentVal) < 85) {
+        await client.set('build_counter', 85);
+        totalChanges = 85;
+      } else {
+        totalChanges = await client.incr('build_counter');
+      }
+
+      await client.quit();
+    } catch (e) {
+      console.error('Chyba při komunikaci s Redisem:', e);
     }
-
-    await client.quit();
-  } catch (e) {
-    console.error('Chyba při komunikaci s Redisem, používám záložní hodnotu:', e);
   }
 
   let fileCount = '0';

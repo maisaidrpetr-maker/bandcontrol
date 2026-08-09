@@ -845,11 +845,11 @@ try {
           <h1>{activePlaylist ? activePlaylist.name : 'ŽÁDNÝ PLAYLIST'}</h1>
         </div>
 
-        {activePlaylist && activePlaylist.songs ? (
+       {activePlaylist && activePlaylist.songs ? (
           <div class="print-song-list">
             {activePlaylist.songs.map((songId: string, index: number) => {
               const song = lyricsMap[songId] || { title: songId, key: '', capo: '', bpm: '' };
-              const isTwentyFirst = index === 20;
+              const isTwentyFirst = index === 20 && activePlaylist.songs.length > 20;
               const formattedCapo = song.capo !== '' && song.capo !== '-' && song.capo !== 0 ? `C${song.capo}` : '';
               
               return (
@@ -860,6 +860,7 @@ try {
                       <h1>{activePlaylist.name}</h1>
                     </div>
                   )}
+                  
                   <div class="print-song-card">
                     <div class="print-song-left">
                       <span class="print-song-index">{index + 1}.</span>

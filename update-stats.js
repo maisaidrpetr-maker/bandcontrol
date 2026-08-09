@@ -6,9 +6,9 @@ const outputPath = path.resolve('src/data/stats.json');
 
 let fileCount = '—';
 let commitInfo = { hash: '—', message: '—', date: '—' };
-let totalChanges = '30'; // fallback
+let totalChanges = '30'; // výchozí
 
-// 1. Zkusíme načíst stará data, kdybychom byli v prostředí bez plné git historie (Vercel)
+// 1. Zkusíme načíst dosavadní hodnoty ze souboru
 try {
   if (fs.existsSync(outputPath)) {
     const oldData = JSON.parse(fs.readFileSync(outputPath, 'utf-8'));
@@ -16,7 +16,7 @@ try {
   }
 } catch (e) {}
 
-// 2. Počet souborů
+// 2. Počet souborů z Gitu
 try {
   const gitFiles = execSync('git ls-files', { encoding: 'utf-8' });
   fileCount = gitFiles.split('\n').filter(Boolean).length.toString();
@@ -29,15 +29,18 @@ try {
   commitInfo = { hash, message, date };
 } catch (e) {}
 
-// 4. Celkový počet změn – spočítáme z Gitu POUZE pokud to zafunguje (na localhostu)
-try {
-  const count = execSync('git rev-list --count HEAD', { encoding: 'utf-8' }).trim();
-  if (count) {
-    totalChanges = count; // Tady se na localhostu samo vezme reálné číslo z tvého Gitu
-  }
-} catch (e) {
-  // Na Vercelu git rev-list selže, takže se ignoruje 
-  // a zůstane zachované číslo, které přišlo v JSONu z GitHubu
+// 4. Počet změn: ZJIŠŤUJEME JEN LOKÁLNĚ! 
+// Pokud běží build na Vercelu (existuje proměnná VERCEL nebo procesor není plný lokální git), 
+// tak počítání z Gitu zcela přeskočíme a vezmeme to, co přišlo ze souboru.
+const isVercel = process.env.VERCEL === '1';
+
+if (!isVercel) {
+  try {
+    const count = execSync('git rev-list --count HEAD', { encoding: 'utf-8' }).trim();
+    if (count) {
+      totalChanges = count; // Doma na localhostu se spočítá reálná hodnota
+    }
+  } catch (e) {}
 }
 
 const stats = {

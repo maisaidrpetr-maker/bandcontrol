@@ -30,7 +30,7 @@ const lyricsMap = Object.fromEntries(
   })
 );
 
-// 2. Připojení k Redis pro získání aktivního playlistu
+// 2. Připojení k Redis pro získání playlistů i událostí přímo
 const client = createClient({
   url: import.meta.env.REDIS_URL
 });
@@ -40,6 +40,8 @@ await client.connect().catch(() => {});
 
 let activePlaylist: any = null;
 let allPlaylistsForList = [];
+let allEvents = [];
+
 try {
   const rawPlaylists = await client.get('bandcontrol:playlists');
   const playlists = rawPlaylists ? JSON.parse(rawPlaylists) : [];
@@ -55,30 +57,28 @@ try {
 } catch (err) {
   console.error('Chyba při načítání playlistů v dashboardu:', err);
 }
-await client.disconnect().catch(() => {});
 
-// Načtení akcí z Redis API endpointu
-let allEvents = [];
 try {
-  const response = new URL('/api/events', Astro.request.url);
-  const res = await fetch(response.toString());
-  if (res.ok) {
-    allEvents = await res.json();
+  const rawEvents = await client.get('bandcontrol:events') || await client.get('events');
+  if (rawEvents) {
+    allEvents = typeof rawEvents === 'string' ? JSON.parse(rawEvents) : rawEvents;
   }
-} catch (e) {
-  console.error('Chyba při načítání událostí:', e);
+} catch (err) {
+  console.error('Chyba při načítání událostí z Redisu:', err);
 }
+
+await client.disconnect().catch(() => {});
 
 const now = new Date();
 const todayTimestamp = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
-const processedEvents = allEvents.map((ev: any) => {
+const processedEvents = Array.isArray(allEvents) ? allEvents.map((ev: any) => {
   const dateObj = new Date(ev.date + (ev.time ? `T${ev.time}` : 'T00:00:00'));
   return {
     ...ev,
     timestamp: isNaN(dateObj.getTime()) ? 0 : dateObj.getTime(),
   };
-});
+}) : [];
 
 const futureEvents = processedEvents
   .filter(ev => ev.timestamp >= todayTimestamp)
@@ -128,7 +128,6 @@ function formatCzechDate(dateStr) {
   return `${d.getDate()}. ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-// Načtení statistik ze souboru stats.json (funguje spolehlivě všude)
 let githubTotalCommits = '-';
 let githubLatestCommit = 'Aktualizace systému';
 let formattedCommitDate = '';

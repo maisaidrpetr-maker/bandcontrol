@@ -56,7 +56,7 @@ const isBoard = currentPath === "/" || currentPath.includes('board') || currentP
     const adminDot = dots[6]; // Poslední tečka na madlu
     
     // Seznam lidí, kteří mají vidět admin sekci (např. ty a kapelník)
-    const allowedUsers = ['Petr Maišaidr', 'Honza Kolář']; // Tady si dopiš jméno kapelníka
+    const allowedUsers = ['Petr Maišaidr', 'Honza Kolář', 'Administrátor']; // Tady si dopiš jméno kapelníka
     
     // Pokud přihlášený uživatel NENÍ v seznamu povolených, schováme to
     if (!allowedUsers.includes(currentName)) {

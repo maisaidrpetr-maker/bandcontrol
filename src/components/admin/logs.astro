@@ -1,0 +1,50 @@
+---
+import { Redis } from '@upstash/redis';
+
+const redis = Redis.fromEnv();
+let logs = [];
+
+try {
+  // Stáhneme posledních 50 záznamů ze seznamu
+  const rawLogs = await redis.lrange('login_logs', 0, 49);
+  logs = rawLogs.map(item => typeof item === 'string' ? JSON.parse(item) : item);
+} catch (e) {
+  console.error("Chyba při načítání logů:", e);
+}
+---
+
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <title>Logy přihlášení</title>
+    <style>
+      body { font-family: sans-serif; background: #1a1a1a; color: #eee; padding: 30px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #222; }
+      th, td { padding: 12px; border: 1px solid #444; text-align: left; }
+      th { background: #333; color: #b87333; }
+    </style>
+  </head>
+  <body>
+    <h1>Historie přihlášení</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Čas</th>
+          <th>Uživatel</th>
+          <th>Role</th>
+          <th>IP adresa</th>
+        </tr>
+      </thead>
+      <tbody>
+        {logs.map(log => (
+          <tr>
+            <td>{new Date(log.time).toLocaleString('cs-CZ')}</td>
+            <td><strong>{log.user}</strong></td>
+            <td>{log.role}</td>
+            <td>{log.ip}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </body>
+</html>

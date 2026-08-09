@@ -1,7 +1,6 @@
 ---
 // src/pages/login.astro
 import '../styles/global.css';
-import { USERS } from '../data/users.js';
 ---
 <html lang="cs">
   <head>
@@ -9,7 +8,6 @@ import { USERS } from '../data/users.js';
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>BandControl</title>
     <style>
-      /* Vrácení vycentrovaného layoutu pro login stránku */
       body { 
         font-family: sans-serif;
         display: flex;
@@ -29,7 +27,6 @@ import { USERS } from '../data/users.js';
         box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.8), inset 0px 1px 0px rgba(255, 255, 255, 0.3);
       }
 
-      /* Kontejner pro jazyk - fixní pozice */
       .lang-control-box {
         position: absolute; top: 12px; right: 20px;
         display: flex; flex-direction: column; align-items: center; gap: 6px;
@@ -42,7 +39,6 @@ import { USERS } from '../data/users.js';
       .led { width: 5px; height: 5px; border-radius: 50%; background: #331100; margin: 2px auto 0; transition: 0.3s; }
       .active-led { background: #ff4500; box-shadow: 0 0 6px #ff4500; }
 
-      /* Přepínač dle tvých rozměrů */
       .slider-container {
         width: 40px; height: 14px; background: #1a1a1a;
         border-radius: 8px; border: 1px solid #000;
@@ -113,7 +109,7 @@ import { USERS } from '../data/users.js';
       </div>
     </div>
 
-    <script define:vars={{ USERS }}>
+    <script>
       window.toggleLang = () => {
         const inputVal = document.getElementById('hiddenInput').value;
         sessionStorage.setItem('temp_password', inputVal);
@@ -156,39 +152,53 @@ import { USERS } from '../data/users.js';
         errorMsg.style.display = 'none';
       });
 
-      function tryLogin() {
-        const password = hiddenInput.value.trim().toLowerCase();
-        const userValue = USERS[password]; 
+      async function tryLogin() {
+        const password = hiddenInput.value.trim();
+        
+        try {
+          const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password })
+          });
 
-        if (userValue) {
-          const namePart = userValue.split('(')[0].trim();
-          const rolePart = userValue.split('(')[1]?.replace(')', '').trim() || 'Člen';
+          const result = await response.json();
 
-          sessionStorage.setItem('jePrihlasen', 'true');
-          sessionStorage.setItem('uzivatelJmeno', namePart);
-          sessionStorage.setItem('uzivatelNastroj', rolePart);
-          
-          window.location.href = '/dashboard';
-        } else {
-          display.style.display = 'none'; placeholder.style.opacity = '0';
-          errorMsg.style.display = 'block';
-          setTimeout(() => {
-            hiddenInput.value = ''; display.textContent = ''; placeholder.style.opacity = '1';
-            errorMsg.style.display = 'none'; display.style.display = 'flex'; hiddenInput.focus();
-          }, 2000);
+          if (response.ok && result.success) {
+            sessionStorage.setItem('jePrihlasen', 'true');
+            sessionStorage.setItem('uzivatelJmeno', result.name);
+            sessionStorage.setItem('uzivatelNastroj', result.role);
+            
+            window.location.href = '/dashboard';
+          } else {
+            showError();
+          }
+        } catch (e) {
+          showError();
         }
       }
+
+      function showError() {
+        display.style.display = 'none'; 
+        placeholder.style.opacity = '0';
+        errorMsg.style.display = 'block';
+        setTimeout(() => {
+          hiddenInput.value = ''; 
+          display.textContent = ''; 
+          placeholder.style.opacity = '1';
+          errorMsg.style.display = 'none'; 
+          display.style.display = 'flex'; 
+          hiddenInput.focus();
+        }, 2000);
+      }
+
       document.getElementById('runBtn').addEventListener('click', tryLogin);
       hiddenInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') tryLogin(); });
       setTimeout(() => hiddenInput.focus(), 100);
 
       const savedPass = sessionStorage.getItem('temp_password');
       if (savedPass) {
-        const input = document.getElementById('hiddenInput');
-        const display = document.getElementById('display');
-        const placeholder = document.getElementById('placeholder');
-        
-        input.value = savedPass;
+        hiddenInput.value = savedPass;
         display.textContent = '●'.repeat(savedPass.length);
         placeholder.style.opacity = '0';
         sessionStorage.removeItem('temp_password');

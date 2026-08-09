@@ -531,12 +531,12 @@ try {
         top: 0;
         width: 100%;
         margin: 0;
-        padding: 25px 10mm 0 10mm !important;
+        padding: 15px 10mm 0 10mm !important; /* Mírně zmenšeno pro lepší vejití na 1 stranu */
         color: #000 !important;
         background: #fff !important;
         display: block !important;
-        height: auto !important; /* <--- PŘIDÁNO: Zabrání zbytečnému roztahování výšky */
-        min-height: 0 !important; /* <--- PŘIDÁNO: Zruší vynucenou minimální výšku */
+        height: auto !important; 
+        min-height: 0 !important; 
       }
       
       .print-header-row {
@@ -545,8 +545,8 @@ try {
         align-items: center !important;
         width: 100% !important;
         background: #e6e6e6 !important;
-        padding: 12px 15px 12px 135px !important;
-        min-height: 50px !important;
+        padding: 10px 15px 10px 135px !important; /* Zmenšeno z 12px */
+        min-height: 45px !important; /* Zmenšeno z 50px */
         position: relative !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
@@ -566,15 +566,15 @@ try {
       }
 
       .print-header-second {
-  display: flex !important;
-  visibility: visible !important;
-  height: auto !important;
-  overflow: visible !important;
-  page-break-before: always !important;
-  break-before: page !important;
-  margin-top: 25px !important; 
-  margin-bottom: 15px !important; /* Přidá mezeru pod hlavičkou na 2. straně */
-}
+        display: flex !important;
+        visibility: visible !important;
+        height: auto !important;
+        overflow: visible !important;
+        page-break-before: always !important;
+        break-before: page !important;
+        margin-top: 25px !important; 
+        margin-bottom: 15px !important;
+      }
 
       .print-container-inner:has(.print-header-second) .print-header-second::after {
         content: "2/2" !important;
@@ -610,7 +610,7 @@ try {
       }
 
       .print-song-list {
-        margin-top: 15px !important;
+        margin-top: 10px !important; /* Zmenšeno z 15px */
         display: block !important;
       }
       .print-song-card {
@@ -622,9 +622,9 @@ try {
         background-position: bottom !important;
         background-repeat: no-repeat !important;
         color: #000 !important;
-        padding: 4px 6px 6px 6px !important;
-        margin-bottom: 0 !important;
-        font-size: 1.8rem !important;
+        padding: 3px 6px 3px 6px !important; /* Zmenšeno vertikální odsazení */
+        margin-bottom: 1px !important; /* Zabrání přetečení na další stránku */
+        font-size: 1.7rem !important; /* Mírně zmenšeno pro jistotu */
         line-height: 1.2 !important;
         border-radius: 0 !important;
         page-break-inside: avoid !important;
@@ -659,7 +659,7 @@ try {
         background: transparent !important;
         border: none !important;
         font-weight: bold !important;
-        font-size: 1.8rem !important;
+        font-size: 1.7rem !important;
         padding: 0 !important;
         width: 55px !important;
         min-width: 55px !important;

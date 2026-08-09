@@ -449,7 +449,7 @@ await client.disconnect().catch(() => {});
         btn.style.setProperty('--pulse-duration', `${beatDurationSec}s`);
         btn.classList.add('blinking');
 
-        const totalDurationMs = beatDurationSec * 8 * 1000;
+        const totalDurationMs = beatDurationSec * 12 * 1000;
 
         const timeoutId = setTimeout(() => {
           btn.classList.remove('blinking');

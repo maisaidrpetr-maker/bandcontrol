@@ -6,4 +6,5 @@ export const USERS = {
   "zuzkab": "Zuzana Bartoňová (Zpěv)",
   "zbynekb": "Zbyněk Bartoň (Banjo)",
   "martink": "Martin Král (Kontrabas)"
+  "admin": "Administrátor (VSCode)"
 };

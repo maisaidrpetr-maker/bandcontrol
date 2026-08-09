@@ -1,8 +1,8 @@
 ---
 title: "Foggy Mountain Special"
 artist: "Interpret"
-bpm: "-"
+bpm: ""
 key: " G"
 audio: "/audio/xxx.mp3"
-capo: "-"
+capo: ""
 ---

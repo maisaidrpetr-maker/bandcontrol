@@ -6,15 +6,17 @@ const outputPath = path.resolve('src/data/stats.json');
 
 let fileCount = '—';
 let commitInfo = { hash: '—', message: '—', date: '—' };
-let totalChanges = '30'; // výchozí
+let totalChanges = '—'; // Tady byla ta nešťastná třicítka
 
-// 1. Zkusíme načíst dosavadní hodnoty ze souboru
+// 1. Načteme existující data ze souboru, pokud existují
 try {
   if (fs.existsSync(outputPath)) {
     const oldData = JSON.parse(fs.readFileSync(outputPath, 'utf-8'));
     if (oldData.totalChanges) totalChanges = oldData.totalChanges;
   }
 } catch (e) {}
+
+// ... zbytek skriptu zůstává stejný ...
 
 // 2. Počet souborů z Gitu
 try {

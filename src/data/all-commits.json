@@ -1,5 +1,41 @@
 [
   {
+    "hash": "b7650c3",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "TestCommits2"
+  },
+  {
+    "hash": "3d44511",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "TestCommits"
+  },
+  {
+    "hash": "95b91c7",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "Pridat all-commits.json a opravit skripty"
+  },
+  {
+    "hash": "2bffbfd",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "VercelGithubCommits"
+  },
+  {
+    "hash": "53d6161",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "VercelCommitPage"
+  },
+  {
+    "hash": "718b832",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "LogCommitVercelUpdate"
+  },
+  {
     "hash": "68698fc",
     "author": "maisaidrpetr-maker",
     "date": "2026-08-09",

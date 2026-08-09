@@ -15,7 +15,7 @@ try {
     commitInfo: { hash: commitHash, message: commitMessage, date: commitDate }
   };
 
-  fs.writeFileSync(path.resolve('./src/data/stats.json'), JSON.stringify(stats, null, 2));
+  fs.writeFileSync(path.resolve('.public/stats.json'), JSON.stringify(stats, null, 2));
   console.log('Statistiky úspěšně aktualizovány:', stats);
 } catch (e) {
   console.error('Chyba generování stats:', e);

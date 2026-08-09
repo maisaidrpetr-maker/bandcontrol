@@ -519,6 +519,16 @@ try {
     }
 
     @media print {
+      @page {
+        size: A4;
+        margin: 10mm; /* Sjednotí a zmenší okraje samotného papíru */
+      }
+      body {
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
       body * {
         visibility: hidden;
       }
@@ -531,12 +541,10 @@ try {
         top: 0;
         width: 100%;
         margin: 0;
-        padding: 15px 10mm 0 10mm !important; /* Mírně zmenšeno pro lepší vejití na 1 stranu */
+        padding: 5px 0 0 0 !important;
         color: #000 !important;
         background: #fff !important;
         display: block !important;
-        height: auto !important; 
-        min-height: 0 !important; 
       }
       
       .print-header-row {

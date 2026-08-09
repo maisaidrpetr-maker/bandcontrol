@@ -1,7 +1,6 @@
 ---
 // src/pages/dashboard.astro
 import '../styles/global.css';
-import stats from '../data/stats.json';
 import NavigationDrawer from '../components/NavigationDrawer.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
@@ -130,13 +129,13 @@ function formatCzechDate(dateStr) {
 }
 
 // Načtení statistik ze souboru stats.json (funguje spolehlivě všude)
-let githubTotalCommits = '30';
+let githubTotalCommits = '-';
 let githubLatestCommit = 'Aktualizace systému';
 let formattedCommitDate = '';
 let githubTotalFiles = '—';
 
 try {
-  const statsPath = path.resolve('./src/data/stats.json');
+  const statsPath = path.resolve('./public/stats.json');
   if (fs.existsSync(statsPath)) {
     const statsData = JSON.parse(fs.readFileSync(statsPath, 'utf-8'));
     if (statsData.totalChanges) githubTotalCommits = statsData.totalChanges;
@@ -829,7 +828,7 @@ try {
                 <span style="font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px;" title={githubLatestCommit}>{githubLatestCommit}</span>
                 {formattedCommitDate && <span style="color: #f0a500; font-weight: bold; flex-shrink: 0;">{formattedCommitDate}</span>}
               </div>
-              <div class="stat-row"><span>Celkový počet změn</span><span>{stats.totalChanges}</span></div>
+              <div class="stat-row"><span>Celkový počet změn</span><span>{githubTotalCommits}</span></div>
               <div class="stat-row"><span>Celkový počet souborů</span><span>{githubTotalFiles}</span></div>
             </div>
           </section>

@@ -564,14 +564,15 @@ try {
       }
 
       .print-header-second {
-        display: flex !important;
-        visibility: visible !important;
-        height: auto !important;
-        overflow: visible !important;
-        page-break-before: always !important;
-        break-before: page !important;
-        margin-top: 25px !important; 
-      }
+  display: flex !important;
+  visibility: visible !important;
+  height: auto !important;
+  overflow: visible !important;
+  page-break-before: always !important;
+  break-before: page !important;
+  margin-top: 25px !important; 
+  margin-bottom: 15px !important; /* Přidá mezeru pod hlavičkou na 2. straně */
+}
 
       .print-container-inner:has(.print-header-second) .print-header-second::after {
         content: "2/2" !important;

@@ -5,6 +5,6 @@ export const USERS = {
   "janak": "Jana Kolářová (Housle)",
   "zuzkab": "Zuzana Bartoňová (Zpěv)",
   "zbynekb": "Zbyněk Bartoň (Banjo)",
-  "martink": "Martin Král (Kontrabas)"
+  "martink": "Martin Král (Kontrabas)",
   "admin": "Administrátor (VSCode)"
 };

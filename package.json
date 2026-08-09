@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "node --env-file=.env update-stats.js && astro build",
+    "build": "node update-stats.js && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "postinstall": "npm config set legacy-peer-deps true"

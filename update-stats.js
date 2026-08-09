@@ -1,20 +1,20 @@
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { Redis } from '@upstash/redis';
-
-// Inicializace Redisu (Vercel si klíče automaticky vezme z proměnných prostředí)
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
+import { createClient } from 'redis';
 
 async function updateStats() {
   let totalChanges = 1;
 
+  const client = createClient({
+    url: process.env.REDIS_URL
+  });
+
   try {
-    // Zkusíme v Redisu inkrementovat klíč 'build_counter'
-    totalChanges = await redis.incr('build_counter');
+    await client.connect();
+    // Zvýšíme hodnotu klíče 'build_counter' v databázi o 1
+    totalChanges = await client.incr('build_counter');
+    await client.quit();
   } catch (e) {
     console.error('Chyba při komunikaci s Redisem, používám záložní hodnotu:', e);
   }

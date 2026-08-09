@@ -1,5 +1,7 @@
 ---
 import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
 interface Commit {
   hash: string;
@@ -10,6 +12,7 @@ interface Commit {
 
 let commits: Commit[] = [];
 
+// 1. Pokus o získání dat z lokálního gitu (localhost)
 try {
   const gitLog = execSync('git log --pretty=format:"%h|%an|%ad|%s" --date=short', { encoding: 'utf-8' });
   commits = gitLog.split('\n').filter(Boolean).map(line => {
@@ -17,23 +20,19 @@ try {
     return { hash, author, date, message };
   });
 } catch (e) {
-  // Lokální git selhal
+  // Lokální git selhal (Vercel)
 }
 
+// 2. Pokud git selhal, načteme data ze statického JSON souboru přes fs
 if (commits.length === 0) {
   try {
-    const response = await fetch('https://api.github.com/repos/maisaidrpetr-maker/bandcontrol/commits');
-    if (response.ok) {
-      const apiCommits = await response.json();
-      commits = apiCommits.map((c: any) => ({
-        hash: c.sha.substring(0, 7),
-        author: c.commit.author.name,
-        date: c.commit.author.date.split('T')[0],
-        message: c.commit.message
-      }));
+    const filePath = path.resolve('./src/data/all-commits.json');
+    if (fs.existsSync(filePath)) {
+      const fileContent = fs.readFileSync(filePath, 'utf-8');
+      commits = JSON.parse(fileContent);
     }
-  } catch (apiError) {
-    console.error('Nepodařilo se načíst commity:', apiError);
+  } catch (e) {
+    // Soubor se nepodařilo načíst
   }
 }
 ---
@@ -45,9 +44,9 @@ if (commits.length === 0) {
 <div class="column" id="changelog-container" data-commits={JSON.stringify(commits)}>
   <h2>Kompletní historie změn a verzí</h2>
   
-  <!-- Seznam commitů - jeden úzký řádek -->
+  <!-- Seznam commitů -->
   <div id="changelog-list" style="margin-top: 10px; display: flex; flex-direction: column; gap: 4px;">
-    <!-- Vygeneruje se dynamicky přes JS, aby fungovalo stránkování -->
+    <!-- Vygeneruje se dynamicky přes JS -->
   </div>
 
   <!-- Spodní lišta stránkování -->

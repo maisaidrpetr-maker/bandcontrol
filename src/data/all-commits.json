@@ -1,0 +1,716 @@
+[
+  {
+    "hash": "68698fc",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "ChangelogPages"
+  },
+  {
+    "hash": "2985b43",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "PrintAllPage"
+  },
+  {
+    "hash": "b7c2bd5",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "DashboardPrint"
+  },
+  {
+    "hash": "fa04cf1",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "PrintPlay"
+  },
+  {
+    "hash": "84c05aa",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "PrintPlaylist2"
+  },
+  {
+    "hash": "248adc2",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "PrinPlaylist"
+  },
+  {
+    "hash": "ded9e5c",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "PrintOnePage"
+  },
+  {
+    "hash": "354c454",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "PrintBlankPageOff"
+  },
+  {
+    "hash": "5302978",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "PrintSecondPagePlaylist"
+  },
+  {
+    "hash": "eec7e8d",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "Merge commit 'c7b164c'"
+  },
+  {
+    "hash": "c7b164c",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "BPMinLyrics"
+  },
+  {
+    "hash": "3911840",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "login.js3"
+  },
+  {
+    "hash": "0edbb73",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "login.js2"
+  },
+  {
+    "hash": "8e84d3a",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "login.js"
+  },
+  {
+    "hash": "2dee962",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "LoginSave"
+  },
+  {
+    "hash": "a4c7de6",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "logs.astroMove"
+  },
+  {
+    "hash": "759765d",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "logs.astro"
+  },
+  {
+    "hash": "7f88efe",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "Login.astro"
+  },
+  {
+    "hash": "888cd64",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "UpdStats2"
+  },
+  {
+    "hash": "605c497",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "UpdCount3"
+  },
+  {
+    "hash": "f83e146",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "UpdCount2"
+  },
+  {
+    "hash": "719c1bc",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "UpdCount"
+  },
+  {
+    "hash": "7913cf3",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "UpdRedis"
+  },
+  {
+    "hash": "b342d66",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "UpdStatDB"
+  },
+  {
+    "hash": "8d5f9d3",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "PrintBtn"
+  },
+  {
+    "hash": "9806c13",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "GitIgnore"
+  },
+  {
+    "hash": "3786dff",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "User.jsUpd"
+  },
+  {
+    "hash": "f80b4f2",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "AdminLogin"
+  },
+  {
+    "hash": "656c89f",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "UpdateStats.js3"
+  },
+  {
+    "hash": "88b4f65",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "UpdateStats.js2"
+  },
+  {
+    "hash": "d563388",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "update-stats.js"
+  },
+  {
+    "hash": "2ef387a",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "AdminVSCupdate"
+  },
+  {
+    "hash": "df054ad",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "LoginAdmin"
+  },
+  {
+    "hash": "07f575c",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "Test9"
+  },
+  {
+    "hash": "34d0404",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "TestCount8"
+  },
+  {
+    "hash": "6409582",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "TestCount7"
+  },
+  {
+    "hash": "e17f214",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "TestCount6"
+  },
+  {
+    "hash": "6405381",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "TestCount5"
+  },
+  {
+    "hash": "3bdccd3",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "TestCount4"
+  },
+  {
+    "hash": "4a440a4",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "TestCount3"
+  },
+  {
+    "hash": "9622dff",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "TestCount2"
+  },
+  {
+    "hash": "f9003f2",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "Test Count"
+  },
+  {
+    "hash": "e9f062e",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "UpdComCount"
+  },
+  {
+    "hash": "604fb87",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "UpdDasboardCount"
+  },
+  {
+    "hash": "a955182",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "Natvrdo číslo stats"
+  },
+  {
+    "hash": "7596714",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "UpdStatsJs"
+  },
+  {
+    "hash": "ed23312",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "UpdateStats.js"
+  },
+  {
+    "hash": "370902c",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "UpdateCommitCounter"
+  },
+  {
+    "hash": "562091c",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "Aktualizace statistik"
+  },
+  {
+    "hash": "9be157c",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "UpdateCommitCount"
+  },
+  {
+    "hash": "9c6afa6",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-09",
+    "message": "ChangeBPMto12"
+  },
+  {
+    "hash": "8b7a604",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-08",
+    "message": "EightMoreMiles.md"
+  },
+  {
+    "hash": "51a608c",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-08",
+    "message": "Test"
+  },
+  {
+    "hash": "c0c69a8",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-08",
+    "message": "CssCorrection"
+  },
+  {
+    "hash": "f1fd26d",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-08",
+    "message": "DashBoard"
+  },
+  {
+    "hash": "c5f18ab",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-08",
+    "message": "SystemOperation"
+  },
+  {
+    "hash": "5747743",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-08",
+    "message": "ActualCommit"
+  },
+  {
+    "hash": "6847acb",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-08",
+    "message": "PrintPlaylistBoardName"
+  },
+  {
+    "hash": "fb1515a",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-08",
+    "message": "PrintPlaylistInBoard"
+  },
+  {
+    "hash": "46e2ce8",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-08",
+    "message": "UserUpdate"
+  },
+  {
+    "hash": "cb5675d",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-08",
+    "message": "ActivitiesON"
+  },
+  {
+    "hash": "8dbd342",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-08",
+    "message": "AddChangelogVercel"
+  },
+  {
+    "hash": "af45f4b",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-08",
+    "message": "AddChangelog"
+  },
+  {
+    "hash": "0acb94c",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-08",
+    "message": "AddActivities"
+  },
+  {
+    "hash": "1cbdcb6",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-08",
+    "message": "StageBPMblink"
+  },
+  {
+    "hash": "cc04dfd",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-06",
+    "message": "AddFooter"
+  },
+  {
+    "hash": "8ef6bd6",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-05",
+    "message": "ListEventsSwitchBtn"
+  },
+  {
+    "hash": "aeb4868",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-05",
+    "message": "SidebarBtnPadding"
+  },
+  {
+    "hash": "b7dfb1a",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-05",
+    "message": "SidebarPadding"
+  },
+  {
+    "hash": "c70bfd8",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-05",
+    "message": "ListEventsBTN"
+  },
+  {
+    "hash": "f9b5ef6",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-04",
+    "message": "ListEventsFull"
+  },
+  {
+    "hash": "0b03a6f",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-04",
+    "message": "DelEvents.json"
+  },
+  {
+    "hash": "5a39a70",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-04",
+    "message": "AdminSectionCSS"
+  },
+  {
+    "hash": "6bf1044",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-03",
+    "message": "RemoveEvents.md"
+  },
+  {
+    "hash": "3decab8",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-03",
+    "message": "DashboardCorrection"
+  },
+  {
+    "hash": "a9275d8",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-03",
+    "message": "EditEvents"
+  },
+  {
+    "hash": "d2a5cb4",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-03",
+    "message": "SetEventsRedisDB"
+  },
+  {
+    "hash": "3ccd423",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-03",
+    "message": "AddEvents"
+  },
+  {
+    "hash": "99c914a",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-08-01",
+    "message": "Stage - Center tune"
+  },
+  {
+    "hash": "362a660",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-07-29",
+    "message": "LongPlaylistRepair"
+  },
+  {
+    "hash": "95f1673",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-07-29",
+    "message": "PrinPlaylisFinal"
+  },
+  {
+    "hash": "f9a47dc",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-07-29",
+    "message": "PlaylistComplete"
+  },
+  {
+    "hash": "a8ebdcd",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-07-29",
+    "message": "PrintPlaylist"
+  },
+  {
+    "hash": "7832c1d",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-07-28",
+    "message": "PlaylistUpdate"
+  },
+  {
+    "hash": "0c1d3fc",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-07-28",
+    "message": "CSSreplace"
+  },
+  {
+    "hash": "1336a1d",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-07-28",
+    "message": "PlaylistFull"
+  },
+  {
+    "hash": "1ef2d9b",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-07-28",
+    "message": "Přidáno .npmrc pro vynucení legacy-peer-deps"
+  },
+  {
+    "hash": "a10e611",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-07-28",
+    "message": "Přidán postinstall pro legacy-peer-deps"
+  },
+  {
+    "hash": "caa8adf",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-07-28",
+    "message": "VercelBuild"
+  },
+  {
+    "hash": "5ffad6c",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-07-28",
+    "message": "SetStagePlaylist"
+  },
+  {
+    "hash": "5271535",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-07-28",
+    "message": "SetActivePlaylist"
+  },
+  {
+    "hash": "5dcf6ef",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-07-27",
+    "message": "Add Lyrics..."
+  },
+  {
+    "hash": "68733a5",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-07-27",
+    "message": "AdminPage"
+  },
+  {
+    "hash": "f159b8d",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-06-02",
+    "message": "Responzitive mobile"
+  },
+  {
+    "hash": "c6743fc",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-06-02",
+    "message": "Overview module"
+  },
+  {
+    "hash": "7d02d51",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-06-02",
+    "message": "Events module final"
+  },
+  {
+    "hash": "5a6a964",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-06-02",
+    "message": "Events module"
+  },
+  {
+    "hash": "dc7d0e7",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-06-02",
+    "message": "Header CSS"
+  },
+  {
+    "hash": "d8fccf0",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-06-01",
+    "message": "Add event"
+  },
+  {
+    "hash": "5d1fae5",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-28",
+    "message": "Iphone optimize"
+  },
+  {
+    "hash": "3c73cb3",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-28",
+    "message": "Update Header"
+  },
+  {
+    "hash": "f90fb31",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-28",
+    "message": "Login system"
+  },
+  {
+    "hash": "e95c915",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-28",
+    "message": "Lang switch login"
+  },
+  {
+    "hash": "660fcbb",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-28",
+    "message": "Login lang and size"
+  },
+  {
+    "hash": "918c2eb",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-28",
+    "message": "Repair mobile login"
+  },
+  {
+    "hash": "c09e667",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-28",
+    "message": "Login"
+  },
+  {
+    "hash": "c687452",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-27",
+    "message": "Splash"
+  },
+  {
+    "hash": "ea0b912",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-27",
+    "message": "Merge branch 'zachrana'"
+  },
+  {
+    "hash": "b84b6d0",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-27",
+    "message": "Lang Login"
+  },
+  {
+    "hash": "3f28022",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-27",
+    "message": "Content update"
+  },
+  {
+    "hash": "9d548de",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-26",
+    "message": "Další oprava šuplíku"
+  },
+  {
+    "hash": "628b9fd",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-26",
+    "message": "Upravený šuplík"
+  },
+  {
+    "hash": "8d459fd",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-26",
+    "message": "Responzitive modules"
+  },
+  {
+    "hash": "3fe12d4",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-26",
+    "message": "feat: kompletni index se suplikem vpravo"
+  },
+  {
+    "hash": "124ca98",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-24",
+    "message": "Add users"
+  },
+  {
+    "hash": "4e649f1",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-24",
+    "message": "feat: pridat typescript a multi-user login"
+  },
+  {
+    "hash": "56f09d1",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-24",
+    "message": "oprava layoutu"
+  },
+  {
+    "hash": "44f2766",
+    "author": "maisaidrpetr-maker",
+    "date": "2026-05-24",
+    "message": "Nový start"
+  },
+  {
+    "hash": "5026214",
+    "author": "houston[bot]",
+    "date": "2026-05-24",
+    "message": "\"Initial commit from Astro\""
+  }
+]

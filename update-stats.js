@@ -5,16 +5,16 @@ import path from 'path';
 try {
   const targetPath = path.resolve('public/stats.json');
   
-  // Načteme staré hodnoty, abychom věděli aktuální stav counteru
-  let currentCount = 0;
+  // Načteme aktuální hodnotu counteru, pokud soubor už existuje
+  let currentCount = 100; // Výchozí číslo, pokud soubor ještě není
   if (fs.existsSync(targetPath)) {
     try {
       const oldData = JSON.parse(fs.readFileSync(targetPath, 'utf8'));
-      currentCount = parseInt(oldData.totalChanges, 10) || 0;
+      currentCount = parseInt(oldData.totalChanges, 10) || 100;
     } catch (e) {}
   }
 
-  // Při každém buildu/syncu přičteme 1
+  // Při každém buildu přičteme 1
   const totalChanges = currentCount + 1;
 
   let fileCount = '0';

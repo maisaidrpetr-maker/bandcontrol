@@ -2,33 +2,21 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
-const outputPath = path.resolve('src/data/stats.json');
-
-let fileCount = '83';
-let commitInfo = { hash: '370902c', message: 'UpdateCommitCount', date: '2026-08-09 05:35:00 +0200' };
-
-// Zde máme číslo natvrdo, takže Vercel už se nemá odkud dozvědět o třicítce
-let totalChanges = '70'; 
-
 try {
-  const gitFiles = execSync('git ls-files', { encoding: 'utf-8' });
-  fileCount = gitFiles.split('\n').filter(Boolean).length.toString();
-} catch (e) {}
+  const totalChanges = execSync('git rev-list --all --count').toString().trim();
+  const fileCount = execSync('git ls-files | wc -l').toString().trim();
+  const commitHash = execSync('git log -1 --format="%h"').toString().trim();
+  const commitMessage = execSync('git log -1 --format="%s"').toString().trim();
+  const commitDate = execSync('git log -1 --format="%ad"').toString().trim();
 
-try {
-  const lastCommit = execSync('git log -1 --format="%h|%s|%ai"', { encoding: 'utf-8' }).trim();
-  const [hash, message, date] = lastCommit.split('|');
-  commitInfo = { hash, message, date };
-} catch (e) {}
+  const stats = {
+    totalChanges,
+    fileCount,
+    commitInfo: { hash: commitHash, message: commitMessage, date: commitDate }
+  };
 
-const stats = {
-  fileCount,
-  commitInfo,
-  totalChanges,
-  updatedAt: new Date().toISOString()
-};
-
-fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-fs.writeFileSync(outputPath, JSON.stringify(stats, null, 2));
-
-console.log('Stats updated successfully:', stats);
+  fs.writeFileSync(path.resolve('./src/data/stats.json'), JSON.stringify(stats, null, 2));
+  console.log('Statistiky úspěšně aktualizovány:', stats);
+} catch (e) {
+  console.error('Chyba generování stats:', e);
+}

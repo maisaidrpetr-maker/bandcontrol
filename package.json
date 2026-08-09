@@ -6,8 +6,8 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "node update-stats.js && astro dev",
+    "build": "node update-stats.js && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "postinstall": "npm config set legacy-peer-deps true"

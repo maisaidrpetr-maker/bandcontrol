@@ -12,8 +12,19 @@ async function updateStats() {
 
   try {
     await client.connect();
-    // Zvýšíme hodnotu klíče 'build_counter' v databázi o 1
-    totalChanges = await client.incr('build_counter');
+    
+    // Zjistíme aktuální hodnotu v databázi
+    let currentVal = await client.get('build_counter');
+    
+    if (!currentVal || parseInt(currentVal) < 85) {
+      // Pokud klíč neexistuje nebo je menší než 85, nastavíme ho na 85
+      await client.set('build_counter', 85);
+      totalChanges = 85;
+    } else {
+      // Jinak normálně inkrementujeme o 1
+      totalChanges = await client.incr('build_counter');
+    }
+
     await client.quit();
   } catch (e) {
     console.error('Chyba při komunikaci s Redisem, používám záložní hodnotu:', e);

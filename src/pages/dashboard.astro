@@ -535,6 +535,8 @@ try {
         color: #000 !important;
         background: #fff !important;
         display: block !important;
+        height: auto !important; /* <--- PŘIDÁNO: Zabrání zbytečnému roztahování výšky */
+        min-height: 0 !important; /* <--- PŘIDÁNO: Zruší vynucenou minimální výšku */
       }
       
       .print-header-row {
@@ -860,7 +862,7 @@ try {
                       <h1>{activePlaylist.name}</h1>
                     </div>
                   )}
-                  
+
                   <div class="print-song-card">
                     <div class="print-song-left">
                       <span class="print-song-index">{index + 1}.</span>

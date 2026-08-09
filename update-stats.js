@@ -1,21 +1,23 @@
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { Redis } from '@upstash/redis';
 
-try {
-  const targetPath = path.resolve('public/stats.json');
-  
-  // Načteme aktuální hodnotu counteru, pokud soubor už existuje
-  let currentCount = 100; // Výchozí číslo, pokud soubor ještě není
-  if (fs.existsSync(targetPath)) {
-    try {
-      const oldData = JSON.parse(fs.readFileSync(targetPath, 'utf8'));
-      currentCount = parseInt(oldData.totalChanges, 10) || 100;
-    } catch (e) {}
+// Inicializace Redisu (Vercel si klíče automaticky vezme z proměnných prostředí)
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
+
+async function updateStats() {
+  let totalChanges = 1;
+
+  try {
+    // Zkusíme v Redisu inkrementovat klíč 'build_counter'
+    totalChanges = await redis.incr('build_counter');
+  } catch (e) {
+    console.error('Chyba při komunikaci s Redisem, používám záložní hodnotu:', e);
   }
-
-  // Při každém buildu přičteme 1
-  const totalChanges = currentCount + 1;
 
   let fileCount = '0';
   let commitHash = '';
@@ -38,8 +40,9 @@ try {
     commitInfo: { hash: commitHash, message: commitMessage, date: commitDate }
   };
 
+  const targetPath = path.resolve('public/stats.json');
   fs.writeFileSync(targetPath, JSON.stringify(stats, null, 2));
   console.log('Statistiky úspěšně aktualizovány:', stats);
-} catch (e) {
-  console.error('Chyba generování stats:', e);
 }
+
+updateStats();

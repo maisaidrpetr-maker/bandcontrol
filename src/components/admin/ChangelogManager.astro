@@ -62,8 +62,11 @@ if (commits.length === 0) {
 </div>
 
 <script>
-  const container = document.getElementById('changelog-container');
-  if (container) {
+  function initChangelog() {
+    const container = document.getElementById('changelog-container');
+    if (!container) return;
+    
+    // Pokud už je inicializováno a data sedí, neřešíme zbytečně znova
     const commits = JSON.parse(container.getAttribute('data-commits') || '[]');
     const itemsPerPage = 10;
     let currentPage = 1;
@@ -104,14 +107,20 @@ if (commits.length === 0) {
       if (nextBtn) (nextBtn as HTMLButtonElement).style.opacity = currentPage === totalPages ? '0.4' : '1';
     }
 
-    prevBtn?.addEventListener('click', () => {
+    // Odstranění starých listenerů klonem tlačítek, ať se nebindují víckrát
+    const newPrev = prevBtn?.cloneNode(true);
+    const newNext = nextBtn?.cloneNode(true);
+    prevBtn?.parentNode?.replaceChild(newPrev!, prevBtn);
+    nextBtn?.parentNode?.replaceChild(newNext!, nextBtn);
+
+    newPrev?.addEventListener('click', () => {
       if (currentPage > 1) {
         currentPage--;
         renderPage();
       }
     });
 
-    nextBtn?.addEventListener('click', () => {
+    newNext?.addEventListener('click', () => {
       if (currentPage < totalPages) {
         currentPage++;
         renderPage();
@@ -120,4 +129,16 @@ if (commits.length === 0) {
 
     renderPage();
   }
+
+  // Spustit při načtení
+  document.addEventListener('DOMContentLoaded', initChangelog);
+
+  // Spustit i při přepnutí záložky Changelog v adminu
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.getAttribute('data-tab') === 'tab-changelog') {
+        setTimeout(initChangelog, 50); // Krátká pauza na vykreslení kontejneru
+      }
+    });
+  });
 </script>

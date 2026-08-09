@@ -12,28 +12,21 @@ interface Commit {
 
 let commits: Commit[] = [];
 
-// 1. Pokus o získání dat z lokálního gitu (localhost)
 try {
   const gitLog = execSync('git log --pretty=format:"%h|%an|%ad|%s" --date=short', { encoding: 'utf-8' });
   commits = gitLog.split('\n').filter(Boolean).map(line => {
     const [hash, author, date, message] = line.split('|');
     return { hash, author, date, message };
   });
-} catch (e) {
-  // Lokální git selhal (Vercel)
-}
+} catch (e) {}
 
-// 2. Pokud git selhal, načteme data ze statického JSON souboru přes fs
 if (commits.length === 0) {
   try {
     const filePath = path.resolve('./src/data/all-commits.json');
     if (fs.existsSync(filePath)) {
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      commits = JSON.parse(fileContent);
+      commits = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
     }
-  } catch (e) {
-    // Soubor se nepodařilo načíst
-  }
+  } catch (e) {}
 }
 ---
 
@@ -41,23 +34,26 @@ if (commits.length === 0) {
   <h1>CHANGELOG</h1>
 </header>
 
-<div class="column" id="changelog-container" data-commits={JSON.stringify(commits)}>
-  <h2>Kompletní historie změn a verzí</h2>
+<div class="column">
+  <h2>Kompletní historie změn a verzí ({commits.length} commitů)</h2>
   
-  <!-- Seznam commitů -->
-  <div id="changelog-list" style="margin-top: 10px; display: flex; flex-direction: column; gap: 4px;">
-    <!-- Vygeneruje se dynamicky přes JS -->
-  </div>
-
-  <!-- Spodní lišta stránkování -->
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding: 6px 12px; background: #161616; border: 1px solid #333; border-radius: 4px;">
-    <div style="display: flex; gap: 6px;">
-      <button id="prev-page" style="background: #222; border: 1px solid #444; color: #aaa; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-weight: bold;">◄</button>
-      <button id="next-page" style="background: #2a2a2a; border: 1px solid #555; color: #fff; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-weight: bold;">►</button>
-    </div>
-    <div id="page-info" style="font-size: 0.8rem; color: #888; font-family: sans-serif;">
-      Stránka 1 z 1
-    </div>
+  <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 4px; max-height: 500px; overflow-y: auto;">
+    {commits.length > 0 ? (
+      commits.map(commit => (
+        <div style="background: #1c1c1c; border: 1px solid #333; padding: 5px 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
+          <div style="display: flex; align-items: center; gap: 12px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex-grow: 1; margin-right: 15px;">
+            <span style="font-weight: 600; color: #ff8800;">{commit.message}</span>
+            <span style="color: #666; font-size: 0.75rem;">({commit.author})</span>
+          </div>
+          <div style="text-align: right; font-size: 0.75rem; color: #aaa; font-family: monospace; display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+            <span style="background: #2a2a2a; padding: 1px 4px; border-radius: 3px; border: 1px solid #444; color: #ff8800;">{commit.hash}</span>
+            <span>📅 {commit.date}</span>
+          </div>
+        </div>
+      ))
+    ) : (
+      <div style="color: #666; font-style: italic; text-align: center; margin-top: 20px;">Žádná historie commitů nenalezena.</div>
+    )}
   </div>
 </div>
 

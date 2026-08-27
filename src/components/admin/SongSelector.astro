@@ -1,5 +1,8 @@
 ---
-const { allLyrics } = Astro.props;
+const { allLyrics, inactiveSongs = [] } = Astro.props;
+
+const activeList = allLyrics.filter((song: any) => !inactiveSongs.includes(song.id));
+const inactiveList = allLyrics.filter((song: any) => inactiveSongs.includes(song.id));
 ---
 <header class="panel-header">
   <h1>VÝBĚR PÍSNÍ</h1>
@@ -12,31 +15,161 @@ const { allLyrics } = Astro.props;
 
 <div class="column">
   <h2>Zde lze naklikat požadované skladby a pak je vložit do nového playlistu</h2>
-  <ul id="repertoire" class="song-list">
-    {allLyrics.map((song: any) => (
-      <li class="song-item" data-id={song.id} data-title={song.data.title || song.id}>
-        {song.data.title || song.id}
+  
+  <!-- Aktivní seznam -->
+  <ul id="repertoire" class="song-list active-list">
+    {activeList.map((song: any) => (
+      <li class="song-item" data-id={song.id} title="Vybrat do playlistu">
+        <span class="song-title">{song.data.title || song.id}</span>
+        <button type="button" class="btn-action btn-deactivate" data-action="deactivate" title="Dočasně vyřadit z repertoáru">
+          <span class="icon">✖</span>
+        </button>
+      </li>
+    ))}
+  </ul>
+
+  <!-- Neaktivní seznam -->
+  <h2 style="margin-top: 30px; opacity: 0.7;">Dočasně vyřazené skladby (nehrát)</h2>
+  <ul id="inactive-repertoire" class="song-list inactive-list">
+    {inactiveList.map((song: any) => (
+      <li class="song-item inactive btn-activate" data-id={song.id} data-action="activate" title="Vrátit zpět do repertoáru">
+        <span class="song-title">{song.data.title || song.id}</span>
+        <span class="btn-action">
+            <span class="icon">↩</span>
+        </span>
       </li>
     ))}
   </ul>
 </div>
 
+<style>
+  .song-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    cursor: pointer;
+    border: 1px solid transparent;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    background: #1a1a1a;
+  }
+  .song-item:hover {
+    border-color: #555;
+  }
+  .song-title {
+    padding: 12px 14px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    font-size: 1.05rem;
+  }
+
+  /* Větší a pohodlnější tlačítko na boku */
+  .btn-action {
+    background: transparent;
+    border: none;
+    border-left: 1px solid #333;
+    width: 60px; /* Širší oblast pro prst */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    color: #aaa;
+    font-size: 1.2rem;
+    padding: 0;
+  }
+  .btn-action:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  .active-list .song-item.selected {
+    border-color: #ff8800;
+    background: #262626;
+  }
+  .active-list .btn-deactivate {
+      color: #ff5555; /* Jemně červená pro vyřazení */
+  }
+  .active-list .btn-deactivate .icon {
+      opacity: 0.4;
+  }
+  .active-list .song-item:hover .btn-deactivate .icon {
+      opacity: 1;
+  }
+
+  .inactive-list .song-item.inactive {
+    opacity: 0.7;
+    border-style: dashed;
+    border-color: #444;
+    background: #111;
+  }
+  .inactive-list .song-item.inactive:hover {
+    opacity: 1;
+    border-color: #888;
+  }
+  .inactive-list .btn-activate {
+      color: #44ff44; /* Jemně zelená šipka zpět */
+  }
+</style>
+
 <script is:inline>
   document.addEventListener('DOMContentLoaded', () => {
+    const repertoire = document.getElementById('repertoire');
+    const inactiveRepertoire = document.getElementById('inactive-repertoire');
+
+    if (repertoire) {
+      repertoire.addEventListener('click', (e) => {
+        const item = e.target.closest('.song-item');
+        const actionBtn = e.target.closest('.btn-action');
+        if (!item) return;
+
+        if (actionBtn && actionBtn.dataset.action === 'deactivate') {
+            e.stopPropagation();
+            const songId = item.getAttribute('data-id');
+            
+            fetch('/api/inactive-songs', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ songId, action: 'deactivate' })
+            }).then(res => {
+              if (res.ok) window.location.reload();
+            });
+            return;
+        }
+
+        item.classList.toggle('selected');
+      });
+    }
+
+    if (inactiveRepertoire) {
+      inactiveRepertoire.addEventListener('click', (e) => {
+        const item = e.target.closest('.song-item.inactive');
+        if (!item) return;
+
+        const songId = item.getAttribute('data-id');
+        
+        fetch('/api/inactive-songs', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ songId, action: 'activate' })
+            }).then(res => {
+              if (res.ok) window.location.reload();
+            });
+      });
+    }
+
     const btnSelectAll = document.getElementById('btn-select-all');
     const btnDeselectAll = document.getElementById('btn-deselect-all');
-
     if (btnSelectAll) {
       btnSelectAll.addEventListener('click', () => {
-        document.querySelectorAll('#repertoire .song-item').forEach(item => {
+        document.querySelectorAll('.active-list .song-item').forEach(item => {
           item.classList.add('selected');
         });
       });
     }
-
     if (btnDeselectAll) {
       btnDeselectAll.addEventListener('click', () => {
-        document.querySelectorAll('#repertoire .song-item').forEach(item => {
+        document.querySelectorAll('.active-list .song-item').forEach(item => {
           item.classList.remove('selected');
         });
       });

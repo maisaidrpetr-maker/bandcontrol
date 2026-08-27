@@ -11,8 +11,10 @@ import PlaylistManager from '../components/admin/PlaylistManager.astro';
 import PlaylistModal from '../components/admin/PlaylistModal.astro';
 import EventManager from '../components/admin/EventManager.astro';
 import ChangelogManager from '../components/admin/ChangelogManager.astro';
+import { getInactiveSongs } from './api/inactive-songs.ts';
 
 const allLyrics = await getCollection('lyrics');
+const inactiveSongs = await getInactiveSongs();
 ---
 
 <html lang="cs">
@@ -71,7 +73,7 @@ const allLyrics = await getCollection('lyrics');
             
             <!-- ZÁLOŽKA 1: TVORBA -->
             <div id="tab-creator" class="tab-content active">
-              <SongSelector allLyrics={allLyrics} />
+              <SongSelector allLyrics={allLyrics} inactiveSongs={inactiveSongs} />
             </div>
 
             <!-- ZÁLOŽKA 2: PLAYLISTY -->
@@ -128,12 +130,6 @@ const allLyrics = await getCollection('lyrics');
             }
           });
         });
-
-        document.querySelectorAll('.song-item').forEach(item => {
-          item.addEventListener('click', () => {
-            item.classList.toggle('selected');
-          });
-        });
       });
 
       // Podpora odhlášení
@@ -144,5 +140,3 @@ const allLyrics = await getCollection('lyrics');
         }
       });
     </script>
-  </body>
-</html>
